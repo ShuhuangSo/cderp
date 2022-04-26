@@ -367,6 +367,7 @@ export default {
 
     // 搜索
     doSearch() {
+      this.page = 1;
       this.$refs.purchaseOrderTable.clearFilter();
       this.initPurchaseOrder();
     },

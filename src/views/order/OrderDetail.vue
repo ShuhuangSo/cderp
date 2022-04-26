@@ -131,10 +131,14 @@
                 width="100"
                 label="单价">
               <template slot-scope="scope">
-                {{ scope.row.unit_price | currency }}
+                <span style="text-decoration:line-through"
+                      v-if="scope.row.unit_price>scope.row.sold_price">
+                  {{ scope.row.unit_price | currency }}</span>
+                <span v-if="scope.row.unit_price===scope.row.sold_price">{{ scope.row.unit_price | currency }}</span>
               </template>
             </el-table-column>
             <el-table-column
+                v-if="order.customer.customer_discount.length>0"
                 align="center"
                 header-align="center"
                 width="100"
@@ -202,6 +206,11 @@
               @click="goEditOrder"
               type="" icon="el-icon-edit"  style="width: 200px">解锁库存修改订单
           </el-button>
+          <el-button
+              type="primary" icon="el-icon-check"
+              v-if="order.order_status === 'FINISHED' && order.paid_status === 'UNPAID'"
+              @click="doCheckout">确认结算
+          </el-button>
 
         </div>
 
@@ -212,6 +221,7 @@
         <OrderLog :orderID="this.orderID"></OrderLog>
       </div>
 
+<!--      发货物流信息填写弹窗-->
       <el-dialog
           title="订单发货"
           :close-on-click-modal="false"
@@ -337,12 +347,52 @@ export default {
     this.initOrder();
   },
   methods:{
+    // 确认结算
+    doCheckout(){
+      this.$confirm('是否进行订单结算，请确认？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.order.customer = this.order.customer.id;
+        this.order.order_detail.forEach(item=>{
+          item.paid_qty = item.sent_qty
+        })
+        console.log(this.order)
+        this.loading = true;
+        this.putRequest('api/orders/order_edit/', this.order).then(resp => {
+          if (resp) {
+            this.loading = false;
+            this.$router.push('/orderManage');
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
+    },
+
     // 点击发货
     clickSend(){
       if(this.order.order_type==='EXPRESS'){
         this.dialogVisible = true;
       }else {
-        this.doSent();
+        this.$confirm('订单发货，请确认？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.doSent();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
+
       }
     },
 

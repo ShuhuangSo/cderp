@@ -21,17 +21,13 @@
 
         <el-radio-group v-model="orderStatus" style="margin-right: 20px" @change="initOrders">
           <el-radio-button label="">全部</el-radio-button>
-          <el-radio-button label="PREPARING">未提交</el-radio-button>
           <el-radio-button label="READY">待发货</el-radio-button>
-          <el-radio-button label="PART_SENT">部分发货</el-radio-button>
           <el-radio-button label="FINISHED">已完成</el-radio-button>
-          <el-radio-button label="EXCEPTION">异常完成</el-radio-button>
         </el-radio-group>
 
         <el-radio-group v-model="payStatus" @change="initOrders">
           <el-radio-button label="">全部</el-radio-button>
           <el-radio-button label="UNPAID">未结算</el-radio-button>
-          <el-radio-button label="PART_PAID">部分结算</el-radio-button>
           <el-radio-button label="FULL_PAID">已结算</el-radio-button>
         </el-radio-group>
 
@@ -39,6 +35,9 @@
       </div>
       <div>
         <el-button type="success" icon="el-icon-plus" @click="createOrder">新建订单</el-button>
+        <el-button type="info"  icon="el-icon-edit" @click="changeListStatus('PREPARING')">草稿箱</el-button>
+
+        <el-button type=""  icon="el-icon-delete" @click="changeListStatus('CANCEL')">回收站</el-button>
       </div>
     </div>
 
@@ -185,6 +184,16 @@
 
       </el-table>
     </div>
+    <div class="pagination">
+      <el-pagination
+          background
+          :page-sizes="[20, 30, 40, 50, 100]"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          layout="sizes, prev, pager, next, jumper, ->, total"
+          :total="total">
+      </el-pagination>
+    </div>
 
   </div>
 </template>
@@ -198,7 +207,7 @@ export default {
       orders: [],
       mode: 'STANDARD', // 订单模式筛选
       payStatus: '', // 订单支付状态筛选
-      orderStatus: '', //订单状态筛选
+      orderStatus: 'READY', //订单状态筛选
       total: 0,
       page: 1,
       size: 20,
@@ -264,6 +273,12 @@ export default {
     this.initOrders();
   },
   methods: {
+    // 草稿箱,回收站
+    changeListStatus(status){
+      this.orderStatus = status;
+      this.initOrders();
+    },
+
     //  恢复到草稿箱
     restoreCreateOrder(obj) {
       this.$confirm('是否将订单恢复？', '提示', {
@@ -333,6 +348,7 @@ export default {
 
     // 搜索
     doSearch() {
+      this.page = 1;
       this.$refs.orderTable.clearFilter();
       this.initOrders();
     },

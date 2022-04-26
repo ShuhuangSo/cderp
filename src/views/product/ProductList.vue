@@ -990,6 +990,7 @@ export default {
       this.pStatus = '';
       this.pTag = '';
       this.pSeries = '';
+      this.page = 1;
       this.$refs.multipleTable.clearFilter();
       this.initProducts();
     },

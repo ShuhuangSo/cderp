@@ -165,6 +165,7 @@ export default {
     },
     // 搜索
     doSearch() {
+
       this.$refs.stockInOutTable.clearFilter();
       this.initStockInOut();
     },

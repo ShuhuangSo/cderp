@@ -115,7 +115,7 @@
               </el-input>
             </el-form-item>
 
-            <el-form-item label="运费"  v-if="order.order_type==='EXPRESS' || order.order_type==='SELLER_SEND'">
+            <el-form-item label="运费" v-if="order.order_type==='EXPRESS' || order.order_type==='SELLER_SEND'">
               <el-input-number
                   v-model="order.postage"
                   :precision="2"
@@ -123,7 +123,7 @@
                   :min="0"></el-input-number>
             </el-form-item>
 
-<!--            折扣优惠信息-->
+            <!--            折扣优惠信息-->
             <el-table
                 :header-cell-style="{background:'#eef1f6'}"
                 :data="currentCustomer.customer_discount"
@@ -155,19 +155,19 @@
                   align="center"
                   header-align="center">
               </el-table-column>
-                <el-table-column
-                    :formatter="percentFormat"
-                    prop="discount_percent"
-                    label="优惠比例"
-                    align="center"
-                    header-align="center">
+              <el-table-column
+                  :formatter="percentFormat"
+                  prop="discount_percent"
+                  label="优惠比例"
+                  align="center"
+                  header-align="center">
               </el-table-column>
             </el-table>
 
           </el-form>
         </div>
 
-<!--        产品列表-->
+        <!--        产品列表-->
         <div>
           <el-input v-model="scanSKU" placeholder="请扫码...."
                     style="width: 98%; margin: 20px 10px 0 10px"
@@ -208,10 +208,14 @@
                 width="100"
                 label="单价">
               <template slot-scope="scope">
-                {{ scope.row.unit_price | currency }}
+                <span style="text-decoration:line-through"
+                      v-if="scope.row.unit_price>scope.row.sold_price">
+                  {{ scope.row.unit_price | currency }}</span>
+                <span v-if="scope.row.unit_price===scope.row.sold_price">{{ scope.row.unit_price | currency }}</span>
               </template>
             </el-table-column>
             <el-table-column
+                v-if="currentCustomer.customer_discount.length>0"
                 align="center"
                 header-align="center"
                 width="100"
@@ -243,7 +247,9 @@
                   <p>店铺锁仓: {{ scope.row.lock_qty }}</p>
                   <div slot="reference" class="name-wrapper">
                     <el-tag type="danger" size="small" v-if="scope.row.ave_qty<10">{{ scope.row.ave_qty }}</el-tag>
-                    <el-tag type="warning" size="small" v-if="scope.row.ave_qty<30 && scope.row.ave_qty>=10">{{ scope.row.ave_qty }}</el-tag>
+                    <el-tag type="warning" size="small" v-if="scope.row.ave_qty<30 && scope.row.ave_qty>=10">
+                      {{ scope.row.ave_qty }}
+                    </el-tag>
                     <el-tag type="success" size="small" v-if="scope.row.ave_qty>=30">{{ scope.row.ave_qty }}</el-tag>
                   </div>
                 </el-popover>
@@ -362,13 +368,15 @@ export default {
       },
       stores: [], //店铺列表
       customers: [], //客户列表
-      currentCustomer: {}, // 当前选中的客户
+      currentCustomer: {
+        customer_discount: []
+      }, // 当前选中的客户
       orderTypes: [
         {name: '门店自提', value: 'PICKUP'},
         {name: '快递', value: 'EXPRESS'},
         {name: '卖家送货', value: 'SELLER_SEND'},
       ],
-      payWays:[
+      payWays: [
         {name: '现结', value: 'PAY_NOW'},
         {name: '约定付款', value: 'CONTRACT'},
       ],
@@ -392,10 +400,10 @@ export default {
     }
   },
 
-  filters:{
+  filters: {
     //金额格式化
-    currency: function(value){
-      if(!value) return 0.00;
+    currency: function (value) {
+      if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
     },
     //折扣类型信息格式化
@@ -414,7 +422,7 @@ export default {
   },
   mounted() {
     this.initBasicSetting();
-    if(this.orderID){
+    if (this.orderID) {
       this.initOrder();
     }
   },
@@ -444,7 +452,7 @@ export default {
       if (!value) {
         return '--'
       }
-      return value +"%";
+      return value + "%";
     },
 
 
@@ -490,7 +498,7 @@ export default {
             this.putRequest('api/orders/order_edit/', this.order).then(resp => {
               if (resp) {
                 this.loading = false;
-                if ('not_enough_stock' in resp){
+                if ('not_enough_stock' in resp) {
                   this.orderID = resp.id
                   this.initOrder();
                 } else {
@@ -527,8 +535,9 @@ export default {
             this.order.order_status = 'READY';
             this.postRequest('api/orders/', this.order).then(resp => {
               if (resp) {
+                console.log(resp)
                 this.loading = false;
-                if ('not_enough_stock' in resp){
+                if ('not_enough_stock' in resp) {
                   this.orderID = resp.id
                   this.initOrder();
                 } else {
@@ -581,9 +590,9 @@ export default {
     },
 
     //选中客户时回调
-    selectCustomer(value){
-      if(value){
-        let cs = this.customers.find(item=>{
+    selectCustomer(value) {
+      if (value) {
+        let cs = this.customers.find(item => {
           return item.id === value
         })
         this.order.contact_name = cs.contact_name;
@@ -593,22 +602,22 @@ export default {
         this.currentCustomer = cs;
 
         //切换客户时优惠信息变动
-        if (cs.customer_discount.length>0 && this.order.order_detail.length>0){
-          this.order.order_detail.forEach(item=>{
-            let new_cs = cs.customer_discount.find(i=>{
+        if (cs.customer_discount.length > 0 && this.order.order_detail.length > 0) {
+          this.order.order_detail.forEach(item => {
+            let new_cs = cs.customer_discount.find(i => {
               return i.series_name === item.series;
             })
-            if (new_cs.discount_type===1){
+            if (new_cs.discount_type === 1) {
               item.sold_price = item.sale_price - new_cs.discount_money;
             }
-            if (new_cs.discount_type===0){
-              item.sold_price = item.sale_price * (100 - new_cs.discount_percent)/100;
+            if (new_cs.discount_type === 0) {
+              item.sold_price = item.sale_price * (100 - new_cs.discount_percent) / 100;
             }
 
           })
-        }else {
+        } else {
           // 清空产品折扣
-          this.order.order_detail.forEach(item=>{
+          this.order.order_detail.forEach(item => {
             item.sold_price = item.unit_price;
           })
         }
@@ -617,14 +626,14 @@ export default {
     },
 
     // 清除客户时的回调
-    clearCustomer(){
+    clearCustomer() {
       this.order.contact_name = '';
       this.order.phone = '';
       this.order.address = '';
-      this.currentCustomer={};
+      this.currentCustomer = {};
 
       // 清空产品折扣
-      this.order.order_detail.forEach(item=>{
+      this.order.order_detail.forEach(item => {
         item.sold_price = item.unit_price;
       })
     },
@@ -650,19 +659,25 @@ export default {
           newCurrentSKU['qty'] = 1; // 添加数量1
           newCurrentSKU['product'] = newCurrentSKU.id; // 修改sku id为product
           newCurrentSKU['unit_price'] = newCurrentSKU.sale_price
-
+          console.log(this.currentCustomer)
+          console.log(newCurrentSKU)
           // 如果有折扣信息，折减去折扣
-          if(this.order.customer && this.currentCustomer.customer_discount.length>0){
-            let ccs = this.currentCustomer.customer_discount.find(item=>{
+          if (this.order.customer && this.currentCustomer.customer_discount.length > 0) {
+            let ccs = this.currentCustomer.customer_discount.find(item => {
               return item.series_name === newCurrentSKU.series;
             })
-            if (ccs.discount_type===1){
-              newCurrentSKU['sold_price'] = newCurrentSKU.sale_price - ccs.discount_money;
+            if(ccs){
+              if (ccs.discount_type === 1) {
+                newCurrentSKU['sold_price'] = newCurrentSKU.sale_price - ccs.discount_money;
+              }
+              if (ccs.discount_type === 0) {
+                newCurrentSKU['sold_price'] = newCurrentSKU.sale_price * (100 - ccs.discount_percent) / 100;
+              }
+            } else {
+              newCurrentSKU['sold_price'] = newCurrentSKU.sale_price;
             }
-            if (ccs.discount_type===0){
-              newCurrentSKU['sold_price'] = newCurrentSKU.sale_price * (100 - ccs.discount_percent)/100;
-            }
-          }else {
+
+          } else {
             newCurrentSKU['sold_price'] = newCurrentSKU.sale_price;
           }
 
@@ -693,21 +708,21 @@ export default {
     },
 
     //搜索客户
-    searchCustomer(query){
-      if(query!==''){
+    searchCustomer(query) {
+      if (query !== '') {
         this.getRequest('api/customers/?search=' + query).then(resp => {
           if (resp.results) {
             this.customers = resp.results;
           }
         })
-      }else {
+      } else {
         this.customers = [];
       }
 
     },
 
     //初始化产品
-    initOrder(){
+    initOrder() {
       this.loading = true;
       this.getRequest('api/orders/' + this.orderID + '/').then(resp => {
         if (resp) {
@@ -718,7 +733,7 @@ export default {
 
           this.order = resp;
           this.order.customer = resp.customer.id;
-          this.order.order_detail.forEach(item=>{
+          this.order.order_detail.forEach(item => {
             item['product'] = item.id;
           })
 
@@ -753,16 +768,19 @@ export default {
   margin-top: 10px;
   width: 1200px;
 }
+
 .total {
   display: flex;
   justify-content: flex-end;
   margin-right: 50px;
   margin-bottom: 20px;
 }
+
 .inputwidth {
   width: 220px;
 }
-.step{
+
+.step {
   padding-left: 300px;
   margin-bottom: 50px;
   margin-top: 50px;
