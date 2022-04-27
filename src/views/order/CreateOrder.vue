@@ -659,8 +659,7 @@ export default {
           newCurrentSKU['qty'] = 1; // 添加数量1
           newCurrentSKU['product'] = newCurrentSKU.id; // 修改sku id为product
           newCurrentSKU['unit_price'] = newCurrentSKU.sale_price
-          console.log(this.currentCustomer)
-          console.log(newCurrentSKU)
+
           // 如果有折扣信息，折减去折扣
           if (this.order.customer && this.currentCustomer.customer_discount.length > 0) {
             let ccs = this.currentCustomer.customer_discount.find(item => {
