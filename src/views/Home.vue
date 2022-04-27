@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <el-container>
+
+    <el-container  style="height: 100%">
       <el-header class="headerMenu">
 
         <div style="display: flex; justify-content: left">
@@ -40,14 +40,14 @@
       </el-header>
 
       <el-main>
-        <el-breadcrumb separator-class="el-icon-arrow-right" v-if="this.$router.currentRoute.path!='/home'">
+        <el-breadcrumb separator-class="el-icon-arrow-right" v-if="this.$router.currentRoute.path!='/home' && this.$router.currentRoute.path!='/orderPOS'">
           <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
           <el-breadcrumb-item>{{ this.$router.currentRoute.name }}</el-breadcrumb-item>
         </el-breadcrumb>
         <router-view/>
       </el-main>
     </el-container>
-  </div>
+
 </template>
 
 <script>
