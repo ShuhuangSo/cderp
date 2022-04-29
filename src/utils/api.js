@@ -31,6 +31,10 @@ axios.interceptors.response.use(success => {
     if (success.status && success.status == 204) {
         Message.success({message: '删除成功！'});
     }
+    // 库存不足
+    if (success.status && success.status == 202) {
+        Message.error({message: success.data.msg});
+    }
     return success.data;
 }, error => {
     if (error.response.status == 504 || error.response.status == 404) {

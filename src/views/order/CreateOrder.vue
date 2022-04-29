@@ -607,11 +607,13 @@ export default {
             let new_cs = cs.customer_discount.find(i => {
               return i.series_name === item.series;
             })
-            if (new_cs.discount_type === 1) {
-              item.sold_price = item.sale_price - new_cs.discount_money;
-            }
-            if (new_cs.discount_type === 0) {
-              item.sold_price = item.sale_price * (100 - new_cs.discount_percent) / 100;
+            if (new_cs){
+              if (new_cs.discount_type === 1) {
+                item.sold_price = item.sale_price - new_cs.discount_money;
+              }
+              if (new_cs.discount_type === 0) {
+                item.sold_price = item.sale_price * (100 - new_cs.discount_percent) / 100;
+              }
             }
 
           })
@@ -736,7 +738,6 @@ export default {
             item['product'] = item.id;
           })
 
-          console.log(this.order)
         }
       })
     },

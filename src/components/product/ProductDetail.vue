@@ -587,24 +587,36 @@ export default {
     initSettings(){
 
       //获取所有可选品牌
-      this.getRequest('api/product_extra_info/?type=BRAND').then(resp => {
-        if (resp.results) {
-          this.brand = resp.results;
-        }
-      })
+      if(window.sessionStorage.getItem('brand')) {
+        this.brand = JSON.parse(window.sessionStorage.getItem('brand'));
+      }else{
+        this.getRequest('api/product_extra_info/?type=BRAND&page_size=1000').then(resp => {
+          if (resp.results) {
+            this.brand = resp.results;
+            window.sessionStorage.setItem('brand', JSON.stringify(this.brand));
+          }
+        })
+      }
+
 
       //获取所有可选产品系列
-      this.getRequest('api/product_extra_info/?type=SERIES').then(resp => {
-        if (resp.results) {
-          this.series = resp.results;
-        }
-      })
+      if(window.sessionStorage.getItem('pSeries')) {
+        this.series = JSON.parse(window.sessionStorage.getItem('pSeries'));
+      }else{
+        this.getRequest('api/product_extra_info/?type=SERIES&page_size=1000').then(resp => {
+          if (resp.results) {
+            this.series = resp.results;
+            window.sessionStorage.setItem('pSeries', JSON.stringify(this.series));
+          }
+        })
+      }
+
 
       //获取所有可选产品类型
       if(window.sessionStorage.getItem('pType')) {
         this.pType = JSON.parse(window.sessionStorage.getItem('pType'));
       }else{
-        this.getRequest('api/product_extra_info/?type=P_TYPE').then(resp => {
+        this.getRequest('api/product_extra_info/?type=P_TYPE&page_size=1000').then(resp => {
           if (resp.results) {
             this.pType = resp.results;
             window.sessionStorage.setItem('pType', JSON.stringify(this.pType));
