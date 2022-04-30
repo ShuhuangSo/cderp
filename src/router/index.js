@@ -15,6 +15,7 @@ import CreateSupplier from "@/views/purchase/CreateSupplier";
 import CreateCustomer from "@/views/order/CreateCustomer";
 import CreateOrder from "@/views/order/CreateOrder";
 import OrderDetail from "@/views/order/OrderDetail";
+import UserPermission from "@/views/setting/UserPermission";
 
 
 
@@ -94,6 +95,11 @@ const routes = [
                 path: '/orderDetail',
                 name: '订单详情',
                 component: OrderDetail
+            },
+            {
+                path: '/userPermission',
+                name: '用户权限',
+                component: UserPermission
             },
         ]
     },

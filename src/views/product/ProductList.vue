@@ -99,7 +99,6 @@
           :data="products"
           tooltip-effect="dark"
           style="width: 100%"
-          @row-dblclick="rowDblClick"
           @filter-change="filterChange"
           @sort-change="handleSort"
           @selection-change="handleSelectionChange">
@@ -108,8 +107,19 @@
             width="42">
         </el-table-column>
 
+
         <!--        产品各仓库库存-->
-        <el-table-column type="expand" width="20">
+        <el-table-column type="expand" width="40">
+          <template slot="header" slot-scope="scope">
+            <el-button size="medium" type="text" icon="el-icon-circle-plus"
+                       @click="expendChange"
+                       v-if="expandStatus">
+            </el-button>
+            <el-button size="medium" type="text" icon="el-icon-remove"
+                       @click="expendChange"
+                       v-if="!expandStatus">
+            </el-button>
+          </template>
           <template slot-scope="props">
             <el-table
                 :header-cell-style="{background:'#eef1f6'}"
@@ -846,11 +856,6 @@ export default {
 
       }
 
-    },
-
-    // 双击行
-    rowDblClick(row, column, event) {
-      this.productDetail(row.id);
     },
 
     // 产品更多操作

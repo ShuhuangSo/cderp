@@ -59,7 +59,7 @@
         >
           <template slot-scope="scope">
             <el-button
-                @click="checkStore(scope.row.id)"
+                @click="checkStore(scope.row)"
                 type="text"
                 size="small">
               查看
@@ -82,8 +82,9 @@
     </div>
 
     <el-dialog
-        title="新建店铺/仓库"
+        :title="store.id? '店铺/仓库详情':'新建店铺/仓库'"
         top="60px"
+        :destroy-on-close="true"
         :visible.sync="dialogVisible"
         width="500">
       <el-form ref="storeForm" :rules="rules" :model="store" label-width="100px">
@@ -166,8 +167,9 @@
 
       </el-form>
       <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="submitForm">确 定</el-button>
+    <el-button @click="closeDetail">取 消</el-button>
+    <el-button v-if="!store.id" type="primary" @click="submitForm">确 定</el-button>
+        <el-button v-if="store.id" type="primary" @click="editForm">保 存</el-button>
   </span>
     </el-dialog>
 
@@ -182,7 +184,9 @@ export default {
   data(){
     return{
       stores: [],
-      store: {},
+      store: {
+        id: null
+      },
       total: 0,
       page: 1,
       size: 20,
@@ -220,9 +224,45 @@ export default {
     this.initStores();
   },
   methods:{
+    // 关闭对话框
+    closeDetail(){
+      this.dialogVisible = false;
+    },
+
     // 新建店铺
     createStore(){
+      this.store = {};
       this.dialogVisible = true;
+    },
+
+    //修改店铺
+    editForm() {
+      this.$confirm('是否修改店铺/仓库？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$refs.storeForm.validate((valid) => {
+          if (valid) {
+            this.loading = true;
+            this.putRequest('api/stores/'+ this.store.id + '/', this.store).then(resp => {
+              if (resp) {
+                this.initStores();
+                this.dialogVisible = false;
+              }
+              this.loading = false;
+            })
+          } else {
+            return false;
+          }
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
     },
 
     //创建店铺
@@ -256,8 +296,9 @@ export default {
     },
 
     // 查看店铺
-    checkStore(){
-
+    checkStore(obj){
+      this.store = Object.assign({},obj)
+      this.dialogVisible = true;
     },
 
     // 格式化日期时间

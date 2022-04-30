@@ -47,6 +47,8 @@ export const formatRoutes = (routes) => {
                     require(['../views/purchase/' + component + '.vue'], resolve);
                 } else if (component.startsWith('Order')) {
                     require(['../views/order/' + component + '.vue'], resolve);
+                } else if (component.startsWith('Setting')) {
+                    require(['../views/setting/' + component + '.vue'], resolve);
                 }
             }
         }
