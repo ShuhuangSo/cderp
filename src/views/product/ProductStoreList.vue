@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <!--    供应商列表-->
+    <!--    店铺列表-->
     <div style="margin-top: 5px">
       <el-table
           ref="storeTable"

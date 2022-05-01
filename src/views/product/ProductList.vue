@@ -1079,6 +1079,7 @@ export default {
           })
         }
       })
+
       //获取所有可选产品系列
       this.getRequest('api/product_extra_info/?type=SERIES').then(resp => {
         if (resp.results) {

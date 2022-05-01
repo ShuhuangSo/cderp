@@ -234,18 +234,11 @@
               {{ tag.tag_name }}
             </el-tag>
             <el-popover
+                @show="showTagSelect"
                 placement="right"
                 width="300"
                 trigger="click">
-              <div>
-                <el-radio-group>
-                  <el-radio :label="tag.id"
-                            :key="tag.id"
-                            v-for="tag in allTags">
-                    <el-tag :type="tag.color">{{ tag.tag_name }}</el-tag>
-                  </el-radio>
-                </el-radio-group>
-              </div>
+              <SelectTag :key="timer" v-if="isShow" :obj="{'id':productID,'tag_type':'PRODUCT'}"></SelectTag>
               <el-button size="mini" type="text" slot="reference">+ 添加标签</el-button>
             </el-popover>
           </div>
@@ -338,15 +331,32 @@
 
     </el-skeleton>
 
+    <el-dialog
+        title="添加标签"
+        :visible.sync="tagVisible"
+        :modal="false"
+        :show-close="false"
+        width="500px">
+      <SelectTag></SelectTag>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="tagVisible = false">取 消</el-button>
+    <el-button type="primary" @click="tagVisible = false">确 定</el-button>
+  </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from 'moment'
+import SelectTag from "@/components/setting/SelectTag";
 
 export default {
   name: "ProductDetail",
   props: ['productID'],
+  components:{
+    SelectTag
+  },
   data() {
     return {
       // 产品
@@ -433,6 +443,9 @@ export default {
       opPage: 1,  // 操作日志当前页
       opSize: 20,  // 操作日志页大小
       isNewProduct: false, // 是否新建产品
+      tagVisible: false,
+      timer: '',
+      isShow: true,
       statusOptions: [{
         value: 'ON_SALE',
         label: '在售'
@@ -472,6 +485,11 @@ export default {
     }
   },
   methods: {
+    showTagSelect(){
+      this.isShow = false;
+      this.timer = new Date().getTime();
+      this.isShow = true;
+    },
 
     //修改、新增产品
     updateProduct() {

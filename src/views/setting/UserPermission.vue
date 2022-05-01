@@ -3,7 +3,7 @@
     <div class="pContainer">
       <el-card shadow="hover" style="padding-bottom: 20px">
         <div slot="header" class="clearfix">
-          <el-page-header @back="cancel" content="用户权限">
+          <el-page-header @back="cancel" :content="'用户权限: '+ $route.query.name">
           </el-page-header>
         </div>
 
@@ -24,6 +24,7 @@
         </div>
 
       </el-card>
+
     </div>
   </div>
 </template>
@@ -32,8 +33,8 @@
 
 export default {
   name: "UserPermission",
-  data(){
-    return{
+  data() {
+    return {
       menu: [],
       defaultProps: {
         children: 'children',
@@ -45,11 +46,11 @@ export default {
     this.initMenu(); // 初始化基础菜单
 
   },
-  methods:{
+  methods: {
     //创建用户菜单
-    createUserMenu(){
+    createUserMenu() {
       let ids = this.$refs.tree.getCheckedKeys()
-      this.postRequest('api/settings/user_menu/'+ this.$route.query.id + '/create_menu/', ids).then(data => {
+      this.postRequest('api/settings/user_menu/' + this.$route.query.id + '/create_menu/', ids).then(data => {
         if (data) {
           console.log(data)
         }
@@ -57,7 +58,7 @@ export default {
     },
 
     //初始化菜单
-    initMenu(){
+    initMenu() {
       this.getRequest('api/settings/all_menu/').then(data => {
         if (data) {
           this.menu = data
@@ -67,23 +68,23 @@ export default {
     },
 
     //初始化选中用户菜单
-    initUserMenu(){
-      this.getRequest('api/settings/user_menu/?id='+ this.$route.query.id).then(data => {
+    initUserMenu() {
+      this.getRequest('api/settings/user_menu/?id=' + this.$route.query.id).then(data => {
         if (data) {
           let userMenuList = [];
           let basicList = []
           //将激活的用户菜单加进来
-          data.forEach(item=>{
-            item.children.forEach(i=>{
+          data.forEach(item => {
+            item.children.forEach(i => {
               if (i.is_active) {
-                userMenuList.push({name:i.name,id:i.id})
+                userMenuList.push({name: i.name, id: i.id})
               }
             })
           })
 
-          this.menu.forEach(item=>{
-            item.children.forEach(i=>{
-              userMenuList.forEach(u=>{
+          this.menu.forEach(item => {
+            item.children.forEach(i => {
+              userMenuList.forEach(u => {
                 if (i.name === u.name) {
                   basicList.push(i.id)
                 }
