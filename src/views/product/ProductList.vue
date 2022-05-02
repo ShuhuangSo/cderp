@@ -222,11 +222,13 @@
             width="80">
         </el-table-column>
         <el-table-column
-            prop="sale_price"
             label="售价"
             align="center"
             header-align="center"
             width="70">
+          <template slot-scope="scope">
+            <span>{{ scope.row.sale_price | currency}}</span>
+          </template>
         </el-table-column>
         <el-table-column
             label="标签"
@@ -238,10 +240,10 @@
             <el-tag
                 v-for="item in scope.row.product_p_tag"
                 :key="item.tag_name"
-                :type="item.color"
-                size="small"
-                effect="light"
-                style="margin-right: 5px">
+                :color="item.color"
+                size="mini"
+                effect="dark"
+                style="margin-right: 5px;border: none">
               {{ item.tag_name }}
             </el-tag>
           </template>
@@ -264,7 +266,8 @@
                 更多操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item disabled>打印标签</el-dropdown-item>
+                <el-dropdown-item disabled>打印条码</el-dropdown-item>
+                <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -372,6 +375,19 @@
         </span>
       </el-dialog>
     </div>
+
+<!--    产品标签弹窗-->
+    <el-dialog
+        title="添加标签"
+        :visible.sync="tagVisible"
+        width="500px"
+    >
+      <SelectTag @selectedTag="initTag"
+                 v-if="isShow"
+                 :key="timer"
+                 :obj="{'id':productID,'tag_type':'PRODUCT','existTag':currentTag}"></SelectTag>
+
+    </el-dialog>
 
 
     <!--      产品批量修改弹框-->
@@ -602,6 +618,7 @@
 
 <script>
 import ProductDetail from "@/components/product/ProductDetail";
+import SelectTag from "@/components/setting/SelectTag";
 
 export default {
   name: "productList",
@@ -632,6 +649,10 @@ export default {
       size: 20,
       expandStatus: true, // 所有行展开状态
       products: [],
+      tagVisible: false,
+      currentTag:[],
+      isShow: false,
+      timer: '',
       statusFilters: [
         {text: '在售', value: 'ON_SALE'},
         {text: '停售', value: 'OFFLINE'},
@@ -715,9 +736,22 @@ export default {
     this.initProductSettings(); // 初始化产品基础资料
   },
   components: {
-    ProductDetail
+    ProductDetail,SelectTag
+  },
+  filters: {
+    //金额格式化
+    currency: function (value) {
+      if (!value) return 0.00;
+      return `¥${value.toFixed(2)}`;
+    },
   },
   methods: {
+    //重新加载标签
+    initTag(test){
+      this.initProducts()
+      this.tagVisible = false
+    },
+
     // 关闭批量修改对话框回调
     closeBulkEdit() {
       this.bulkImage = ''
@@ -877,6 +911,16 @@ export default {
             });
           });
         })
+      }
+
+      //添加标签
+      if (command['type'] == 'addTag') {
+        this.isShow = false
+        this.timer = new Date().getTime();
+        this.productID=command['obj'].id
+        this.currentTag=command['obj'].product_p_tag
+        this.isShow = true
+        this.tagVisible = true
       }
 
     },

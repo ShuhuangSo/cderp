@@ -175,10 +175,10 @@
             <el-tag
                 v-for="item in scope.row.purchase_p_tag"
                 :key="item.tag_name"
-                :type="item.color"
-                size="small"
-                effect="light"
-                style="margin-right: 5px">
+                :color="item.color"
+                size="mini"
+                effect="dark"
+                style="margin-right: 5px;border: none">
               {{ item.tag_name }}
             </el-tag>
           </template>
@@ -227,6 +227,13 @@
                 size="small">
               恢复
             </el-button>
+            <el-divider direction="vertical"></el-divider>
+            <el-button
+                @click="addTag(scope.row)"
+                type="text"
+                size="small">
+              添加标签
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -243,11 +250,25 @@
       </el-pagination>
     </div>
 
+    <!--    采购单标签弹窗-->
+    <el-dialog
+        title="添加标签"
+        :visible.sync="tagVisible"
+        width="500px"
+    >
+      <SelectTag @selectedTag="initTag"
+                 v-if="isShow"
+                 :key="timer"
+                 :obj="{'id':purchaseID,'tag_type':'PURCHASE','existTag':currentTag}"></SelectTag>
+
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import SelectTag from "@/components/setting/SelectTag";
 
 export default {
   name: "PurchaseOrder",
@@ -264,13 +285,36 @@ export default {
       total: 0,
       page: 1,
       size: 20,
+      tagVisible: false,
+      currentTag:[],
+      isShow: false,
+      timer: '',
+      purchaseID: null,
     }
   },
   mounted() {
     this.initPurchaseOrder();
     this.initSettings();
   },
+  components:{
+    SelectTag
+  },
   methods: {
+    //重新加载标签
+    initTag(test){
+      this.initPurchaseOrder()
+      this.tagVisible = false
+    },
+    //添加标签
+    addTag(obj){
+      this.isShow = false
+      this.timer = new Date().getTime();
+      this.purchaseID=obj.id
+      this.currentTag=obj.purchase_p_tag
+      this.isShow = true
+      this.tagVisible = true
+    },
+
     // 金额日期时间
     moneyFormat: function (row, column) {
 

@@ -225,11 +225,13 @@
 
             <el-divider content-position="left">标签</el-divider>
             <el-tag
-                style="margin-right: 5px"
+                style="margin-right: 5px;border: none"
                 :key="tag.tag_name"
-                :type="tag.color"
+                :color="tag.color"
+                effect="dark"
                 v-for="tag in product.product_p_tag"
                 closable
+                @close="deleteTag(tag.id)"
                 :disable-transitions="false">
               {{ tag.tag_name }}
             </el-tag>
@@ -238,7 +240,9 @@
                 placement="right"
                 width="300"
                 trigger="click">
-              <SelectTag :key="timer" v-if="isShow" :obj="{'id':productID,'tag_type':'PRODUCT'}"></SelectTag>
+              <SelectTag :key="timer" v-if="isShow"
+                         @selectedTag="initTag"
+                         :obj="{'id':productID,'tag_type':'PRODUCT','existTag':product.product_p_tag}"></SelectTag>
               <el-button size="mini" type="text" slot="reference">+ 添加标签</el-button>
             </el-popover>
           </div>
@@ -330,19 +334,6 @@
       </el-card>
 
     </el-skeleton>
-
-    <el-dialog
-        title="添加标签"
-        :visible.sync="tagVisible"
-        :modal="false"
-        :show-close="false"
-        width="500px">
-      <SelectTag></SelectTag>
-      <span slot="footer" class="dialog-footer">
-    <el-button @click="tagVisible = false">取 消</el-button>
-    <el-button type="primary" @click="tagVisible = false">确 定</el-button>
-  </span>
-    </el-dialog>
 
   </div>
 </template>
@@ -443,7 +434,6 @@ export default {
       opPage: 1,  // 操作日志当前页
       opSize: 20,  // 操作日志页大小
       isNewProduct: false, // 是否新建产品
-      tagVisible: false,
       timer: '',
       isShow: true,
       statusOptions: [{
@@ -485,6 +475,19 @@ export default {
     }
   },
   methods: {
+    // 删除标签
+    deleteTag(id){
+      this.deleteRequest('api/product_tags/'+id+'/').then(resp => {
+        this.initProduct()
+      })
+    },
+
+    //重新加载标签
+    initTag(test){
+      this.initProduct()
+    },
+
+    //触发子组件更新
     showTagSelect(){
       this.isShow = false;
       this.timer = new Date().getTime();
