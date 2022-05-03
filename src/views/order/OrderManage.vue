@@ -45,6 +45,7 @@
       <el-table
           ref="orderTable"
           :data="orders"
+          @filter-change="filterChange"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
           style="width: 100%">
@@ -138,22 +139,27 @@
         </el-table-column>
 
         <el-table-column
+            :filter-multiple="false"
+            :filters="tagFilters"
+            column-key="filterTag"
             label="标签">
           <template slot-scope="scope">
             <el-tag
                 v-for="item in scope.row.order_tag"
                 :key="item.tag_name"
-                :type="item.color"
-                size="small"
-                effect="light"
-                style="margin-right: 5px">
+                :color="item.color"
+                :closable="editTag"
+                @close="removeTag(item.id)"
+                size="mini"
+                effect="dark"
+                style="margin-right: 5px;border: none">
               {{ item.tag_name }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
             label="操作"
-            width="100"
+            width="120"
             align="center"
             header-align="center"
         >
@@ -179,6 +185,17 @@
                 size="small">
               恢复
             </el-button>
+            <el-divider direction="vertical"></el-divider>
+            <el-dropdown @command="handleOp">
+              <el-button type="text">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
+                <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
+                <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </template>
         </el-table-column>
 
@@ -194,11 +211,24 @@
           :total="total">
       </el-pagination>
     </div>
+    <!--    订单标签弹窗-->
+    <el-dialog
+        title="添加标签"
+        :visible.sync="tagVisible"
+        width="500px"
+    >
+      <SelectTag @selectedTag="initTag"
+                 v-if="isShow"
+                 :key="timer"
+                 :obj="{'id':orderID,'tag_type':'ORDER','existTag':currentTag}"></SelectTag>
 
+    </el-dialog>
   </div>
 </template>
 
 <script>
+
+import SelectTag from "@/components/setting/SelectTag";
 
 export default {
   name: "OrderManage",
@@ -213,7 +243,15 @@ export default {
       size: 20,
       loading: false,
       searchValue: '',
-      orderType: 'STANDARD'
+      orderType: 'STANDARD',
+      editTag: false,
+      tagVisible: false,
+      isShow: false,
+      timer: '',
+      orderID: null,
+      currentTag:[],
+      tagFilters: [],  // 标签过滤项
+      orderTag: '', // 标签筛选
     }
   },
   filters: {
@@ -271,8 +309,51 @@ export default {
   },
   mounted() {
     this.initOrders();
+    this.initSettings();
+  },
+  components:{
+    SelectTag
   },
   methods: {
+    // 监听筛选项的变化
+    filterChange(filterObj) {
+      // 监听产品标签字段
+      if (filterObj.filterTag) {
+        this.orderTag = filterObj.filterTag[0];
+      }
+      this.initOrders();
+    },
+
+    // 删除标签操作
+    removeTag(id){
+      this.deleteRequest('api/order_tags/'+id+'/').then(resp => {
+        this.initOrders()
+      })
+    },
+
+    //更多操作
+    handleOp(command) {
+      //添加标签
+      if (command['type'] == 'addTag') {
+        this.isShow = false
+        this.timer = new Date().getTime();
+        this.orderID=command['obj'].id
+        this.currentTag=command['obj'].order_tag
+        this.isShow = true
+        this.tagVisible = true
+      }
+      //编辑标签
+      if (command['type'] == 'editTag') {
+        this.editTag = !this.editTag
+      }
+    },
+
+    //重新加载标签
+    initTag(test){
+      this.initOrders()
+      this.tagVisible = false
+    },
+
     // 草稿箱,回收站
     changeListStatus(status){
       this.orderStatus = status;
@@ -358,6 +439,17 @@ export default {
       this.initOrders();
     },
 
+    initSettings(){
+      // 获取所有客户标签
+      this.getRequest('api/settings/tags/?type=ORDER').then(resp => {
+        if (resp) {
+          resp.results.forEach(i => {
+            this.tagFilters.push({text: i.tag_name, value: i.tag_name, tagID: i.id})
+          })
+        }
+      })
+    },
+
     // 初始化订单列表
     initOrders() {
       this.loading = true;
@@ -374,6 +466,9 @@ export default {
       }
       if (this.orderStatus) {
         url += '&order_status=' + this.orderStatus;
+      }
+      if (this.orderTag) {
+        url += '&order_tag__tag__tag_name=' + this.orderTag;
       }
       this.getRequest(url).then(resp => {
         if (resp.results) {

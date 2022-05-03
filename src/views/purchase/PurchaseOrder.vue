@@ -176,6 +176,8 @@
                 v-for="item in scope.row.purchase_p_tag"
                 :key="item.tag_name"
                 :color="item.color"
+                :closable="deleteTag"
+                @close="removeTag(item.id)"
                 size="mini"
                 effect="dark"
                 style="margin-right: 5px;border: none">
@@ -201,7 +203,7 @@
         </el-table-column>
         <el-table-column
             label="操作"
-            width="100"
+            width="120"
             align="center"
             header-align="center"
         >
@@ -228,12 +230,16 @@
               恢复
             </el-button>
             <el-divider direction="vertical"></el-divider>
-            <el-button
-                @click="addTag(scope.row)"
-                type="text"
-                size="small">
-              添加标签
-            </el-button>
+            <el-dropdown @command="handleOp">
+              <el-button type="text">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
+                <el-dropdown-item v-if="!deleteTag" :command="{type:'deleteTag', obj:scope.row}">编辑标签</el-dropdown-item>
+                <el-dropdown-item v-if="deleteTag" :command="{type:'deleteTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -290,6 +296,7 @@ export default {
       isShow: false,
       timer: '',
       purchaseID: null,
+      deleteTag: false,
     }
   },
   mounted() {
@@ -300,6 +307,25 @@ export default {
     SelectTag
   },
   methods: {
+    // 删除标签操作
+    removeTag(id){
+      this.deleteRequest('api/purchase_order_tags/'+id+'/').then(resp => {
+        this.initPurchaseOrder()
+      })
+    },
+
+    //更多操作
+    handleOp(command) {
+      //添加标签
+      if (command['type'] == 'addTag') {
+        this.addTag(command['obj'])
+      }
+      //删除标签
+      if (command['type'] == 'deleteTag') {
+        this.deleteTag = !this.deleteTag
+      }
+    },
+
     //重新加载标签
     initTag(test){
       this.initPurchaseOrder()

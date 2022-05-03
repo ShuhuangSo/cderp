@@ -241,6 +241,8 @@
                 v-for="item in scope.row.product_p_tag"
                 :key="item.tag_name"
                 :color="item.color"
+                :closable="editTag"
+                @close="deleteTag(item.id)"
                 size="mini"
                 effect="dark"
                 style="margin-right: 5px;border: none">
@@ -263,12 +265,14 @@
             <el-divider direction="vertical"></el-divider>
             <el-dropdown @command="handleProductOp">
               <el-button type="text">
-                更多操作<i class="el-icon-arrow-down el-icon--right"></i>
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item disabled>打印条码</el-dropdown-item>
                 <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+                <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
+                <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -653,6 +657,7 @@ export default {
       currentTag:[],
       isShow: false,
       timer: '',
+      editTag: false,
       statusFilters: [
         {text: '在售', value: 'ON_SALE'},
         {text: '停售', value: 'OFFLINE'},
@@ -746,6 +751,13 @@ export default {
     },
   },
   methods: {
+    // 删除标签
+    deleteTag(id){
+      this.deleteRequest('api/product_tags/'+id+'/').then(resp => {
+        this.initProducts()
+      })
+    },
+
     //重新加载标签
     initTag(test){
       this.initProducts()
@@ -921,6 +933,11 @@ export default {
         this.currentTag=command['obj'].product_p_tag
         this.isShow = true
         this.tagVisible = true
+      }
+
+      //编辑标签
+      if (command['type'] == 'editTag') {
+        this.editTag = !this.editTag
       }
 
     },

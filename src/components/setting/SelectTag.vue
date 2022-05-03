@@ -96,6 +96,31 @@ export default {
           }
         })
       }
+      //客户标签
+      if(this.obj.tag_type==='CUSTOMER'){
+        let customerTag = {
+          customer: this.obj.id,
+          tag: id
+        }
+        this.postRequest('api/customer_tags/', customerTag).then(resp => {
+          if (resp) {
+            this.$emit('selectedTag', 'test')
+          }
+        })
+      }
+
+      //订单标签
+      if(this.obj.tag_type==='ORDER'){
+        let orderTag = {
+          order: this.obj.id,
+          tag: id
+        }
+        this.postRequest('api/order_tags/', orderTag).then(resp => {
+          if (resp) {
+            this.$emit('selectedTag', 'test')
+          }
+        })
+      }
 
     },
 
