@@ -102,7 +102,7 @@
                    v-if="orderID"
                    :disabled="order.order_detail.length===0 || !order.customer"
                    @click="placeEditOrder()"
-                   type="success">下单ed
+                   type="success">下单
         </el-button>
         <div style="margin-top: 10px; display: flex;justify-content: space-between">
           <el-button style="width: 49%; height: 50px"
@@ -116,7 +116,7 @@
                      :disabled="order.order_detail.length===0 || !order.customer"
                      @click="holdEditOrder"
                      size="medium"
-                     type="warning">挂单ed</el-button>
+                     type="warning">挂单</el-button>
           <el-button style="width: 49%; height: 50px"
                      v-if="!orderID"
                      :disabled="order.order_detail.length===0 || !order.customer"
@@ -128,7 +128,7 @@
                      :disabled="order.order_detail.length===0 || !order.customer"
                      @click="lockEditOrder"
                      size="medium"
-                     type="primary">锁单ed</el-button>
+                     type="primary">锁单</el-button>
         </div>
         <div style="margin-top: 10px; display: flex;justify-content: space-between">
           <el-button style="width: 49%; height: 40px"

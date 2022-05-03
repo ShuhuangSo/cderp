@@ -56,7 +56,7 @@ export default {
               this.loading = false;
               // 存储用户token
               const tokenStr = 'JWT ' + resp.token;
-              window.sessionStorage.setItem('tokenStr', tokenStr);
+              window.localStorage.setItem('tokenStr', tokenStr);
               // 跳转未登录前页面
               let path = this.$route.query.redirect;
               this.$router.replace((path == '/' || path == undefined) ? '/home' : path);

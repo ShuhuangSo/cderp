@@ -293,6 +293,38 @@
 
       <el-card shadow="hover" v-if="!isNewProduct">
         <div slot="header" class="clearfix">
+          <span style="font-weight: bold"><i class="el-icon-s-order"></i>库存记录</span>
+        </div>
+        <div>
+          <el-tabs type="card" v-model="filterType" @tab-click="handleClick">
+            <el-tab-pane label="全部记录" name="ALL">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="采购入库" name="B_IN">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="销售出库" name="S_OUT">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="手工入库" name="M_IN">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="手工出库" name="M_OUT">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="锁仓" name="LOCK">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+            <el-tab-pane label="解锁" name="UNLOCK">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
+          </el-tabs>
+
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" v-if="!isNewProduct">
+        <div slot="header" class="clearfix">
           <span style="font-weight: bold"><i class="el-icon-s-order"></i>操作日志</span>
         </div>
         <div>
@@ -341,12 +373,13 @@
 <script>
 import moment from 'moment'
 import SelectTag from "@/components/setting/SelectTag";
+import StockLog from "@/components/product/StockLog";
 
 export default {
   name: "ProductDetail",
   props: ['productID'],
   components:{
-    SelectTag
+    SelectTag, StockLog
   },
   data() {
     return {
@@ -378,6 +411,7 @@ export default {
         product_p_tag: [],
         note: '',
         product_stock: [],
+
       },
       rules: {
         p_name: [
@@ -436,6 +470,7 @@ export default {
       isNewProduct: false, // 是否新建产品
       timer: '',
       isShow: true,
+      filterType: 'ALL', // 库存记录过滤类型
       statusOptions: [{
         value: 'ON_SALE',
         label: '在售'
@@ -475,6 +510,12 @@ export default {
     }
   },
   methods: {
+    //点击库存记录筛选项
+    handleClick(){
+      this.isShow = false;
+      this.timer = new Date().getTime();
+      this.isShow = true;
+    },
     // 删除标签
     deleteTag(id){
       this.deleteRequest('api/product_tags/'+id+'/').then(resp => {

@@ -27,7 +27,7 @@ Vue.prototype.patchRequest = patchRequest;
 
 router.beforeEach((to, from, next) => {
     // 判断用户是否登录，登录则初始化导航菜单、保存用户信息
-    if (window.sessionStorage.getItem('tokenStr')) {
+    if (window.localStorage.getItem('tokenStr')) {
         initMenu(router, store); // 初始化菜单
         initProduct(store); // 初始化简易产品
         if (!window.sessionStorage.getItem('user')) {
