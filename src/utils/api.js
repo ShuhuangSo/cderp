@@ -47,7 +47,7 @@ axios.interceptors.response.use(success => {
         Message.error({message: error.response.data.msg});
     }  else if (error.response.status == 401) {
         Message.error({message: '身份验证过期，请重新登录！'});
-        window.sessionStorage.removeItem('tokenStr');
+        window.localStorage.removeItem('tokenStr');
         router.replace('/');
     } else {
         if (error.response.data.msg) {

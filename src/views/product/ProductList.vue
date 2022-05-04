@@ -630,7 +630,7 @@ export default {
     return {
       // 产品上传认证
       headers: {
-        Authorization: window.sessionStorage.getItem('tokenStr'),
+        Authorization: window.localStorage.getItem('tokenStr'),
       },
       uploadLoading: false, //上传loading
       uploadResult: false, // 上传结果显示
