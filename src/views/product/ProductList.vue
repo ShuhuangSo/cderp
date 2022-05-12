@@ -151,6 +151,7 @@
               </el-table-column>
               <el-table-column
                   prop="last_sale_time"
+                  :formatter="datetimeFormat"
                   label="最后销售时间">
               </el-table-column>
             </el-table>
@@ -166,23 +167,27 @@
             <el-image
                 style="width: 40px; height: 40px"
                 :src="scope.row.image"
+                :preview-src-list="[scope.row.image]"
                 fit="fill">
             </el-image>
           </template>
         </el-table-column>
         <el-table-column
-            prop="sku"
-            sortable="custom"
             label="SKU"
-            width="80">
+            show-overflow-tooltip
+            min-width="250">
+          <template slot-scope="scope">
+            <el-button
+                type="text"
+                @click="productDetail(scope.row.id)"
+                size="small">
+              {{scope.row.sku}}
+            </el-button>
+
+            <div>{{scope.row.p_name}}</div>
+          </template>
         </el-table-column>
-        <el-table-column
-            prop="p_name"
-            label="产品名称"
-            min-width="250"
-            sortable="custom"
-            show-overflow-tooltip>
-        </el-table-column>
+
         <el-table-column
             label="状态"
             align="center"
@@ -623,6 +628,7 @@
 <script>
 import ProductDetail from "@/components/product/ProductDetail";
 import SelectTag from "@/components/setting/SelectTag";
+import moment from "moment";
 
 export default {
   name: "productList",
@@ -751,6 +757,17 @@ export default {
     },
   },
   methods: {
+    // 格式化日期时间
+    datetimeFormat: function (row, column) {
+      let date = row[column.property];
+
+      if (date == undefined) {
+        return ''
+      }
+      return moment(date).format("YYYY-MM-DD HH:mm:ss")
+
+    },
+
     // 删除标签
     deleteTag(id){
       this.deleteRequest('api/product_tags/'+id+'/').then(resp => {

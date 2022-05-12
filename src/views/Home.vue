@@ -73,7 +73,7 @@ export default {
           type: 'warning'
         }).then(() => {
           // 清空用户信息
-          window.sessionStorage.removeItem('tokenStr');
+          window.localStorage.removeItem('tokenStr');
           window.sessionStorage.removeItem('user');
           //清空vuex里的菜单信息
           this.$store.commit('initRoutes', []);

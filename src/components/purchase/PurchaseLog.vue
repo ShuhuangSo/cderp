@@ -75,14 +75,11 @@ export default {
 
     // 格式化日期时间
     datetimeFormat: function (row, column) {
-
-      var date = row[column.property];
+      let date = row[column.property];
 
       if (date == undefined) {
         return ''
       }
-      ;
-
       return moment(date).format("YYYY-MM-DD HH:mm:ss")
 
     },
