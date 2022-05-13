@@ -47,6 +47,7 @@
                   style="width: 400px;"
                   type="textarea"
                   :rows="2"
+                  :disabled="purchaseOrder.order_status === 'FINISHED'"
                   placeholder="请输入供应商备注，供应商可见"
                   @change="changeSupTips"
                   v-model="purchaseOrder.sup_tips">

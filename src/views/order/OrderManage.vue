@@ -194,6 +194,7 @@
                 <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
                 <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
                 <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.order_status==='CANCEL'" :command="{type:'deleteOrder', obj:scope.row}">删除订单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -345,6 +346,23 @@ export default {
       //编辑标签
       if (command['type'] == 'editTag') {
         this.editTag = !this.editTag
+      }
+      //删除订单
+      if (command['type'] == 'deleteOrder') {
+        this.$confirm('是否要删除该订单？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'error'
+        }).then(() => {
+          this.deleteRequest('api/orders/' + command['obj'].id + '/').then(resp => {
+            this.initOrders();
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
       }
     },
 

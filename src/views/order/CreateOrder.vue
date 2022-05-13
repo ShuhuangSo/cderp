@@ -569,6 +569,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.order.order_status = 'PREPARING';
         this.$refs.orderForm.validate((valid) => {
           if (valid) {
             this.loading = true;

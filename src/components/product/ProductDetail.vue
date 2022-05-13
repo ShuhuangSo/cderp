@@ -36,7 +36,7 @@
               <el-col :span="12">
                 <el-form-item label="产品名称" required prop="p_name">
                   <el-input v-model="product.p_name"
-                            maxlength="30"
+                            maxlength="50"
                             show-word-limit></el-input>
                 </el-form-item>
               </el-col>
@@ -55,9 +55,9 @@
               </el-col>
 
               <el-col :span="12">
-                <el-form-item label="标签名称">
+                <el-form-item label="条码名称">
                   <el-input v-model="product.label_name"
-                            maxlength="18"
+                            maxlength="25"
                             prop="label_name"
                             show-word-limit>
                   </el-input>
@@ -212,16 +212,6 @@
           </el-form>
 
           <div v-if="!isNewProduct">
-            <el-divider content-position="left" >兼容手机型号</el-divider>
-            <el-tag
-                style="margin-right: 5px"
-                :key="model.phone_model"
-                :type="model.phone_model"
-                v-for="model in product.product_comp_model"
-                closable
-                :disable-transitions="false">
-              {{ model.phone_model }}
-            </el-tag>
 
             <el-divider content-position="left">标签</el-divider>
             <el-tag

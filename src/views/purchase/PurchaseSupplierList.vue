@@ -60,7 +60,13 @@
                 @click="checkSupplier(scope.row.id)"
                 type="text"
                 size="small">
-              查看
+              编辑
+            </el-button>
+            <el-button
+                @click="deleteSupplier(scope.row.id)"
+                type="text"
+                size="small">
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -123,6 +129,24 @@ export default {
         query: {
           id: id
         }
+      });
+    },
+
+    //删除供应商
+    deleteSupplier(id){
+      this.$confirm('是否要删除该供应商？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      }).then(() => {
+        this.deleteRequest('api/suppliers/' + id + '/').then(resp => {
+          this.initSuppliers();
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
       });
     },
 

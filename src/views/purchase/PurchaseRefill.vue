@@ -17,7 +17,9 @@
         </el-button>
       </div>
       <div>
-        <span style="font-size: 12px; color: #919398;margin-right: 10px">更新时间 {{
+        <span
+            v-if="createTime"
+            style="font-size: 12px; color: #919398;margin-right: 10px">更新时间 {{
             this.createTime | datetimeFormat
           }}</span>
         <el-button type="success" icon="el-icon-refresh"
@@ -445,11 +447,11 @@ export default {
       }
       this.loading = true
       this.getRequest(url).then(resp => {
+        this.loading = false
         if (resp) {
           this.refillPromote = resp.results;
           this.createTime = this.refillPromote[0].create_time
-          this.total = resp.count;
-          this.loading = false
+          this.total = resp.count
         }
       })
     }

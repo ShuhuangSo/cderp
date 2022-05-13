@@ -3,7 +3,7 @@
 
     <div class="operate">
       <div>
-        <el-input size="small" placeholder="请输入批次号搜索"
+        <el-input size="small" placeholder="请输入批次号、SKU搜索"
                   clearable
                   @clear="clearSearchValue"
                   @keyup.enter.native="doSearch"
@@ -238,6 +238,8 @@
                 <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
                 <el-dropdown-item v-if="!deleteTag" :command="{type:'deleteTag', obj:scope.row}">编辑标签</el-dropdown-item>
                 <el-dropdown-item v-if="deleteTag" :command="{type:'deleteTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.order_status=='CANCEL'"
+                                  :command="{type:'deleteOrder', obj:scope.row}">删除采购单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -323,6 +325,26 @@ export default {
       //删除标签
       if (command['type'] == 'deleteTag') {
         this.deleteTag = !this.deleteTag
+      }
+      //删除采购单
+      if (command['type'] == 'deleteOrder') {
+        this.$confirm('是否删除采购单，删除后将无法恢复？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+
+          this.deleteRequest('api/purchase_orders/'+command['obj'].id+'/').then(resp => {
+            this.initPurchaseOrder();
+          })
+        }).catch(() => {
+          this.loading = false;
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
+
       }
     },
 

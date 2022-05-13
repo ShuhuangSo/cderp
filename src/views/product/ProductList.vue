@@ -33,6 +33,12 @@
                    @click="expendChange"
                    v-if="!expandStatus">全部收起
         </el-button>
+        <el-tooltip class="item" effect="dark" content="刷新数据" placement="top">
+          <el-button size="small" type="info" plain icon="el-icon-refresh"
+                     @click="initProducts">
+          </el-button>
+        </el-tooltip>
+
 
       </div>
 
@@ -222,6 +228,20 @@
         <el-table-column
             prop="total_lock_qty"
             label="总锁仓"
+            align="center"
+            header-align="center"
+            width="80">
+        </el-table-column>
+        <el-table-column
+            prop="purchase_qty"
+            label="采购中"
+            align="center"
+            header-align="center"
+            width="80">
+        </el-table-column>
+        <el-table-column
+            prop="on_way_qty"
+            label="在途"
             align="center"
             header-align="center"
             width="80">
