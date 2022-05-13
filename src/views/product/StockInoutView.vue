@@ -11,9 +11,10 @@
           <div>
             <el-form ref="inoutForm" :model="stockInout" label-width="180px" class="inoutForm">
               <el-form-item label="类型" prop="origin_store">
-                <el-tag type="success" size="small" effect="plain" v-if="stockInout.type==='IN'">入库</el-tag>
-                <el-tag type="danger" size="small" effect="plain" v-if="stockInout.type==='OUT'">出库</el-tag>
-                <el-tag type="warning" size="small" effect="plain" v-if="stockInout.type==='MOVE'">调拨</el-tag>
+                <el-tag type="success" size="small" effect="dark" v-if="stockInout.type==='IN'">入库</el-tag>
+                <el-tag type="danger" size="small" effect="dark" v-if="stockInout.type==='OUT'">出库</el-tag>
+                <el-tag type="warning" size="small" effect="dark" v-if="stockInout.type==='MOVE'">调拨</el-tag>
+                <el-tag type="info" size="small" effect="dark" v-if="stockInout.type==='TAKING'">盘点</el-tag>
               </el-form-item>
 
               <el-form-item label="源仓库/店铺" prop="origin_store" v-if="stockInout.type==='MOVE'">
@@ -159,6 +160,8 @@ export default {
         return '出库数量'
       }else if(this.stockInout.type ==='MOVE'){
         return '调拨数量'
+      }else if(this.stockInout.type ==='TAKING'){
+        return '盘点数量'
       }else {
         return '数量'
       }
@@ -173,6 +176,9 @@ export default {
       }
       if(this.stockInout.type==='MOVE'){
         title = '库存调拨单'
+      }
+      if(this.stockInout.type==='TAKING'){
+        title = '盘点记录单'
       }
       return title;
     }

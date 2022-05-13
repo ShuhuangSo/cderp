@@ -33,6 +33,10 @@
           <span v-if="scope.row.op_type==='M_OUT' || scope.row.op_type==='S_OUT'" style="color: #b80303;font-weight: bold">- {{scope.row.qty}}</span>
           <span v-if="scope.row.op_type==='UNLOCK'" style="color: green;font-weight: bold"><i class="el-icon-unlock"></i> {{scope.row.qty}}</span>
           <span v-if="scope.row.op_type==='LOCK'" style="color: #b80303;font-weight: bold"><i class="el-icon-lock"></i> {{scope.row.qty}}</span>
+          <span v-if="scope.row.op_type==='TAKING'">
+            <span v-if="scope.row.qty>0" style="color: green;font-weight: bold">+{{scope.row.qty}}</span>
+            <span v-if="scope.row.qty<=0" style="color: #b80303;font-weight: bold">{{scope.row.qty}}</span>
+          </span>
         </template>
       </el-table-column>
       <el-table-column
@@ -92,6 +96,7 @@ export default {
     type: function (value) {
       if (value==='LOCK') return '锁仓';
       if (value==='UNLOCK') return '解锁';
+      if (value==='TAKING') return '库存盘点';
       if (value==='S_OUT') return '销售出库';
       if (value==='M_OUT') return '手工出库';
       if (value==='M_IN') return '手工入库';
@@ -104,7 +109,7 @@ export default {
   methods:{
     //跳转到批次详情
     goBatchDetail(row){
-      if (row.op_type==='M_IN' || row.op_type==='M_OUT'){
+      if (row.op_type==='M_IN' || row.op_type==='M_OUT' || row.op_type==='TAKING'){
         let routeUrl = this.$router.resolve({
           path: "/stockInoutView",
           query: {id:row.op_origin_id}

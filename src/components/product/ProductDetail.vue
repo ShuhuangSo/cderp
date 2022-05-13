@@ -318,6 +318,9 @@
             <el-tab-pane label="解锁" name="UNLOCK">
               <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
             </el-tab-pane>
+            <el-tab-pane label="库存盘点" name="TAKING">
+              <StockLog :key="timer" v-if="isShow" :obj="{'id':productID,'type': 'PRODUCT','filter':filterType}"></StockLog>
+            </el-tab-pane>
           </el-tabs>
 
         </div>
