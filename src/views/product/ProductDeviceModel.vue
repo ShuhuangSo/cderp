@@ -41,22 +41,40 @@
           v-loading="loading"
           style="width: 100%">
         <el-table-column
-            prop="model"
-            label="型号"
-            width="250">
+            label="图片"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 100px; height: 133px"
+                :src="scope.row.image"
+                :preview-src-list="[scope.row.image]"
+                fit="fill">
+            </el-image>
+          </template>
         </el-table-column>
         <el-table-column
             :filter-multiple="false"
             :filters="brandFilters"
             column-key="filterBrand"
-            prop="brand"
-            label="品牌"
-            width="100">
+            label="品牌型号"
+            width="230">
+          <template slot-scope="scope">
+            <div class="m_name">{{scope.row.brand}}</div>
+            <div class="m_name">{{scope.row.model}}</div>
+          </template>
         </el-table-column>
+
         <el-table-column
-            prop="type"
-            label="类型"
-            width="100">
+            label="参数"
+            width="310">
+          <template slot-scope="scope">
+            <div><span v-if="scope.row.announced" class="tt">传闻: </span>{{scope.row.announced}}</div>
+            <div><span v-if="scope.row.status" class="tt">状态: </span>{{scope.row.status}}</div>
+            <div><span v-if="scope.row.dimensions" class="tt">尺寸: </span>{{scope.row.dimensions}}</div>
+            <div><span v-if="scope.row.weight" class="tt">重量: </span>{{scope.row.weight}}</div>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -79,7 +97,7 @@
         </el-table-column>
         <el-table-column
             label="操作"
-            width="120"
+            width="100"
         >
           <template slot-scope="scope">
 
@@ -88,9 +106,11 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{'name':'update',obj:scope.row}">更新参数</el-dropdown-item>
+                <el-dropdown-item :command="{'name':'gsm',obj:scope.row}">GSM详情</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'edit',obj:scope.row}">修改</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'band',obj:scope.row}">绑定</el-dropdown-item>
-                <el-dropdown-item :command="{'name':'unband',obj:scope.row}">解绑</el-dropdown-item>
+                <el-dropdown-item :disabled="scope.row.cp_model.length===0" :command="{'name':'unband',obj:scope.row}">解绑</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'delete',obj:scope.row}">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -125,20 +145,9 @@
           <el-select v-model="device.brand" placeholder="请选择" class="inputwidth">
             <el-option
                 v-for="item in brandOptions"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item required label="类型" prop="type">
-          <el-select v-model="device.type" placeholder="请选择" class="inputwidth">
-            <el-option
-                v-for="item in typeOptions"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name">
+                :key="item.brand_name"
+                :label="item.brand_name"
+                :value="item.brand_name">
             </el-option>
           </el-select>
         </el-form-item>
@@ -267,37 +276,17 @@ export default {
         model: '',
         note: '',
         cp_id: null,
+        dimensions: '',
+        weight: '',
+        link: '',
+        announced: '',
+        image: '',
+        status: ''
       },
-      brandOptions: [
-        {'name': 'Apple'},
-        {'name': 'Samsung'},
-        {'name': 'OPPO'},
-        {'name': 'VIVO'},
-        {'name': 'Xiaomi'},
-        {'name': 'Huawei'},
-        {'name': 'Oneplus'},
-        {'name': 'Honor'},
-        {'name': 'Google'},
-        {'name': 'Sony'},
-        {'name': 'Nokia'},
-        {'name': 'Motorola'},
-        {'name': 'LG'},
-        {'name': 'HTC'},
-        {'name': 'Lenovo'},
-        {'name': 'Realme'},
-        {'name': 'ASUS'},
-        {'name': 'TCL'},
-      ],
-      typeOptions: [
-        {'name': '手机'},
-        {'name': '平板'},
-      ],
+      brandOptions: [],
       rules: {
         brand: [
           {required: true, message: '请选择品牌', trigger: 'blur'},
-        ],
-        type: [
-          {required: true, message: '请选择类型', trigger: 'blur'},
         ],
         model: [
           {required: true, message: '请输入型号', trigger: 'blur'},
@@ -307,12 +296,34 @@ export default {
   },
   mounted() {
     this.initDeviceModels();
-    this.brandOptions.forEach(item=>{
-      this.brandFilters.push({'text':item.name,'value':item.name})
-    })
+    this.initDeviceBrands();
   },
   methods: {
     handleOp(command){
+      //跳转GSM页面
+      if (command.name === 'gsm') {
+        window.open(command.obj.link, '_blank');
+      }
+      //更新信息
+      if (command.name === 'update') {
+        this.$confirm('是否更新参数信息？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$message.info('正在更新，请稍候')
+          this.getRequest('/api/device_models/'+ command.obj.id +'/get_model_info/').then(resp => {
+            if (resp){
+              this.initDeviceModels();
+            }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
+      }
       //解绑
       if (command.name === 'unband') {
         this.$confirm('是否将该型号解除绑定？', '提示', {
@@ -517,6 +528,7 @@ export default {
     },
     // 搜索
     doSearch() {
+      this.page = 1;
       this.$refs.deviceTable.clearFilter();
       this.initDeviceModels();
     },
@@ -535,6 +547,19 @@ export default {
     currentChange(page) {
       this.page = page;
       this.initDeviceModels();
+    },
+
+    //初始化手机品牌
+    initDeviceBrands() {
+      let url = '/api/device_brands/'
+      this.getRequest(url).then(resp => {
+        if (resp) {
+          this.brandOptions = resp;
+          this.brandOptions.forEach(item=>{
+            this.brandFilters.push({'text':item.brand_name,'value':item.brand_name})
+          })
+        }
+      })
     },
 
     //初始化兼容型号
@@ -579,6 +604,13 @@ export default {
 }
 .inputwidth{
   width: 90%;
+}
+.tt{
+  font-weight: bold;
+}
+.m_name{
+  font-weight: bold;
+  color: teal;
 }
 /deep/ .el-transfer-panel{
   width: 300px !important;
