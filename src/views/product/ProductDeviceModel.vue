@@ -62,7 +62,11 @@
             width="230">
           <template slot-scope="scope">
             <div class="m_name">{{scope.row.brand}}</div>
-            <div class="m_name">{{scope.row.model}}</div>
+            <el-tooltip effect="dark" :content="scope.row.create_time | datetime" placement="top">
+            <div class="m_name">
+              {{scope.row.model}}
+              <el-tag v-if="scope.row.is_new" size="mini" effect="dark" type="danger">新款</el-tag></div>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -248,6 +252,8 @@
 </template>
 
 <script>
+import moment from "moment";
+
 export default {
   name: "ProductDeviceModel",
   data() {
@@ -293,6 +299,12 @@ export default {
         ],
       },
     }
+  },
+  filters: {
+    //时间日期格式化
+    datetime: function (value) {
+      return '更新时间：' + moment(value).format("YYYY-MM-DD HH:mm:ss");
+    },
   },
   mounted() {
     this.initDeviceModels();
@@ -377,7 +389,6 @@ export default {
       if (filterObj.filterBrand) {
         this.brandTag = filterObj.filterBrand[0];
       }
-
       this.initDeviceModels();
     },
 
