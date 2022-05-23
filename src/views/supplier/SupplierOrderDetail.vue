@@ -82,6 +82,15 @@
                 <el-tag type="danger" effect="dark" size="mini" v-if="scope.row.urgent">加急</el-tag>
               </template>
             </el-table-column>
+            <el-table-column
+                align="center"
+                header-align="center"
+                width="80"
+                label="条码">
+              <template slot-scope="scope">
+                <el-button size="mini" @click="printLabel(scope.row)">打印</el-button>
+              </template>
+            </el-table-column>
 
             <el-table-column
                 prop="qty"
@@ -177,6 +186,10 @@
             <el-button type="" icon="el-icon-printer"  v-if="purchaseOrder.order_status==='WAIT_CONFIRM'">打印订单
             </el-button>
 
+            <el-button type="" icon="el-icon-printer"
+                       @click="printAllLabel"
+                       v-if="purchaseOrder.order_status==='IN_PRODUCTION' || purchaseOrder.order_status==='PART_SENT'">打印条码
+            </el-button>
             <el-button type="success" icon="el-icon-truck"
                        :disabled="!total_send"
                        @click="doConfirmSent"
@@ -229,6 +242,69 @@
   </span>
     </el-dialog>
 
+    <!--    产品标签打印弹窗-->
+    <div>
+      <el-dialog
+          v-loading="loading"
+          title="产品标签打印"
+          :visible.sync="labelVisible"
+          :destroy-on-close="true"
+          :close-on-click-modal="false"
+          @close="closePrint"
+          width="800px"
+      >
+        <el-table
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="printProducts"
+            border
+            size="mini"
+            v-loading="loading"
+            style="width: 98%; margin: 10px">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image"
+                  :preview-src-list="[scope.row.image]"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              width="100px"
+              prop="sku"
+              label="SKU">
+          </el-table-column>
+          <el-table-column
+              prop="p_name"
+              label="产品名称">
+          </el-table-column>
+          <el-table-column
+              label="打印数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+
+        </el-table>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="closePrint">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :loading="printLoading"
+                     @click="submitPrint">打 印</el-button>
+        </span>
+      </el-dialog>
+    </div>
+
   </div>
 </template>
 
@@ -264,6 +340,9 @@ export default {
       isSupply: false,
       isShortNote: false,
       dialogVisible: false,
+      labelVisible: false, // 产品标签打印弹窗
+      printProducts: [],  // 打印标签产品
+      printLoading: false,
       options: [{
         value: 'Shunfeng',
         label: '顺丰快递'
@@ -289,6 +368,47 @@ export default {
     }
   },
   methods: {
+    //打印单个标签
+    printLabel(obj){
+      this.printProducts.push({
+        'image': obj.image,
+        'sku': obj.sku,
+        'p_name': obj.p_name,
+        'qty': 1
+      })
+      this.labelVisible = true
+    },
+
+    //打印所有标签
+    printAllLabel(){
+      this.purchaseOrder.purchase_detail.forEach(item=>{
+        this.printProducts.push({
+          'image': item.image,
+          'sku': item.sku,
+          'p_name': item.p_name,
+          'qty': item.qty
+        })
+        this.labelVisible = true
+      })
+    },
+
+    //关闭标签打印
+    closePrint(){
+      this.labelVisible = false
+      this.printProducts = []
+    },
+    //提交打印
+    submitPrint(){
+      this.printLoading = true
+      this.postRequest('api/products/create_label/', {'products': this.printProducts}).then(resp => {
+        this.printLoading = false
+        if (resp.url) {
+          this.labelVisible = false
+          window.open(resp.url, '_blank')
+        }
+      })
+    },
+
     // 返回
     backToIndex() {
       this.$router.push('/supplierIndex');

@@ -540,12 +540,15 @@ export default {
     // 搜索
     doSearch() {
       this.page = 1;
+      this.brandTag = ''
       this.$refs.deviceTable.clearFilter();
       this.initDeviceModels();
     },
     // 重置搜索内容
     clearSearchValue() {
       this.searchValue = '';
+      this.brandTag = ''
+      this.$refs.deviceTable.clearFilter();
       this.initDeviceModels();
     },
 

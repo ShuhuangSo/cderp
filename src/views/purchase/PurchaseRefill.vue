@@ -26,10 +26,6 @@
                    :loading="calcLoading"
                    @click="calcRefill">{{ this.calcLoading ? '正在计算' : '重新计算' }}
         </el-button>
-        <el-button type="" icon="el-icon-setting"
-                   style="margin-right: 5px"
-                   @click="calcRefill">
-        </el-button>
       </div>
     </div>
 

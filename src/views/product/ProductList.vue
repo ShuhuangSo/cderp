@@ -22,6 +22,7 @@
             <el-dropdown-item command="status">修改状态</el-dropdown-item>
             <el-dropdown-item command="tag">添加标签</el-dropdown-item>
             <el-dropdown-item command="note">添加备注</el-dropdown-item>
+            <el-dropdown-item command="print">打印条码</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
 
@@ -187,10 +188,10 @@
                 type="text"
                 @click="productDetail(scope.row.id)"
                 size="small">
-              {{scope.row.sku}}
+              {{ scope.row.sku }}
             </el-button>
 
-            <div>{{scope.row.p_name}}</div>
+            <div>{{ scope.row.p_name }}</div>
           </template>
         </el-table-column>
 
@@ -252,7 +253,7 @@
             header-align="center"
             width="70">
           <template slot-scope="scope">
-            <span>{{ scope.row.sale_price | currency}}</span>
+            <span>{{ scope.row.sale_price | currency }}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -293,7 +294,7 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item disabled>打印条码</el-dropdown-item>
+                <el-dropdown-item :command="{type:'print', obj:scope.row}">打印条码</el-dropdown-item>
                 <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
                 <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
                 <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
@@ -361,7 +362,9 @@
               action="api/products/bulk_upload/">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能上传excel文件, <el-link href="/media/template/sku-upload-template.xlsx" target="_blank">模板下载</el-link></div>
+            <div class="el-upload__tip" slot="tip">只能上传excel文件,
+              <el-link href="/media/template/sku-upload-template.xlsx" target="_blank">模板下载</el-link>
+            </div>
           </el-upload>
 
           <div v-if="uploadResult">
@@ -405,7 +408,7 @@
       </el-dialog>
     </div>
 
-<!--    产品标签弹窗-->
+    <!--    产品标签弹窗-->
     <el-dialog
         title="添加标签"
         :visible.sync="tagVisible"
@@ -640,6 +643,68 @@
       </el-dialog>
     </div>
 
+    <!--    产品标签打印弹窗-->
+    <div>
+      <el-dialog
+          v-loading="loading"
+          title="产品标签打印"
+          :visible.sync="labelVisible"
+          :destroy-on-close="true"
+          :close-on-click-modal="false"
+          @close="closePrint"
+          width="800px"
+      >
+        <el-table
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="printProducts"
+            border
+            size="mini"
+            v-loading="loading"
+            style="width: 98%; margin: 10px">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image"
+                  :preview-src-list="[scope.row.image]"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              width="100px"
+              prop="sku"
+              label="SKU">
+          </el-table-column>
+          <el-table-column
+              prop="p_name"
+              label="产品名称">
+          </el-table-column>
+          <el-table-column
+              label="打印数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+
+        </el-table>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="closePrint">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :loading="printLoading"
+                     @click="submitPrint">打 印</el-button>
+        </span>
+      </el-dialog>
+    </div>
 
   </div>
 
@@ -680,7 +745,10 @@ export default {
       expandStatus: true, // 所有行展开状态
       products: [],
       tagVisible: false,
-      currentTag:[],
+      labelVisible: false, // 产品标签打印弹窗
+      printProducts: [],  // 打印标签产品
+      printLoading: false,
+      currentTag: [],
       isShow: false,
       timer: '',
       editTag: false,
@@ -767,7 +835,7 @@ export default {
     this.initProductSettings(); // 初始化产品基础资料
   },
   components: {
-    ProductDetail,SelectTag
+    ProductDetail, SelectTag
   },
   filters: {
     //金额格式化
@@ -777,6 +845,24 @@ export default {
     },
   },
   methods: {
+    //关闭标签打印
+    closePrint(){
+      this.labelVisible = false
+      this.printProducts = []
+    },
+    //提交打印
+    submitPrint(){
+      this.printLoading = true
+      this.postRequest('api/products/create_label/', {'products': this.printProducts}).then(resp => {
+        this.printLoading = false
+        if (resp.url) {
+          this.labelVisible = false
+          this.$refs.multipleTable.clearSelection();
+          window.open(resp.url, '_blank')
+        }
+      })
+    },
+
     // 格式化日期时间
     datetimeFormat: function (row, column) {
       let date = row[column.property];
@@ -789,14 +875,14 @@ export default {
     },
 
     // 删除标签
-    deleteTag(id){
-      this.deleteRequest('api/product_tags/'+id+'/').then(resp => {
+    deleteTag(id) {
+      this.deleteRequest('api/product_tags/' + id + '/').then(resp => {
         this.initProducts()
       })
     },
 
     //重新加载标签
-    initTag(test){
+    initTag(test) {
       this.initProducts()
       this.tagVisible = false
     },
@@ -848,11 +934,23 @@ export default {
       })
       if (command === 'all') {
         this.showAllEdit = true;
+        this.bulkEditVisible = true;
+      } else if (command === 'print') {
+        this.multipleSelection.forEach(item => {
+          this.printProducts.push({
+            'image': item.image,
+            'sku': item.sku,
+            'p_name': item.p_name,
+            'qty': 1
+          })
+        })
+        this.labelVisible = true
       } else {
         this.showEditType = command;
+        this.bulkEditVisible = true;
       }
 
-      this.bulkEditVisible = true;
+
     },
     // 提交批量修改
     submitBulkEdit() {
@@ -913,8 +1011,8 @@ export default {
         this.allBulk.changeItems['note'] = this.bulkNote
       }
 
-      if (this.allBulk.ids.length && JSON.stringify(this.allBulk.changeItems)!=='{}') {
-        this.$confirm('此操作将修改 '+this.multipleSelection.length +' 条记录是否继续?', '提示', {
+      if (this.allBulk.ids.length && JSON.stringify(this.allBulk.changeItems) !== '{}') {
+        this.$confirm('此操作将修改 ' + this.multipleSelection.length + ' 条记录是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -943,6 +1041,17 @@ export default {
 
     // 产品更多操作
     handleProductOp(command) {
+      // 打印条码
+      if (command['type'] == 'print') {
+        this.printProducts.push({
+          'image': command['obj'].image,
+          'sku': command['obj'].sku,
+          'p_name': command['obj'].p_name,
+          'qty': 1
+        })
+        this.labelVisible = true
+      }
+
       // 产品删除
       if (command['type'] == 'delete') {
         this.$confirm('已被关联使用的产品将无法删除, 是否继续?', '提示', {
@@ -966,8 +1075,8 @@ export default {
       if (command['type'] == 'addTag') {
         this.isShow = false
         this.timer = new Date().getTime();
-        this.productID=command['obj'].id
-        this.currentTag=command['obj'].product_p_tag
+        this.productID = command['obj'].id
+        this.currentTag = command['obj'].product_p_tag
         this.isShow = true
         this.tagVisible = true
       }
