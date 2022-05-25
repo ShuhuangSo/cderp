@@ -11,9 +11,12 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-        <el-button type="primary" icon="el-icon-attract"
-                   @click="bandModels">兼容绑定
-        </el-button>
+        <el-badge :value="cpDeviceModels.length" :hidden="cpDeviceModels.length===0">
+          <el-button type="" icon="el-icon-attract"
+                     @click="bandModels2">兼容对比
+          </el-button>
+        </el-badge>
+
       </div>
       <div>
         <el-button type="success" icon="el-icon-plus"
@@ -39,7 +42,12 @@
           @filter-change="filterChange"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
+          @selection-change="handleSelectionChange"
           style="width: 100%">
+        <el-table-column
+            type="selection"
+            width="42">
+        </el-table-column>
         <el-table-column
             label="图片"
             align="center"
@@ -113,7 +121,7 @@
                 <el-dropdown-item :command="{'name':'update',obj:scope.row}">更新参数</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'gsm',obj:scope.row}">GSM详情</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'edit',obj:scope.row}">修改</el-dropdown-item>
-                <el-dropdown-item :command="{'name':'band',obj:scope.row}">绑定</el-dropdown-item>
+                <el-dropdown-item :command="{'name':'band',obj:scope.row}">加入对比</el-dropdown-item>
                 <el-dropdown-item :disabled="scope.row.cp_model.length===0" :command="{'name':'unband',obj:scope.row}">解绑</el-dropdown-item>
                 <el-dropdown-item :command="{'name':'delete',obj:scope.row}">删除</el-dropdown-item>
               </el-dropdown-menu>
@@ -216,36 +224,91 @@
         </span>
     </el-dialog>
 
-<!--    兼容型号绑定-->
+<!--    加入对比弹框-->
     <el-dialog
-        title="兼容型号绑定"
+        title="兼容对比"
         :before-close="cancelBand"
-        :visible.sync="cpVisible"
-        :destroy-on-close="true"
         :close-on-click-modal="false"
-        width="900px"
+        :visible.sync="cp2Visible"
+        width="90%"
     >
-      <div>
-        <el-transfer
-            filterable
-            :titles="['所有型号', '绑定型号']"
-            :button-texts="['解绑', '绑定']"
-            :render-content="renderFunc"
-            v-model="cp_ids"
-            :props="{
-                      key: 'id',
-                      label: 'model'
-                    }"
-            :data="cpDeviceModels">
-        </el-transfer>
+      <el-table
+          :data="cpDeviceModels"
+          :header-cell-style="{background:'#fafafa'}"
+          style="width: 100%">
+        <el-table-column
+            label="图片"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 100px; height: 133px"
+                :src="scope.row.image"
+                :preview-src-list="[scope.row.image]"
+                fit="fill">
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column
+            :filter-multiple="false"
+            :filters="brandFilters"
+            column-key="filterBrand"
+            label="品牌型号"
+            width="230">
+          <template slot-scope="scope">
+            <div class="m_name">{{scope.row.brand}}</div>
+            <el-tooltip effect="dark" :content="scope.row.create_time | datetime" placement="top">
+              <div class="m_name">
+                {{scope.row.model}}
+                <el-tag v-if="scope.row.is_new" size="mini" effect="dark" type="danger">新款</el-tag></div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
 
-      </div>
+        <el-table-column
+            label="参数"
+            width="310">
+          <template slot-scope="scope">
+            <div><span v-if="scope.row.announced" class="tt">传闻: </span>{{scope.row.announced}}</div>
+            <div><span v-if="scope.row.status" class="tt">状态: </span>{{scope.row.status}}</div>
+            <div><span v-if="scope.row.dimensions" class="tt">尺寸: </span>{{scope.row.dimensions}}</div>
+            <div><span v-if="scope.row.weight" class="tt">重量: </span>{{scope.row.weight}}</div>
+          </template>
+        </el-table-column>
 
+        <el-table-column
+            label="兼容型号">
+          <template slot-scope="scope">
+            <el-tag
+                v-for="item in scope.row.cp_model"
+                :key="item.model"
+                type="info"
+                size="mini"
+                effect="dark"
+                style="margin-right: 5px">
+              {{ item.model }}
+            </el-tag>
+          </template>
+        </el-table-column>
 
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="操作"
+            width="100"
+        >
+          <template slot-scope="scope">
+            <el-button @click="removeCP(scope.row.id)" type="text">
+              移除对比
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="cancelBand">取 消</el-button>
-          <el-button :disabled="cp_ids.length<2" size="small" type="primary" @click="submitBand">确 认</el-button>
-        </span>
+          <el-button :disabled="cpDeviceModels.length<2" size="small" type="primary" @click="band">绑 定</el-button>
+      </span>
     </el-dialog>
 
   </div>
@@ -270,9 +333,11 @@ export default {
       searchValue: '',
       uploadVisible: false,
       loading: false,
+      modelLoading: false,
       createVisible: false,
-      cpVisible: false,
+      cp2Visible: false,
       cp_ids: [],
+      multipleSelection: [], // 选中行
       brandFilters: [],  // 品牌过滤项
       brandTag: '', // 品牌筛选
       device: {
@@ -311,6 +376,20 @@ export default {
     this.initDeviceBrands();
   },
   methods: {
+    //移除对比
+    removeCP(id){
+      let index = this.cpDeviceModels.findIndex(item => {
+        return item.id === id
+      });
+      this.cpDeviceModels.splice(index, 1)
+    },
+
+    //选行
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+
+    },
+
     handleOp(command){
       //跳转GSM页面
       if (command.name === 'gsm') {
@@ -355,8 +434,8 @@ export default {
       }
       //绑定
       if (command.name === 'band') {
-        this.cp_ids.push(command.obj.id)
-        this.bandModels();
+        this.cpDeviceModels.push(command.obj)
+        this.$message.success('型号已加入')
       }
       if (command.name === 'edit') {
         this.device = Object.assign({},command.obj)
@@ -392,45 +471,69 @@ export default {
       this.initDeviceModels();
     },
 
-    //穿梭框显示不全加上title
-    renderFunc(h,option){
-      return <span title={option.model}>{option.model}</span>
+    band(){
+      this.$confirm('是否绑定型号？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.submitBand()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
     },
+
 
     //提交绑定
     submitBand(){
+      this.cpDeviceModels.forEach(item=>{
+        this.cp_ids.push(item.id)
+      })
       let ids = {'ids': this.cp_ids}
       let url = '/api/device_models/cp_band/'
 
       this.postRequest(url, ids).then(resp => {
         if (resp) {
           this.initDeviceModels();
-          this.cpVisible = false;
+          this.cp2Visible = false;
           this.cp_ids = []
+          this.cpDeviceModels = []
         }
       })
     },
 
-    // 打开绑定
-    bandModels(){
-      this.cpVisible = true;
-      this.initBandModel();
-    },
-    //初始化绑定型号
-    initBandModel(){
-      let url = '/api/device_models/?page_size=10000'
+    // 打开型号对比
+    bandModels2(){
+      this.cp2Visible = true;
 
-      this.getRequest(url).then(resp => {
-        if (resp.results) {
-          this.cpDeviceModels = resp.results;
-        }
-      })
+      if (this.cpDeviceModels.length===0){
+        this.multipleSelection.forEach(item=>{
+          this.cpDeviceModels.push(item)
+        })
+      } else {
+        let existItems = JSON.parse(JSON.stringify(this.cpDeviceModels))
+        this.multipleSelection.forEach(item=>{
+          let ex = false
+          existItems.forEach(i=>{
+            if (i.id === item.id) {
+              ex = true
+            }
+          })
+          if (!ex) this.cpDeviceModels.push(item)
+        })
+      }
+
+
     },
 
     //取消绑定
     cancelBand(){
       this.cp_ids=[]
-      this.cpVisible = false;
+      this.$refs.deviceTable.clearSelection();
+      this.cp2Visible = false;
     },
 
     // 型号上传前的回调
