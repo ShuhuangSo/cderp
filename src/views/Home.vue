@@ -5,7 +5,7 @@
 
         <div style="display: flex; justify-content: left">
           <router-link to="/home">
-            <el-tooltip class="item" effect="light" content="系统版本: v0.3" placement="bottom">
+            <el-tooltip class="item" effect="light" content="系统版本: v0.4" placement="bottom">
               <img src="../assets/logo-m.png" alt="CaseDance"  class="logo">
             </el-tooltip>
 
@@ -43,7 +43,7 @@
       </el-header>
 
       <el-main>
-        <el-breadcrumb separator-class="el-icon-arrow-right" v-if="this.$router.currentRoute.path!='/home' && this.$router.currentRoute.path!='/orderPOS'">
+        <el-breadcrumb separator-class="el-icon-arrow-right" v-if="this.$router.currentRoute.path!='/home' && this.$router.currentRoute.path!='/orderPOS' && this.$router.currentRoute.path!='/dashboard'">
           <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
           <el-breadcrumb-item>{{ this.$router.currentRoute.name }}</el-breadcrumb-item>
         </el-breadcrumb>

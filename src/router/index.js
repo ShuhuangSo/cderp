@@ -16,6 +16,7 @@ import CreateCustomer from "@/views/order/CreateCustomer";
 import CreateOrder from "@/views/order/CreateOrder";
 import OrderDetail from "@/views/order/OrderDetail";
 import UserPermission from "@/views/setting/UserPermission";
+import SalesCharts from "@/views/charts/SalesCharts";
 
 
 

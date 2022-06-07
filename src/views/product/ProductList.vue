@@ -184,12 +184,12 @@
             show-overflow-tooltip
             min-width="250">
           <template slot-scope="scope">
-            <el-button
-                type="text"
-                @click="productDetail(scope.row.id)"
-                size="small">
+            <el-link
+                type="primary"
+                @click.native="productDetail(scope.row.id)"
+                :underline="false">
               {{ scope.row.sku }}
-            </el-button>
+            </el-link>
 
             <div>{{ scope.row.p_name }}</div>
           </template>

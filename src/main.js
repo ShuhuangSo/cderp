@@ -13,16 +13,22 @@ import {patchRequest} from "@/utils/api";
 import {initMenu} from "@/utils/menus";
 import el from "element-ui/src/locale/lang/el";
 import {initProduct} from "@/utils/skus";
+import * as echarts from 'echarts'
+import VueAnimateNumber from 'vue-animate-number'
 
 Vue.config.productionTip = false
 
 Vue.use(ElementUI, {size: 'small'});
+
+Vue.use(VueAnimateNumber)
 
 Vue.prototype.postRequest = postRequest;
 Vue.prototype.getRequest = getRequest;
 Vue.prototype.putRequest = putRequest;
 Vue.prototype.deleteRequest = deleteRequest;
 Vue.prototype.patchRequest = patchRequest;
+Vue.prototype.$echarts = echarts
+
 
 
 router.beforeEach((to, from, next) => {

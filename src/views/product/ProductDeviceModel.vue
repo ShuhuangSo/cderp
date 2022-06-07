@@ -80,12 +80,13 @@
 
         <el-table-column
             label="参数"
-            width="310">
+            width="350">
           <template slot-scope="scope">
-            <div><span v-if="scope.row.announced" class="tt">传闻: </span>{{scope.row.announced}}</div>
-            <div><span v-if="scope.row.status" class="tt">状态: </span>{{scope.row.status}}</div>
-            <div><span v-if="scope.row.dimensions" class="tt">尺寸: </span>{{scope.row.dimensions}}</div>
-            <div><span v-if="scope.row.weight" class="tt">重量: </span>{{scope.row.weight}}</div>
+            <div><span v-if="scope.row.announced" class="tt">Announced: </span>{{scope.row.announced}}</div>
+            <div><span v-if="scope.row.status" class="tt">Status: </span>{{scope.row.status}}</div>
+            <div><span v-if="scope.row.dimensions" class="tt">Size: </span>{{scope.row.dimensions}}</div>
+            <div><span v-if="scope.row.weight" class="tt">Weight: </span>{{scope.row.weight}}</div>
+            <div><span v-if="scope.row.detail_model" class="tt">Models: </span>{{scope.row.detail_model}}</div>
           </template>
         </el-table-column>
 
@@ -270,10 +271,11 @@
             label="参数"
             width="310">
           <template slot-scope="scope">
-            <div><span v-if="scope.row.announced" class="tt">传闻: </span>{{scope.row.announced}}</div>
-            <div><span v-if="scope.row.status" class="tt">状态: </span>{{scope.row.status}}</div>
-            <div><span v-if="scope.row.dimensions" class="tt">尺寸: </span>{{scope.row.dimensions}}</div>
-            <div><span v-if="scope.row.weight" class="tt">重量: </span>{{scope.row.weight}}</div>
+            <div><span v-if="scope.row.announced" class="tt">Announced: </span>{{scope.row.announced}}</div>
+            <div><span v-if="scope.row.status" class="tt">Status: </span>{{scope.row.status}}</div>
+            <div><span v-if="scope.row.dimensions" class="tt">Size: </span>{{scope.row.dimensions}}</div>
+            <div><span v-if="scope.row.weight" class="tt">Weight: </span>{{scope.row.weight}}</div>
+            <div><span v-if="scope.row.detail_model" class="tt">Models: </span>{{scope.row.detail_model}}</div>
           </template>
         </el-table-column>
 
@@ -352,7 +354,8 @@ export default {
         link: '',
         announced: '',
         image: '',
-        status: ''
+        status: '',
+        detail_model: ''
       },
       brandOptions: [],
       rules: {
