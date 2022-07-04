@@ -17,6 +17,7 @@ import CreateOrder from "@/views/order/CreateOrder";
 import OrderDetail from "@/views/order/OrderDetail";
 import UserPermission from "@/views/setting/UserPermission";
 import SalesCharts from "@/views/charts/SalesCharts";
+import MonthDetail from "@/views/app/bonus/MonthDetail";
 
 
 
@@ -101,6 +102,11 @@ const routes = [
                 path: '/userPermission',
                 name: '用户权限',
                 component: UserPermission
+            },
+            {
+                path: '/monthDetail',
+                name: '月份业绩详情',
+                component: MonthDetail
             },
         ]
     },
