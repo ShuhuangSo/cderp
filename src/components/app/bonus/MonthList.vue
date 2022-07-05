@@ -27,7 +27,8 @@
             header-align="center"
             label="操作">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="checkMonth(scope.row.month)">详情</el-button>
+            <el-button v-if="scope.row.status" size="mini" plain type="primary" @click="checkMonth(scope.row.month)">详情</el-button>
+            <el-button v-if="!scope.row.status" size="mini" plain type="warning" @click="checkMonth(scope.row.month)">待录入</el-button>
           </template>
         </el-table-column>
 

@@ -4,6 +4,16 @@
       <span class="chartTitle">③ 销售提成</span>
       <el-button style="float: right " type="success" :loading="loading" @click="createBonus">生成提成报表</el-button>
     </div>
+    <el-select v-model="manager"
+               @change="initBonus"
+               placeholder="筛选负责人" class="selectManger">
+      <el-option
+          v-for="item in managers"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+      </el-option>
+    </el-select>
     <el-table
         :data="bonus"
         :header-cell-style="{background:'#eef1f6'}"
@@ -65,10 +75,21 @@
           header-align="center"
           label="操作">
         <template slot-scope="scope">
-          <el-button type="text" @click="editAccountBonus(scope.row)">编辑</el-button>
+          <el-button size="mini" plain type="primary" @click="editAccountBonus(scope.row)">编辑</el-button>
+          <el-button size="mini" plain type="danger" @click="deleteAccountBonus(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+        style="margin-top: 10px"
+        background
+        small
+        :hide-on-single-page="false"
+        layout="prev, pager, next, ->, total"
+        @current-change="currentChange"
+        :page-size="size"
+        :total="total">
+    </el-pagination>
 
     <!--  编辑报表弹窗-->
     <el-dialog
@@ -268,7 +289,12 @@ export default {
     return {
       bonus: [],
       loading: false,
+      total: 0, // 总条数
+      page: 1,  // 当前页
+      size: 20,  // 页大小
       bonusVisible: false,
+      managers: [],
+      manager: '',
       accountBonus: {
         id: null,
         platform: '',
@@ -339,8 +365,32 @@ export default {
   },
   mounted() {
     this.initBonus()
+    this.initManagers()
   },
   methods: {
+    deleteAccountBonus(id){
+      this.$confirm('是否删除报表？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        this.deleteRequest('api/bo_account_bonus/'+ id+'/').then(resp => {
+          this.initBonus();
+          this.loading = false;
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+    // 页码
+    currentChange(page) {
+      this.page = page;
+      this.initBonus();
+    },
     updateAccountBonus(){
       this.accountBonus.profit = this.profit
       this.accountBonus.bonus = this.aBonus
@@ -364,17 +414,34 @@ export default {
       this.postRequest(url, {'month': this.month}).then(resp => {
         this.loading = false
         if (resp) {
+          this.manager = ''
           this.initBonus();
+        }
+      })
+    },
+    initManagers(){
+      let url = 'api/bo_manager/'
+      this.getRequest(url).then(resp => {
+        if (resp) {
+          this.managers = resp
+          this.managers.push({
+            name: '全部员工',
+            id: ''
+          })
         }
       })
     },
     initBonus() {
       this.loading = true
-      let url = 'api/bo_account_bonus/?month=' + this.month
+      let url = 'api/bo_account_bonus/?month=' + this.month + '&page=' + this.page + '&page_size=' + this.size;
+      if (this.manager) {
+        url += '&manager=' + this.manager;
+      }
       this.getRequest(url).then(resp => {
         this.loading = false
         if (resp.results) {
           this.bonus = resp.results;
+          this.total = resp.count;
         }
       })
     }
@@ -399,6 +466,9 @@ export default {
 
 .inputwidth {
   width: 200px;
+}
+.selectManger{
+  margin-bottom: 5px;
 }
 
 .note {

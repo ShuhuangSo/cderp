@@ -39,7 +39,7 @@
               header-align="center"
               label="操作">
             <template slot-scope="scope">
-              <el-button type="text" @click="changeRate(scope.row)">编辑</el-button>
+              <el-button size="mini" plain type="primary" @click="changeRate(scope.row)">编辑</el-button>
             </template>
           </el-table-column>
         </el-table>

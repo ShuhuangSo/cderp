@@ -12,7 +12,7 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-descriptions
-              v-if="props.row.platform==='eBay'"
+              v-if="props.row.platform==='eBay' || props.row.platform==='Aliexpress'"
               :title="props.row.account_name" :column="2" border>
             <el-descriptions-item label="平台">{{ props.row.platform }}</el-descriptions-item>
             <el-descriptions-item label="站点">{{ props.row.platform_base }}</el-descriptions-item>
@@ -96,10 +96,21 @@
           header-align="center"
           label="操作">
         <template slot-scope="scope">
-          <el-button type="text" @click="editAccountSales(scope.row)">编辑</el-button>
+          <el-button size="mini" plain type="primary" @click="editAccountSales(scope.row)">编辑</el-button>
+          <el-button size="mini" plain type="danger" @click="deleteAccountSales(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+        style="margin-top: 10px"
+        background
+        small
+        :hide-on-single-page="false"
+        layout="prev, pager, next, ->, total"
+        @current-change="currentChange"
+        :page-size="size"
+        :total="total">
+    </el-pagination>
     <div>
       <!--  添加报表弹窗-->
       <el-dialog
@@ -137,6 +148,7 @@
               <el-select @change="setAccount($event)" filterable v-model="accountSales.account_name" placeholder="请选择" class="inputwidth">
                 <el-option
                     v-for="item in accounts"
+                    :disabled="item.disabled"
                     :key="item.name"
                     :label="item.name"
                     :value="item.name">
@@ -157,7 +169,7 @@
             </el-form-item>
 
 <!--            ebay平台内容-->
-            <div v-if="accountSales.platform==='eBay'">
+            <div v-if="accountSales.platform==='eBay' || accountSales.platform==='Aliexpress'">
               <el-form-item
                   :label="'销售额 '+accountSales.ori_currency" prop="sale_amount">
                 <el-input-number v-model="accountSales.sale_amount"
@@ -290,6 +302,9 @@ export default {
   data(){
     return{
       loading: false,
+      total: 0, // 总条数
+      page: 1,  // 当前页
+      size: 20,  // 页大小
       accountSalesList: [],
       accountVisible: false,
       accountSales: {
@@ -385,6 +400,30 @@ export default {
     this.initAccountSales();
   },
   methods:{
+    //删除报表
+    deleteAccountSales(id){
+      this.$confirm('是否删除报表？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        this.deleteRequest('api/bo_account_sales/'+ id+'/').then(resp => {
+          this.initAccountSales();
+          this.loading = false;
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+    // 页码
+    currentChange(page) {
+      this.page = page;
+      this.initAccountSales();
+    },
     setAccount(value){
       this.accounts.forEach(item=>{
         if (item.name === value) this.accountSales.manager = item.manager.id
@@ -472,7 +511,11 @@ export default {
           this.accounts = resp.results;
           let a = false
           this.accounts.forEach(item=>{
-            if(item.name === this.accountSales.account_name) a = true
+            if(item.name === this.accountSales.account_name) a = true;
+            item['disabled'] = false
+            this.accountSalesList.forEach(i=>{
+              if (item.name === i.account_name) item['disabled'] = true
+            })
           })
           if (!a) {
             this.accountSales.account_name = ''
@@ -497,11 +540,12 @@ export default {
     //初始账号业绩
     initAccountSales(){
       this.loading = true
-      let url = 'api/bo_account_sales/?month=' + this.month
+      let url = 'api/bo_account_sales/?month=' + this.month + '&page=' + this.page + '&page_size=' + this.size;
       this.getRequest(url).then(resp => {
         this.loading = false
         if (resp.results) {
           this.accountSalesList = resp.results;
+          this.total = resp.count;
         }
       })
     },
