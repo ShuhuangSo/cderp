@@ -1,7 +1,9 @@
 <template>
   <div>
     <el-form :rules="rules" ref="loginForm" :model="loginForm" class="loginContainer">
-      <h3 class="loginTitle">CaseDance系统登录</h3>
+      <div class="loginTitle">
+        <img src="../assets/logo-m2.png" alt="CaseDance"  class="logo">
+      </div>
       <el-form-item prop="username">
         <el-input prefix-icon="el-icon-user"
                   size="medium"
@@ -32,8 +34,8 @@ export default {
   data() {
     return {
       loginForm: {
-        username: "admin",
-        password: "admin123456"
+        username: "",
+        password: ""
       },
       loading: false,
       rules: {
@@ -85,7 +87,10 @@ export default {
 }
 
 .loginTitle {
-  margin: 0px auto 40px auto;
+  margin: 0px auto 10px auto;
   text-align: center;
+}
+.logo{
+  height: 30px;
 }
 </style>
