@@ -63,16 +63,14 @@
           label="账号名称">
       </el-table-column>
       <el-table-column
-          prop="platform"
           align="center"
           header-align="center"
-          label="平台">
-      </el-table-column>
-      <el-table-column
-          prop="platform_base"
-          align="center"
-          header-align="center"
-          label="站点">
+          label="平台|站点">
+        <template slot-scope="scope">
+          {{ scope.row.platform}}
+          <el-divider direction="vertical"></el-divider>
+          {{ scope.row.platform_base}}
+        </template>
       </el-table-column>
       <el-table-column
           align="center"

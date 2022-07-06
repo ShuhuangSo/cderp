@@ -26,16 +26,14 @@
           label="账号名称">
       </el-table-column>
       <el-table-column
-          prop="platform"
           align="center"
           header-align="center"
-          label="平台">
-      </el-table-column>
-      <el-table-column
-          prop="platform_base"
-          align="center"
-          header-align="center"
-          label="站点">
+          label="平台|站点">
+        <template slot-scope="scope">
+          {{ scope.row.platform}}
+          <el-divider direction="vertical"></el-divider>
+          {{ scope.row.platform_base}}
+        </template>
       </el-table-column>
       <el-table-column
           align="center"
@@ -68,6 +66,14 @@
           label="负责人">
         <template slot-scope="scope">
           {{ scope.row.manager ? scope.row.manager.name : '无' }}
+        </template>
+      </el-table-column>
+      <el-table-column
+          align="center"
+          header-align="center"
+          label="审核">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.is_calc" size="mini" type="success">已核对</el-tag>
         </template>
       </el-table-column>
       <el-table-column
@@ -251,6 +257,12 @@
           <el-form-item label="提成金额" prop="platform">
             <span class="lirun">￥{{ this.aBonus | currency }}</span>
           </el-form-item>
+          <el-form-item label="审核" prop="is_calc">
+            <el-switch
+                v-model="accountBonus.is_calc"
+                active-color="#13ce66">
+            </el-switch>
+          </el-form-item>
 
 
         </el-form>
@@ -325,6 +337,7 @@ export default {
         bonus_rate: null,
         bonus: null,
         manager: null,
+        is_calc: false
       },
     }
   },
