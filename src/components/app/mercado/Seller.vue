@@ -101,7 +101,7 @@
               <div><el-button
                   style="margin-bottom: 2px"
                   icon="el-icon-s-data"
-                  size="mini" @click="saleChart(scope.row.id)">统计</el-button></div>
+                  size="mini" @click="saleChart(scope.row)">统计</el-button></div>
               <div v-if="!scope.row.collection"><el-button size="mini"
                                                            icon="el-icon-star-off"
                                                            @click="collectSeller(scope.row)">收藏</el-button></div>
@@ -175,15 +175,53 @@
       </span>
     </el-dialog>
 
+    <!--    销量图表弹窗-->
+    <el-dialog
+        :title="'卖家数据统计: ' + chartTitle"
+        :close-on-click-modal="false"
+        :visible.sync="saleVisible"
+        width="80%"
+    >
+      <div>
+        <el-date-picker
+            v-model="dateR"
+            :picker-options="pickerOptions"
+            value-format="yyyy-MM-dd"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期">
+        </el-date-picker>
+      </div>
+      <div class="chart">
+        <SellerSaleChart :dateR="dateR" :sellerID="sellerID"></SellerSaleChart>
+      </div>
+      <div class="chart">
+        <SellerTotalChart :dateR="dateR" :sellerID="sellerID"></SellerTotalChart>
+      </div>
+      <div class="chart">
+        <SellerItemChart :dateR="dateR" :sellerID="sellerID"></SellerItemChart>
+      </div>
+
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import SellerSaleChart from "@/components/app/mercado/SellerSaleChart";
+import SellerItemChart from "@/components/app/mercado/SellerItemChart";
+import SellerTotalChart from "@/components/app/mercado/SellerTotalChart";
 
 export default {
   name: "Seller",
   props: ['siteID'],
+  components:{
+    SellerSaleChart, SellerItemChart, SellerTotalChart
+  },
   data(){
     return{
       sellers: [],
@@ -196,9 +234,40 @@ export default {
       siteID: '',
       collectStatus: false,
       noteVisible: false,
+      saleVisible: false,
+      sellerID: null,
+      chartTitle: null,
       seller: {
         id: null,
         note: null
+      },
+      dateR: [],
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+            picker.$emit('pick', [start, end]);
+          }
+        }]
       },
     }
   },
@@ -209,10 +278,32 @@ export default {
     },
 
   },
+  watch: {
+    siteID:{
+      handler(val){
+        this.initSellers();
+      }
+
+    }
+  },
   mounted() {
     this.initSellers();
+    this.getDefaultTime();
   },
   methods:{
+    // 设置默认的开始与结束时间
+    getDefaultTime() {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+      this.dateR[0] = moment(start).format("YYYY-MM-DD"); // 开始时间
+      this.dateR[1] = moment(end).format("YYYY-MM-DD"); // 结束时间
+    },
+    saleChart(row){
+      this.sellerID = row.id
+      this.chartTitle = row.nickname
+      this.saleVisible = true
+    },
     deleteSeller(id){
       this.$confirm('是否删除卖家？', '提示', {
         confirmButtonText: '确定',
@@ -349,5 +440,8 @@ export default {
 .zi {
   font-weight: bold;
   color: #E6A23C;
+}
+.chart{
+  height: 500px;
 }
 </style>

@@ -2,7 +2,11 @@
   <div style="display: flex">
 
     <div class="categ">
-      <el-tree :load="loadNode"
+      <el-tree v-loading="cate_loading"
+               element-loading-text="类目加载中"
+               element-loading-spinner="el-icon-loading"
+               :load="loadNode"
+               empty-text=" "
                node-key="categ_id"
                ref="tree"
                lazy
@@ -18,7 +22,9 @@
       </el-tree>
     </div>
     <div style="width: 100%; margin-left: 5px">
-      <div style="font-size: 14px; color: teal">当前目录：{{this.path_from_root?this.path_from_root: '整站'}}</div>
+      <div style="font-size: 14px; color: teal">
+        <el-link v-if="path_from_root" @click="backToSite" style="margin-bottom: 4px" type="info">返回整站</el-link>
+        当前目录：{{this.path_from_root?this.path_from_root: '整站'}}</div>
       <el-table
           ref="keywordsTable"
           :data="keywords"
@@ -33,7 +39,7 @@
             width="100">
         </el-table-column>
         <el-table-column
-            label="关键词">
+            label="热搜关键词">
           <template slot-scope="scope">
             <div>{{scope.row.keyword}}
               <span v-if="scope.row.status==='UP'"><el-tag size="mini" type="success"><i class="el-icon-top"></i>上升{{scope.row.rank_changed}}位</el-tag></span>
@@ -72,6 +78,7 @@ export default {
       path_from_root: null,
       keywords: null,
       loading: false,
+      cate_loading: false,
       defaultProps: {
         children: 'children',
         label: 'name',
@@ -79,7 +86,14 @@ export default {
       }
     }
   },
+  mounted() {
+    this.getKeywords(this.siteID)
+  },
   methods:{
+    backToSite(){
+      this.path_from_root = null
+      this.getKeywords(this.siteID)
+    },
     handleNodeClick(data){
       this.path_from_root = data.path_from_root
       this.getKeywords(data.categ_id)
@@ -92,7 +106,9 @@ export default {
       if (node.level === 0) {
         //如果当前为第一级  则通过参数0请求第一层的数据
         let url = 'api/med_categories/get_categories/?father_id=0&site_id=' + this.siteID
+        this.cate_loading = true
         this.getRequest(url).then(resp => {
+          this.cate_loading = false
           if (resp.length > 0) {
             //如果不是空的  定义一个叫dataList的变量接收请求的数据是一个对象数组
             let dataList = resp;
@@ -111,7 +127,9 @@ export default {
       }else{
         //如果当前不是最顶级  则node.data拿到被点击的节点本身  通过节点di请求这条数据的子集
         let url = 'api/med_categories/get_categories/?father_id='+ node.data.categ_id +'&site_id=' + this.siteID
+        this.cate_loading = true
         this.getRequest(url).then(resp => {
+          this.cate_loading = false
           if (resp.length > 0) {
             //如果不是空的  定义一个叫dataList的变量接收请求的数据是一个对象数组
             let dataList = resp;

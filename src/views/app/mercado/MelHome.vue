@@ -1,7 +1,7 @@
 <template>
   <div class="mainList">
     <div style="display: flex;justify-content: center">
-      <el-radio-group v-model="siteID">
+      <el-radio-group @change="changeSite" v-model="siteID">
         <el-radio-button label="MLM">墨西哥</el-radio-button>
         <el-radio-button label="MLC">智利</el-radio-button>
         <el-radio-button label="MLB">巴西</el-radio-button>
@@ -10,7 +10,7 @@
     <el-tabs v-model="activeName">
       <el-tab-pane :lazy="true" label="产品跟踪" name="first"><Listing :siteID="siteID"></Listing></el-tab-pane>
       <el-tab-pane :lazy="true" label="卖家管理" name="second"><Seller :siteID="siteID"></Seller></el-tab-pane>
-      <el-tab-pane :lazy="true" label="类目热搜" name="third"><Categories :siteID="siteID"></Categories></el-tab-pane>
+      <el-tab-pane :lazy="true" label="类目热搜" name="third"><Categories :key="timer" :siteID="siteID"></Categories></el-tab-pane>
     </el-tabs>
   </div>
 
@@ -30,6 +30,12 @@ export default {
     return{
       activeName: 'first',
       siteID: 'MLM',
+      timer: null
+    }
+  },
+  methods:{
+    changeSite(){
+      this.timer = new Date().getTime();
     }
   }
 }
