@@ -127,9 +127,7 @@ export default {
       }else{
         //如果当前不是最顶级  则node.data拿到被点击的节点本身  通过节点di请求这条数据的子集
         let url = 'api/med_categories/get_categories/?father_id='+ node.data.categ_id +'&site_id=' + this.siteID
-        this.cate_loading = true
         this.getRequest(url).then(resp => {
-          this.cate_loading = false
           if (resp.length > 0) {
             //如果不是空的  定义一个叫dataList的变量接收请求的数据是一个对象数组
             let dataList = resp;
