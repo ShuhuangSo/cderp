@@ -31,12 +31,8 @@
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
           style="width: 100%">
-        <el-table-column
-            type="selection"
-            width="42">
-        </el-table-column>
 
-        <el-table-column type="expand">
+        <el-table-column type="expand" width="40">
           <template slot-scope="props">
             <el-descriptions
                 title="产品详情" :column="1" border>
@@ -147,8 +143,30 @@
         </el-table-column>
 
         <el-table-column
-            prop="note"
-            label="备注">
+            label="操作"
+            width="130"
+        >
+          <template slot-scope="scope">
+            <el-button
+                type="text"
+                @click="productDetail(scope.row.id)"
+                size="small">
+              编辑
+            </el-button>
+            <el-divider direction="vertical"></el-divider>
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'print', obj:scope.row}">打印条码</el-dropdown-item>
+                <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
+                <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
+                <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
         </el-table-column>
       </el-table>
     </div>
@@ -163,6 +181,23 @@
           :total="total">
       </el-pagination>
     </div>
+
+    <!--    产品详情弹窗-->
+    <el-dialog
+        title="产品详情"
+        :visible.sync="productDetailVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        top="20px"
+        width="1200px"
+    >
+      <MelProductDetail ref="productDetail" :productID="productID"
+                        @closeProductDetail="closeProductDetail"></MelProductDetail>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="productDetailVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="productDetailUpdate">确 定</el-button>
+        </span>
+    </el-dialog>
 
     <!--    批量上传弹窗-->
     <el-dialog
@@ -203,9 +238,13 @@
 
 <script>
 import moment from "moment/moment";
+import MelProductDetail from "@/views/app/mercado/MelProductDetail";
 
 export default {
   name: "MelProduct",
+  components:{
+    MelProductDetail
+  },
   data() {
     return {
       loading: false,
@@ -219,6 +258,8 @@ export default {
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
       },
+      productDetailVisible: false, //产品详情弹窗
+      productID: 0, // 产品id
     }
   },
   filters: {
@@ -241,6 +282,21 @@ export default {
     this.initMLProducts();
   },
   methods: {
+    // 打开产品详情弹窗
+    productDetail(id) {
+      this.productID = id;
+      this.productDetailVisible = true;
+    },
+    // 产品详情弹窗更新
+    productDetailUpdate() {
+      this.$refs.productDetail.updateProduct();
+    },
+    // 成功业务处理后关闭产品详情弹窗
+    closeProductDetail() {
+      this.$message.success('操作成功')
+      this.initMLProducts();
+      this.productDetailVisible = false;
+    },
     // 型号上传前的回调
     beforeUpload() {
       this.loading = true;
@@ -312,5 +368,4 @@ export default {
   display: flex;
   justify-content: space-between;
 }
-
 </style>
