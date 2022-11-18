@@ -206,7 +206,7 @@
                 <el-form-item label="备注">
                   <el-input
                       type="textarea"
-                      :rows="2"
+                      :rows="5"
                       placeholder="请输入内容"
                       v-model="mlProduct.note">
                   </el-input>

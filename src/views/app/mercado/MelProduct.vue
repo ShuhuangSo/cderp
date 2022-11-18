@@ -31,6 +31,10 @@
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
           style="width: 100%">
+        <el-table-column
+            type="selection"
+            width="42">
+        </el-table-column>
 
         <el-table-column type="expand" width="40">
           <template slot-scope="props">
@@ -66,7 +70,7 @@
             label="图片"
             align="center"
             header-align="center"
-            width="150">
+            width="60">
           <template slot-scope="scope">
             <el-image
                 style="width: 50px; height: 50px"
@@ -147,22 +151,13 @@
             width="130"
         >
           <template slot-scope="scope">
-            <el-button
-                type="text"
-                @click="productDetail(scope.row.id)"
-                size="small">
-              编辑
-            </el-button>
-            <el-divider direction="vertical"></el-divider>
             <el-dropdown @command="handleProductOp">
               <el-button type="text">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'print', obj:scope.row}">打印条码</el-dropdown-item>
-                <el-dropdown-item :command="{type:'addTag', obj:scope.row}">添加标签</el-dropdown-item>
-                <el-dropdown-item v-if="!editTag" :command="{type:'editTag', obj:scope.row}">编辑标签</el-dropdown-item>
-                <el-dropdown-item v-if="editTag" :command="{type:'editTag', obj:scope.row}">取消标签编辑</el-dropdown-item>
+                <el-dropdown-item :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
+                <el-dropdown-item :command="{type:'edit', id:scope.row.id}">编辑产品</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -188,7 +183,6 @@
         :visible.sync="productDetailVisible"
         :destroy-on-close="true"
         :close-on-click-modal="false"
-        top="20px"
         width="1200px"
     >
       <MelProductDetail ref="productDetail" :productID="productID"
@@ -196,6 +190,33 @@
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="productDetailVisible = false">取 消</el-button>
           <el-button size="small" type="primary" @click="productDetailUpdate">确 定</el-button>
+        </span>
+    </el-dialog>
+
+    <!--    更换图片弹窗-->
+    <el-dialog
+        title="产品图片"
+        :visible.sync="imageVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="500px"
+    >
+      <div style="text-align: center">
+        <el-upload
+            class="avatar-uploader"
+            action="api/ml_products/image_upload/"
+            :show-file-list="false"
+            name="pic"
+            :data="{'id': this.imageID}"
+            :headers="headers"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload">
+          <img v-if="imageUrl" :src="imageUrl" class="avatar">
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="imageVisible = false">取 消</el-button>
         </span>
     </el-dialog>
 
@@ -222,7 +243,9 @@
             action="api/ml_products/bulk_upload/">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip" slot="tip">只能上传excel文件, <el-link href="/media/template/device models upload template.xlsx" target="_blank">模板下载</el-link></div>
+          <div class="el-upload__tip" slot="tip">只能上传excel文件,
+            <el-link href="/media/template/ml_products_upload_ template.xlsx" target="_blank">模板下载</el-link>
+          </div>
         </el-upload>
 
       </div>
@@ -242,7 +265,7 @@ import MelProductDetail from "@/views/app/mercado/MelProductDetail";
 
 export default {
   name: "MelProduct",
-  components:{
+  components: {
     MelProductDetail
   },
   data() {
@@ -260,6 +283,9 @@ export default {
       },
       productDetailVisible: false, //产品详情弹窗
       productID: 0, // 产品id
+      imageVisible: false, // 图片修改弹窗
+      imageUrl: null,
+      imageID: null,
     }
   },
   filters: {
@@ -282,6 +308,57 @@ export default {
     this.initMLProducts();
   },
   methods: {
+    // 图片上传前
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg';
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error('上传图片只能是 JPG 格式!');
+      }
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!');
+      }
+      return isJPG && isLt2M;
+    },
+    handleAvatarSuccess(res, file) {
+      this.initMLProducts();
+      this.imageVisible = false;
+    },
+    // 产品更多操作
+    handleProductOp(command) {
+      // 编辑图片
+      if (command['type'] === 'editImage') {
+        this.imageUrl = command['obj'].image,
+            this.imageID = command['obj'].id,
+            this.imageVisible = true
+      }
+
+      // 编辑产品
+      if (command['type'] === 'edit') {
+        this.productDetail(command['id'])
+      }
+
+      // 产品删除
+      if (command['type'] == 'delete') {
+        this.$confirm('删除的产品无法恢复, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //调用删除产品
+          this.deleteRequest('api/ml_products/' + command['id'] + '/').then(resp => {
+            this.initMLProducts();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        })
+      }
+
+    },
     // 打开产品详情弹窗
     productDetail(id) {
       this.productID = id;
@@ -291,6 +368,7 @@ export default {
     productDetailUpdate() {
       this.$refs.productDetail.updateProduct();
     },
+
     // 成功业务处理后关闭产品详情弹窗
     closeProductDetail() {
       this.$message.success('操作成功')
@@ -367,5 +445,32 @@ export default {
   margin-top: 10px;
   display: flex;
   justify-content: space-between;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>
