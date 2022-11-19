@@ -74,8 +74,8 @@
           <template slot-scope="scope">
             <el-image
                 style="width: 50px; height: 50px"
-                :src="scope.row.image"
-                :preview-src-list="[scope.row.image]"
+                :src="scope.row.image?scope.row.image:''"
+                :preview-src-list="[scope.row.image?scope.row.image:'']"
                 fit="fill">
             </el-image>
           </template>
@@ -185,7 +185,9 @@
         :close-on-click-modal="false"
         width="1200px"
     >
-      <MelProductDetail ref="productDetail" :productID="productID"
+      <MelProductDetail ref="productDetail"
+                        :key="timer"
+                        :productID="productID"
                         @closeProductDetail="closeProductDetail"></MelProductDetail>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="productDetailVisible = false">取 消</el-button>
@@ -286,6 +288,7 @@ export default {
       imageVisible: false, // 图片修改弹窗
       imageUrl: null,
       imageID: null,
+      timer: null,
     }
   },
   filters: {
@@ -336,6 +339,7 @@ export default {
 
       // 编辑产品
       if (command['type'] === 'edit') {
+        this.timer = new Date().getTime();
         this.productDetail(command['id'])
       }
 
