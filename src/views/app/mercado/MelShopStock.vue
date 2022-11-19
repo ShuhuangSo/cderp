@@ -16,10 +16,18 @@
       </div>
 
       <div>
-        <el-button type="success" icon="el-icon-plus"
-                   style="margin-right: 10px"
-                   @click="uploadVisible=true">产品导入
-        </el-button>
+        <el-select v-model="shopID"
+                   style="width: 300px;"
+                   @change="changeShop" placeholder="请选择店铺">
+          <el-option
+              v-for="item in shops"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            <span style="float: left">{{ item.name }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
+          </el-option>
+        </el-select>
       </div>
     </div>
 
@@ -35,10 +43,10 @@
             label="图片"
             align="center"
             header-align="center"
-            width="60">
+            width="100">
           <template slot-scope="scope">
             <el-image
-                style="width: 50px; height: 50px"
+                style="width: 80px; height: 80px"
                 :src="scope.row.image"
                 :preview-src-list="[scope.row.image]"
                 fit="fill">
@@ -65,6 +73,54 @@
           </template>
         </el-table-column>
 
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="FBM库存 | 在途 | 中转仓">
+          <template slot-scope="scope">
+            {{ scope.row.qty}}
+            <el-divider direction="vertical"></el-divider>
+            {{ scope.row.onway_qty}}
+            <el-divider direction="vertical"></el-divider>
+            0
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="销量">
+          <template slot-scope="scope">
+            <div>15天销量: <span class="zi">{{scope.row.day15_sold}} </span>
+            </div>
+            <div>30天销量: <span class="zi">{{scope.row.day30_sold}} </span>
+            </div>
+            <div>累计销量: <span class="zi">{{scope.row.total_sold}}</span></div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="均摊成本 | 均摊头程">
+          <template slot-scope="scope">
+            {{ scope.row.unit_cost}}
+            <el-divider direction="vertical"></el-divider>
+            {{ scope.row.first_ship_fee}}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="状态"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
+            <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
+            <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
+            <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
+          </template>
+        </el-table-column>
+
       </el-table>
 
       <div class="pagination">
@@ -88,6 +144,7 @@ export default {
   data(){
     return{
       shops: null,
+      shopID: null,
       shopStocks: null,
       loading: false,
       total: 0, // 总条数
@@ -97,7 +154,7 @@ export default {
     }
   },
   mounted() {
-    this.initShopStock();
+    this.inintShops();
   },
   methods:{
     // 重置搜索内容
@@ -122,8 +179,26 @@ export default {
       this.page = page;
       this.initShopStock();
     },
+    //改变店铺动作
+    changeShop(){
+      this.page = 1;
+      this.initShopStock();
+    },
+    inintShops(){
+      //获取所有可选店铺
+      if(window.sessionStorage.getItem('ml_shops')) {
+        this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+      }else{
+        this.getRequest('api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time').then(resp => {
+          if (resp.results) {
+            this.shops = resp.results;
+            window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+          }
+        })
+      }
+    },
     initShopStock(){
-      let url = '/api/ml_shopstock/?shop=1&page=' + this.page + '&page_size=' + this.size
+      let url = '/api/ml_shopstock/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
