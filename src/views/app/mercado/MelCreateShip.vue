@@ -82,14 +82,114 @@
           </el-form>
         </div>
 
+        <el-button type="primary" icon="el-icon-plus"
+                   style="margin-left: 10px"
+                   :disabled="!ship.shop"
+                   @click="addProduct">添加产品
+        </el-button>
+        <el-table
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="ship.ship_detail"
+            border
+            size="mini"
+            style="width: 98%; margin: 10px">
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              prop="sku"
+              label="SKU"
+              align="center"
+              header-align="center"
+              width="80">
+          </el-table-column>
+          <el-table-column
+              prop="p_name"
+              label="产品名称">
+          </el-table-column>
+
+          <el-table-column
+              label="数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="简要备注">
+            <template slot-scope="scope">
+              <el-input maxlength=20 v-model="scope.row.note"></el-input>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="操作"
+              width="100"
+              align="center"
+              header-align="center"
+          >
+            <template slot-scope="scope">
+
+              <el-button
+                  v-if="scope.row.urgent"
+                  title="取消加急"
+                  @click="changeUrgent(scope.row)"
+                  type="danger" size="mini" circle>急</el-button>
+              <el-button
+                  v-if="!scope.row.urgent"
+                  title="加急"
+                  @click="changeUrgent(scope.row)"
+                  type="" size="mini" circle>急</el-button>
+              <el-button
+                  @click="removeProduct(scope.row.sku)"
+                  type="" size="mini" icon="el-icon-delete" circle></el-button>
+
+            </template>
+          </el-table-column>
+        </el-table>
+
       </el-card>
     </div>
+
+    <!--    添加产品弹窗-->
+    <el-dialog
+        title="添加产品"
+        :visible.sync="addProductVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <MelAddProduct ref="addProduct" @func="getAddProducts"></MelAddProduct>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="addProductVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="confirmAddProduct">确 定</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
+import MelAddProduct from "@/views/app/mercado/MelAddProduct";
+
 export default {
   name: "MelCreateShip",
+  components:{
+    MelAddProduct
+  },
   data(){
     return{
       ship: {
@@ -100,10 +200,11 @@ export default {
         end_date: '',
         ship_date: '',
         note: '',
-        ship_detail: null,
+        ship_detail: [],
       },
       shops: null, //可选店铺
       carriers: null, //可选物流商
+      addProductVisible: false,
     }
   },
   mounted() {
@@ -111,6 +212,41 @@ export default {
     this.initCarriers();
   },
   methods:{
+    // 添加产品弹窗确认
+    confirmAddProduct() {
+      this.$refs.addProduct.submitSelectProduct();
+    },
+    //获取子组件 添加产品的信息
+    getAddProducts(data){
+      if (data.length > 0) {
+        data.forEach(item=>{
+          let existSKU = this.ship.ship_detail.find(i => {
+            return i.sku === item.sku;
+          })
+          // 产品不存在才添加
+          if (!existSKU){
+            // 如果产品需要在当前目标店铺 或 发中转仓 才能添加
+            if (item.shop === this.ship.shop || this.ship.target === 'TRANSIT'){
+              let p = {}
+              p['qty'] = 1; // 添加数量1
+              p['sku'] = item.sku;
+              p['p_name'] = item.p_name;
+              p['image'] = item.image;
+              p['shop'] = item.shop;
+
+              this.ship.ship_detail.push(p)
+            }
+          }
+
+        })
+      }
+      this.addProductVisible = false;
+    },
+    // 添加产品
+    addProduct(){
+      this.addProductVisible = true
+    },
+    // 修改目标
     changeTarget(){
       this.ship.shop = ''
       this.inintShops()
