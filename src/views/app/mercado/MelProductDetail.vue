@@ -325,7 +325,6 @@ export default {
         if (valid) {
             delete this.mlProduct.create_time
             delete this.mlProduct.image
-            console.log(this.mlProduct)
             this.putRequest('api/ml_products/' + this.productID + '/', this.mlProduct).then(resp => {
               if (resp) {
                 // 调用父组件的关闭窗口方法
