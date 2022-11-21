@@ -25,7 +25,7 @@
                          placeholder="请选择店铺">
                 <el-option
                     v-for="item in shops"
-                    :key="ship.target"
+                    :key="ship.name"
                     :label="item.name"
                     :value="item.name">
                   <span style="float: left">{{ item.name }}</span>
@@ -34,12 +34,13 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="承运商" prop="shop">
+            <el-form-item label="承运商" prop="carrier">
               <el-select v-model="ship.carrier"
                          style="width: 300px;"
                          placeholder="请选择发货物流">
                 <el-option
                     v-for="item in carriers"
+                    :key="item.name"
                     :label="item.name"
                     :value="item.name">
                 </el-option>
@@ -56,6 +57,7 @@
             <el-form-item label="截单日期" prop="end_date">
               <el-date-picker
                   v-model="ship.end_date"
+                  value-format="yyyy-MM-dd"
                   type="date"
                   placeholder="选择日期">
               </el-date-picker>
@@ -64,6 +66,7 @@
             <el-form-item label="航班日期" prop="end_date">
               <el-date-picker
                   v-model="ship.ship_date"
+                  value-format="yyyy-MM-dd"
                   type="date"
                   placeholder="选择日期">
               </el-date-picker>
@@ -107,15 +110,23 @@
             </template>
           </el-table-column>
           <el-table-column
-              prop="sku"
-              label="SKU"
-              align="center"
-              header-align="center"
-              width="80">
+              label="产品"
+              show-overflow-tooltip
+              width="300">
+            <template slot-scope="scope">
+              <div>{{ scope.row.sku }}</div>
+
+              <div>{{ scope.row.p_name }}</div>
+            </template>
           </el-table-column>
+
           <el-table-column
-              prop="p_name"
-              label="产品名称">
+              label="ItemID"
+              show-overflow-tooltip
+              width="120">
+            <template slot-scope="scope">
+              <div>{{ scope.row.item_id }}</div>
+            </template>
           </el-table-column>
 
           <el-table-column
@@ -144,15 +155,15 @@
             <template slot-scope="scope">
 
               <el-button
-                  v-if="scope.row.urgent"
-                  title="取消加急"
-                  @click="changeUrgent(scope.row)"
-                  type="danger" size="mini" circle>急</el-button>
+                  v-if="scope.row.s_type === 'NEW'"
+                  title="取消标新"
+                  @click="changeType(scope.row)"
+                  type="success" size="mini" circle>新</el-button>
               <el-button
-                  v-if="!scope.row.urgent"
-                  title="加急"
-                  @click="changeUrgent(scope.row)"
-                  type="" size="mini" circle>急</el-button>
+                  v-if="scope.row.s_type === 'REFILL'"
+                  title="标记为新产品"
+                  @click="changeType(scope.row)"
+                  type="" size="mini" circle>新</el-button>
               <el-button
                   @click="removeProduct(scope.row.sku)"
                   type="" size="mini" icon="el-icon-delete" circle></el-button>
@@ -160,6 +171,20 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <div class="total" v-if="ship.ship_detail.length">
+          <div style="float: left; width: 250px">
+            <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
+          </div>
+        </div>
+
+        <div STYLE="display: flex;justify-content: right;margin-right: 20px">
+          <el-button type="success"
+                     :disabled="!ship.ship_detail.length"
+                     @click="submitForm('WAIT_CONFIRM')">保存运单
+          </el-button>
+
+        </div>
 
       </el-card>
     </div>
@@ -202,16 +227,83 @@ export default {
         note: '',
         ship_detail: [],
       },
-      shops: null, //可选店铺
-      carriers: null, //可选物流商
+      shops: [], //可选店铺
+      carriers: [], //可选物流商
       addProductVisible: false,
+      rules: {
+        shop: [
+          {required: true, message: '请选择目标店铺', trigger: 'blur'},
+        ],
+        carrier: [
+          {required: true, message: '请选择发货物流', trigger: 'blur'},
+        ]
+      },
     }
   },
   mounted() {
     this.inintShops();
     this.initCarriers();
   },
+  computed: {
+    // 总数量
+    totalQuantity() {
+      let qty = 0;
+      this.ship.ship_detail.forEach(item => {
+        qty += item.qty;
+      })
+      return qty
+    },
+  },
   methods:{
+
+    //  保存运单
+    submitForm() {
+      this.$confirm('是否提交并保存运单？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$refs.shipForm.validate((valid) => {
+          if (valid) {
+            this.loading = true;
+            this.postRequest('api/ml_ship/create_ship/', this.ship).then(resp => {
+              if (resp) {
+                this.loading = false;
+                this.$router.push({
+                  path: '/melManage',
+                  query: {
+                    activeName: 'second'
+                  }
+                });
+              }
+            })
+          }
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
+    },
+
+    // 改变标新状态
+    changeType(row){
+      if (row.s_type === 'REFILL') {
+        row.s_type = 'NEW'
+      } else {
+        row.s_type = 'REFILL'
+      }
+    },
+    // 删除产品
+    removeProduct(sku) {
+      let index = this.ship.ship_detail.findIndex(item => {
+        return item.sku === sku
+      });
+      this.ship.ship_detail.splice(index, 1)
+    },
+
     // 添加产品弹窗确认
     confirmAddProduct() {
       this.$refs.addProduct.submitSelectProduct();
@@ -219,6 +311,8 @@ export default {
     //获取子组件 添加产品的信息
     getAddProducts(data){
       if (data.length > 0) {
+        let exist = false
+        let not_match = false
         data.forEach(item=>{
           let existSKU = this.ship.ship_detail.find(i => {
             return i.sku === item.sku;
@@ -231,14 +325,23 @@ export default {
               p['qty'] = 1; // 添加数量1
               p['sku'] = item.sku;
               p['p_name'] = item.p_name;
+              p['item_id'] = item.item_id;
               p['image'] = item.image;
               p['shop'] = item.shop;
+              p['note'] = '';
+              p['s_type'] = 'REFILL';
 
               this.ship.ship_detail.push(p)
+            } else {
+              not_match = true
             }
+          } else {
+            exist = true
           }
 
         })
+        if (exist) this.$message.error('产品重复添加！')
+        if (not_match) this.$message.error('产品与目标店铺不匹配！')
       }
       this.addProductVisible = false;
     },
@@ -284,5 +387,11 @@ export default {
 .pContainer {
   margin-top: 10px;
   width: 1200px;
+}
+.total {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 50px;
+  margin-bottom: 20px;
 }
 </style>

@@ -27,9 +27,9 @@ export default {
   },
   data(){
     return{
-      activeName: this.$route.query.activeName?this.$route.query.activeName:'first',
+      activeName: this.$route.query.activeName?this.$route.query.activeName:'second',
     }
-  }
+  },
 }
 </script>
 

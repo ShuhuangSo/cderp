@@ -77,7 +77,9 @@
                   label="产品"
                   show-overflow-tooltip>
                 <template slot-scope="scope">
-                  <div>{{ scope.row.sku }}</div>
+                  <div>{{ scope.row.sku }}
+                    <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
+                  </div>
 
                   <div>{{ scope.row.p_name }}</div>
                 </template>
@@ -109,11 +111,20 @@
               </el-table-column>
 
               <el-table-column
-                  prop="s_type"
-                  label="发货类型"
+                  label="单价"
                   align="center"
                   header-align="center"
-                  width="180">
+                  width="70">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.unit_cost | currency }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  prop="note"
+                  label="备注"
+                  align="center"
+                  header-align="center">
               </el-table-column>
 
             </el-table>
@@ -121,10 +132,13 @@
         </el-table-column>
 
         <el-table-column
-            prop="batch"
             label="批次号"
             align="center"
-            header-align="center">
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div class="m_name">{{ scope.row.batch}}</div>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -145,7 +159,7 @@
             <div><span class="tt">物流单号: </span>{{scope.row.s_number}}</div>
             <div><span class="tt">截单日期: </span>{{scope.row.end_date}}</div>
             <div><span class="tt">航班日期: </span>{{scope.row.ship_date}}</div>
-            <div><span class="tt">运单类型: </span>{{scope.row.ship_type}}</div>
+            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>
           </template>
         </el-table-column>
 
@@ -182,14 +196,13 @@
             width="130"
         >
           <template slot-scope="scope">
-            <el-dropdown @command="handleProductOp">
+            <el-dropdown @command="handleShipOp">
               <el-button type="text">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
-                <el-dropdown-item :command="{type:'edit', id:scope.row.id}">编辑产品</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
+                <el-dropdown-item :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -243,6 +256,41 @@ export default {
     this.initShips()
   },
   methods:{
+
+    // 运单更多操作
+    handleShipOp(command) {
+
+      // 打包发货
+      if (command['type'] === 'packing') {
+        this.$router.push({
+          path: '/shipDetail',
+          query: {
+            id: command['id']
+          }
+        });
+      }
+
+      // 产品删除
+      if (command['type'] === 'delete') {
+        this.$confirm('删除的运单无法恢复, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //调用删除产品
+          this.deleteRequest('api/ml_ship/' + command['id'] + '/').then(resp => {
+            this.initShips();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        })
+      }
+
+    },
+
     // 创建运单
     createShip(){
       this.$router.push('/createShip')
@@ -313,5 +361,10 @@ export default {
 }
 .tt{
   font-weight: bold;
+}
+.m_name{
+  font-weight: bold;
+  color: teal;
+  font-size: large;
 }
 </style>

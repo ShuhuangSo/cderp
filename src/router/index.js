@@ -19,6 +19,7 @@ import UserPermission from "@/views/setting/UserPermission";
 import SalesCharts from "@/views/charts/SalesCharts";
 import MonthDetail from "@/views/app/bonus/MonthDetail";
 import MelCreateShip from "@/views/app/mercado/MelCreateShip";
+import MelShipDetail from "@/views/app/mercado/MelShipDetail";
 
 
 
@@ -113,6 +114,11 @@ const routes = [
                 path: '/createShip',
                 name: '创建运单',
                 component: MelCreateShip
+            },
+            {
+                path: '/shipDetail',
+                name: '运单详情',
+                component: MelShipDetail
             },
         ]
     },
