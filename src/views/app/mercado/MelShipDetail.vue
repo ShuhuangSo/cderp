@@ -35,19 +35,78 @@
           </el-descriptions>
         </div>
 
-        <div class="block">
-          <h4>包装箱</h4>
-          <el-button>新增包装箱</el-button>
-            <el-card v-for="item in boxes" :key="item.id" class="box">
-              <div slot="header" class="clearfix">
-                <span>{{ item.box_number }}</span>
-                <el-button style="float: right; padding: 3px 0" type="text">编辑</el-button>
-              </div>
-              <el-descriptions :column=1 size="medium">
-                <el-descriptions-item label="箱号">{{ item.box_number }}</el-descriptions-item>
-                <el-descriptions-item label="物流商箱唛号">{{ item.carrier_box_number }}</el-descriptions-item>
-              </el-descriptions>
-            </el-card>
+        <div>
+          <h4 style="margin-left: 10px">包装箱</h4>
+          <el-button @click="addBoxVisible=true" style="margin-left: 10px">新增包装箱</el-button>
+          <el-table
+              :header-cell-style="{background:'#eef1f6'}"
+              :data="boxes"
+              border
+              size="mini"
+              style="width: 98%; margin: 10px">
+
+            <el-table-column
+                prop="box_number"
+                label="箱号"
+                align="center"
+                header-align="center"
+                width="120">
+            </el-table-column>
+
+            <el-table-column
+                prop="carrier_box_number"
+                label="物流商箱唛号"
+                align="center"
+                header-align="center"
+                width="180">
+            </el-table-column>
+
+            <el-table-column
+                label="重量"
+                align="center"
+                header-align="center"
+                width="120">
+              <template slot-scope="scope">
+                <div>{{ scope.row.weight | KG }}</div>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                label="尺寸"
+                align="center"
+                header-align="center"
+                width="180">
+              <template slot-scope="scope">
+                <div>{{ scope.row.length | CM}} x {{ scope.row.width | CM}} x {{ scope.row.heigth | CM}}</div>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                prop="note"
+                label="备注">
+            </el-table-column>
+
+            <el-table-column
+                label="操作"
+                width="100"
+                align="center"
+                header-align="center"
+            >
+              <template slot-scope="scope">
+
+                <el-button
+                    title="编辑"
+                    @click="changeBox(scope.row)"
+                    type="" size="mini" icon="el-icon-edit" circle></el-button>
+
+                <el-button
+                    title="删除"
+                    @click="removeBox(scope.row.id)"
+                    type="" size="mini" icon="el-icon-delete" circle></el-button>
+
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
 
         <div style="margin-left: 10px">
@@ -138,11 +197,101 @@
         </el-table>
 
       </el-card>
+
+      <!--    添加包装箱弹窗-->
+      <el-dialog
+          title="新增包装箱"
+          :visible.sync="addBoxVisible"
+          :destroy-on-close="true"
+          :close-on-click-modal="false"
+          width="550px"
+      >
+        <div>
+          <el-form ref="boxForm" :model="box" :rules="rules"
+                   label-position="right" label-width="100px" class="basicProduct">
+            <el-row>
+
+              <el-col :span="24">
+                <el-form-item required label="箱号" prop="box_number">
+                  <el-input v-model="box.box_number"
+                            maxlength="30"></el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item required label="尺寸">
+                  <el-row>
+                    <el-col :span="8">
+                      <el-form-item prop="length">
+                        <el-input v-model="box.length">
+                          <template slot="prepend">长cm</template>
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+
+                    <el-col :span="8">
+                      <el-form-item prop="width">
+                        <el-input v-model="box.width">
+                          <template slot="prepend">宽cm</template>
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+
+                    <el-col :span="8" prop="heigth">
+                      <el-form-item>
+                        <el-input v-model="box.heigth">
+                          <template slot="prepend">高cm</template>
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item label="重量" prop="weight">
+                  <el-input v-model="box.weight">
+                    <template slot="prepend">kg</template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item label="物流商箱唛" prop="carrier_box_number">
+                  <el-input v-model="box.carrier_box_number"
+                            maxlength="50"></el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%">
+                <el-form-item label="备注">
+                  <el-input
+                      type="textarea"
+                      :rows="2"
+                      placeholder="请输入内容"
+                      v-model="box.note">
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+            </el-row>
+
+
+          </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="addBoxVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitBox">确 定</el-button>
+        </span>
+      </el-dialog>
+
     </div>
   </div>
 </template>
 
 <script>
+import moment from "moment/moment";
+
 export default {
   name: "MelShipDetail",
   data(){
@@ -151,13 +300,114 @@ export default {
       ship: null,
       loading: false,
       boxes: [], //包装箱
+      addBoxVisible: false,
+      box: {
+        ship: this.$route.query.id,
+      }, //新包装箱
+      rules: {
+        box_number: [
+          {required: true, message: '请输入箱号', trigger: 'blur'},
+          {min: 1, max: 30, message: '箱号长度有误', trigger: 'blur'}
+        ],
+        length: [
+          {required: true, message: '长度不能为空', trigger: 'blur'},
+          {pattern: /^[0-9]+([.]{0,1}[0-9]+){0,1}$/, message: '请输入正确尺寸', trigger: 'blur'}
+        ],
+        width: [
+          {required: true, message: '宽度不能为空', trigger: 'blur'},
+          {pattern: /^[0-9]+([.]{0,1}[0-9]+){0,1}$/, message: '请输入正确尺寸', trigger: 'blur'}
+        ],
+        heigth: [
+          {required: true, message: '高度不能为空', trigger: 'blur'},
+          {pattern: /^[0-9]+([.]{0,1}[0-9]+){0,1}$/, message: '请输入正确尺寸', trigger: 'blur'}
+        ],
+        weight: [
+          {pattern: /^[0-9]+([.]{0,1}[0-9]+){0,1}$/, message: '请输入正确重量', trigger: 'blur'}
+        ],
+      },
     }
+  },
+  filters: {
+    //时间日期格式化
+    date: function (value) {
+      return moment(value).format("YYYY-MM-DD");
+    },
+    //rmb金额格式化
+    currency: function (value) {
+      if (!value) return 0.00;
+      return `¥${value.toFixed(2)}`;
+    },
+    //重量格式化
+    KG: function (value) {
+      if (!value) return ''
+      return `${value} kg`;
+    },
+    //尺寸格式化
+    CM: function (value) {
+      return `${value} cm`;
+    },
   },
   mounted() {
     this.initShip();
     this.initBox();
   },
   methods:{
+    // 修改箱子
+    changeBox(row){
+      this.addBoxVisible = true;
+      this.box= Object.assign({},row);
+    },
+    // 删除箱子
+    removeBox(id){
+      this.$confirm('是否删除包装箱?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //调用删除箱子
+        this.deleteRequest('api/ml_ship_box/' + id + '/').then(resp => {
+          this.initBox();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+      })
+    },
+    // 提交箱子
+    summitBox() {
+      this.$refs.boxForm.validate((valid) => {
+        if (valid) {
+          if (this.box.id) {
+            this.putRequest('api/ml_ship_box/' + this.box.id + '/', this.box).then(resp => {
+              if (resp) {
+                this.addBoxVisible = false
+                this.initBox();
+              }
+            })
+          } else {
+            this.postRequest('api/ml_ship_box/', this.box).then(resp => {
+              if (resp) {
+                this.addBoxVisible = false
+                this.initBox();
+              }
+            })
+          }
+
+
+        } else {
+          this.$message({
+            showClose: true,
+            message: '保存失败，请检查错误项',
+            type: 'error'
+          });
+          return false;
+        }
+      });
+
+    },
+
     // 取消并返回
     cancel() {
       this.$router.push({
