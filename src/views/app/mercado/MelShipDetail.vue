@@ -145,21 +145,49 @@
           </el-table-column>
 
           <el-table-column
-              label="ItemID"
-              show-overflow-tooltip
-              width="120">
+              label="成本价"
+              align="center"
+              header-align="center"
+              width="80">
             <template slot-scope="scope">
-              <div>{{ scope.row.item_id }}</div>
+              <div>{{ scope.row.unit_cost | currency}}</div>
             </template>
           </el-table-column>
 
           <el-table-column
-              label="数量"
+              label="计划数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.plan_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="发货数量"
               align="center"
               header-align="center"
               width="160">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+              <el-input-number v-model="scope.row.qty" :min="0"></el-input-number>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="箱号"
+              align="center"
+              header-align="center"
+              width="120">
+            <template slot-scope="scope">
+              <el-select v-model="scope.row.box_number" placeholder="请选择">
+                <el-option
+                    v-for="item in boxes"
+                    :key="item.id"
+                    :label="item.box_number"
+                    :value="item.box_number">
+                </el-option>
+              </el-select>
             </template>
           </el-table-column>
 
@@ -170,31 +198,22 @@
             </template>
           </el-table-column>
 
-          <el-table-column
-              label="操作"
-              width="100"
-              align="center"
-              header-align="center"
-          >
-            <template slot-scope="scope">
-
-              <el-button
-                  v-if="scope.row.s_type === 'NEW'"
-                  title="取消标新"
-                  @click="changeType(scope.row)"
-                  type="success" size="mini" circle>新</el-button>
-              <el-button
-                  v-if="scope.row.s_type === 'REFILL'"
-                  title="标记为新产品"
-                  @click="changeType(scope.row)"
-                  type="" size="mini" circle>新</el-button>
-              <el-button
-                  @click="removeProduct(scope.row.sku)"
-                  type="" size="mini" icon="el-icon-delete" circle></el-button>
-
-            </template>
-          </el-table-column>
         </el-table>
+
+        <div class="total" v-if="ship.ship_shipDetail.length">
+          <div style="float: left; width: 250px">
+            <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
+          </div>
+        </div>
+
+        <div STYLE="display: flex;justify-content: right;margin-right: 20px">
+          <el-button type="success"
+                     style="width: 200px"
+                     :disabled="!boxes.length"
+                     @click="sendShip">发 货
+          </el-button>
+
+        </div>
 
       </el-card>
 
@@ -327,6 +346,16 @@ export default {
       },
     }
   },
+  computed: {
+    // 总数量
+    totalQuantity() {
+      let qty = 0;
+      this.ship.ship_shipDetail.forEach(item => {
+        qty += item.qty;
+      })
+      return qty
+    },
+  },
   filters: {
     //时间日期格式化
     date: function (value) {
@@ -352,6 +381,31 @@ export default {
     this.initBox();
   },
   methods:{
+    //发货
+    sendShip(){
+      this.$confirm('是否确认发货?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
+          if (resp) {
+            this.$router.push({
+              path: '/melManage',
+              query: {
+                activeName: 'second'
+              }
+            });
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+      })
+    },
+
     // 修改箱子
     changeBox(row){
       this.addBoxVisible = true;
@@ -425,6 +479,9 @@ export default {
         if (resp) {
           this.loading = false;
           this.ship = resp;
+          this.ship.ship_shipDetail.forEach(item=>{
+            item['plan_qty'] = item.qty
+          })
         }
       })
     },
@@ -447,14 +504,10 @@ export default {
   width: 1200px;
 }
 
-.block{
-  width: 50%;
-  padding-left: 50px;
-
-}
-.box{
-  width: 400px;
-  margin-top: 10px;
-  margin-right: 10px;
+.total {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 50px;
+  margin-bottom: 20px;
 }
 </style>

@@ -138,6 +138,23 @@
             width="150">
           <template slot-scope="scope">
             <div class="m_name">{{ scope.row.batch}}</div>
+            <div style="margin-top: 10px">
+              <el-tag size="mini" type="info" v-if="scope.row.s_status=='PREPARING'">备货中</el-tag>
+              <el-tag size="mini" type="warning" v-if="scope.row.s_status=='BOOKED'">已预约</el-tag>
+              <el-tag size="mini" type="success" v-if="scope.row.s_status=='BOOKED'">已完成</el-tag>
+              <el-tag size="mini" v-if="scope.row.s_status=='SHIPPED'">已发货</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="目标店铺"
+            width="150"
+            align="center"
+            header-align="center">
+          <template slot-scope="scope">
+            <el-tag effect="dark" type="danger">{{ scope.row.shop}}</el-tag>
+
           </template>
         </el-table-column>
 
@@ -172,13 +189,6 @@
             <div><span class="tt">总重量: </span>{{scope.row.weight}}</div>
             <div><span class="tt">总体积: </span>{{scope.row.cbm}}</div>
           </template>
-        </el-table-column>
-
-        <el-table-column
-            prop="shop"
-            label="目标店铺"
-            align="center"
-            header-align="center">
         </el-table-column>
 
         <el-table-column
