@@ -5,28 +5,43 @@
   <div>
 
     <div class="operate">
-      <div>
-        <el-input size="small" placeholder="批次号 Envio 物流单号 备注"
-                  clearable
-                  @clear="clearSearchValue"
-                  @keyup.enter.native="doSearch"
-                  v-model="searchValue"
-                  style="width: 350px; margin-right: 5px">
-          <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
-        </el-input>
+
+      <div class="filter">
+        <div>
+
+          <el-badge :value="pre_qty" :hidden="!pre_qty" class="item">
+            <el-button size="small" :type="s_status==='PREPARING'?'primary':''" @click="changeStatus('PREPARING')">备货中</el-button>
+          </el-badge>
+
+          <el-badge :value="shipped_qty" :hidden="!shipped_qty" class="item">
+            <el-button size="small" :type="s_status==='SHIPPED'?'primary':''" @click="changeStatus('SHIPPED')">运输中</el-button>
+          </el-badge>
+
+          <el-badge :value="booked_qty" :hidden="!booked_qty" class="item">
+            <el-button size="small" :type="s_status==='BOOKED'?'primary':''" @click="changeStatus('BOOKED')">已预约</el-button>
+          </el-badge>
+
+            <el-button size="small" :type="s_status==='FINISHED'?'primary':''" @click="changeStatus('FINISHED')">已完成</el-button>
+
+        </div>
+
+
       </div>
 
       <div class="filter">
         <div>
-          <el-radio-group v-model="s_status" style="margin-right: 20px" @change="initShips">
-            <el-radio-button label="">全部</el-radio-button>
-            <el-radio-button label="PREPARING">备货中<br /></el-radio-button>
-            <el-radio-button label="SHIPPED">已发货</el-radio-button>
-            <el-radio-button label="BOOKED">已预约</el-radio-button>
-            <el-radio-button label="FINISHED">已完成</el-radio-button>
-          </el-radio-group>
+          <el-input size="small" placeholder="批次号 Envio 物流单号 备注"
+                    clearable
+                    @clear="clearSearchValue"
+                    @keyup.enter.native="doSearch"
+                    v-model="searchValue"
+                    style="width: 350px; margin-right: 5px">
+            <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
+          </el-input>
 
-          <el-radio-group @change="changeTarget" v-model="target">
+          <el-radio-group
+              style="margin-left: 50px"
+              @change="changeTarget" v-model="target">
             <el-radio-button label="">全部</el-radio-button>
             <el-radio-button label="FBM">FBM入仓单</el-radio-button>
             <el-radio-button label="TRANSIT">中转仓单</el-radio-button>
@@ -153,7 +168,7 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <el-tag effect="dark" type="danger">{{ scope.row.shop}}</el-tag>
+            <el-tag effect="dark" type="info">{{ scope.row.shop}}</el-tag>
 
           </template>
         </el-table-column>
@@ -169,8 +184,17 @@
         </el-table-column>
 
         <el-table-column
+            label="预约日期"
+            align="center"
+            header-align="center">
+          <template slot-scope="scope">
+            <div>{{ scope.row.book_date}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             label="物流商"
-            width="350">
+            width="300">
           <template slot-scope="scope">
             <div><span class="tt">物流名称: </span>{{scope.row.carrier}}</div>
             <div><span class="tt">物流单号: </span>{{scope.row.s_number}}</div>
@@ -182,22 +206,12 @@
 
         <el-table-column
             label="包裹信息"
-            width="350">
+            width="300">
           <template slot-scope="scope">
             <div><span class="tt">总数量: </span>{{scope.row.total_qty}}</div>
             <div><span class="tt">总箱数: </span>{{scope.row.total_box}}</div>
             <div><span class="tt">总重量: </span>{{scope.row.weight}}</div>
             <div><span class="tt">总体积: </span>{{scope.row.cbm}}</div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="创建日期"
-            align="center"
-            header-align="center"
-            width="90">
-          <template slot-scope="scope">
-            <span>{{ scope.row.create_time | date }}</span>
           </template>
         </el-table-column>
 
@@ -212,6 +226,7 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
+                <el-dropdown-item :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -231,6 +246,29 @@
       </el-pagination>
     </div>
 
+    <!--    FBM预约弹窗-->
+    <el-dialog
+        title="FBM预约"
+        :visible.sync="bookVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        <el-date-picker
+            style="width: 100%"
+            v-model="book_date"
+            value-format="yyyy-MM-dd"
+            type="date"
+            placeholder="选择预约日期">
+        </el-date-picker>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="bookVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="!book_date" @click="summitBookDate">确 定</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -247,8 +285,14 @@ export default {
       size: 20,  // 页大小
       searchValue: '',
       target: '',
-      s_status: '',
+      s_status: 'PREPARING',// 筛选状态
       ships: [],
+      pre_qty: 0, // 备货运单数量
+      shipped_qty: 0, // 发货运单数量
+      booked_qty: 0, // 预定运单数量
+      bookVisible: false, // fbm预约
+      book_date: '', //预约日期
+      ship_id: null,
     }
   },
   filters: {
@@ -266,6 +310,22 @@ export default {
     this.initShips()
   },
   methods:{
+    //提交预定日期
+    summitBookDate(){
+      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'book_date': this.book_date}).then(resp => {
+        if (resp) {
+          this.bookVisible = false;
+          this.initShips()
+          this.book_date = ''
+          this.ship_id = null
+        }
+      })
+    },
+    // 改变筛选状态
+    changeStatus(value){
+      this.s_status = value
+      this.initShips()
+    },
 
     // 运单更多操作
     handleShipOp(command) {
@@ -278,6 +338,12 @@ export default {
             id: command['id']
           }
         });
+      }
+
+      // FBM预约
+      if (command['type'] === 'book') {
+        this.bookVisible = true;
+        this.ship_id = command['id']
       }
 
       // 产品删除
@@ -332,6 +398,16 @@ export default {
       this.page = page;
       this.initShips();
     },
+    // 计算各状态运单数量
+    calcShips(){
+      this.getRequest('/api/ml_ship/calc_ships/').then(resp => {
+        if (resp) {
+          this.pre_qty = resp.pre_qty
+          this.shipped_qty = resp.shipped_qty
+          this.booked_qty = resp.booked_qty
+        }
+      })
+    },
     initShips() {
       let url = '/api/ml_ship/?page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
@@ -349,6 +425,8 @@ export default {
           this.total = resp.count;
         }
       })
+
+      this.calcShips();
     }
   }
 }
@@ -376,5 +454,8 @@ export default {
   font-weight: bold;
   color: teal;
   font-size: large;
+}
+.item {
+  margin-right: 18px;
 }
 </style>

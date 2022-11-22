@@ -322,6 +322,8 @@ export default {
       addBoxVisible: false,
       box: {
         ship: this.$route.query.id,
+        carrier_box_number: '',
+        note: '',
       }, //新包装箱
       rules: {
         box_number: [
@@ -434,14 +436,14 @@ export default {
       this.$refs.boxForm.validate((valid) => {
         if (valid) {
           if (this.box.id) {
-            this.putRequest('api/ml_ship_box/' + this.box.id + '/', this.box).then(resp => {
+            this.putRequest('api/ml_ship_box/update_shipbox/', this.box).then(resp => {
               if (resp) {
                 this.addBoxVisible = false
                 this.initBox();
               }
             })
           } else {
-            this.postRequest('api/ml_ship_box/', this.box).then(resp => {
+            this.postRequest('api/ml_ship_box/add_shipbox/', this.box).then(resp => {
               if (resp) {
                 this.addBoxVisible = false
                 this.initBox();
