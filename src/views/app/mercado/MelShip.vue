@@ -156,7 +156,7 @@
             <div style="margin-top: 10px">
               <el-tag size="mini" type="info" v-if="scope.row.s_status=='PREPARING'">备货中</el-tag>
               <el-tag size="mini" type="warning" v-if="scope.row.s_status=='BOOKED'">已预约</el-tag>
-              <el-tag size="mini" type="success" v-if="scope.row.s_status=='BOOKED'">已完成</el-tag>
+              <el-tag size="mini" type="success" v-if="scope.row.s_status=='FINISHED'">已完成</el-tag>
               <el-tag size="mini" v-if="scope.row.s_status=='SHIPPED'">已发货</el-tag>
             </div>
           </template>
@@ -227,6 +227,7 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
+                <el-dropdown-item :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -312,7 +313,7 @@ export default {
   methods:{
     //提交预定日期
     summitBookDate(){
-      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'book_date': this.book_date}).then(resp => {
+      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'book_date': this.book_date, 's_status': 'BOOKED'}).then(resp => {
         if (resp) {
           this.bookVisible = false;
           this.initShips()
@@ -344,6 +345,13 @@ export default {
       if (command['type'] === 'book') {
         this.bookVisible = true;
         this.ship_id = command['id']
+      }
+
+      // 修改FBM预约
+      if (command['type'] === 'edit_book') {
+        this.bookVisible = true;
+        this.book_date = command['row'].book_date
+        this.ship_id = command['row'].id
       }
 
       // 产品删除
