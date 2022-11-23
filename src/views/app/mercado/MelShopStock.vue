@@ -102,9 +102,9 @@
             header-align="center"
             label="均摊成本 | 均摊头程">
           <template slot-scope="scope">
-            {{ scope.row.unit_cost}}
+            {{ scope.row.unit_cost | currency}}
             <el-divider direction="vertical"></el-divider>
-            {{ scope.row.first_ship_fee}}
+            {{ scope.row.first_ship_cost | currency}}
           </template>
         </el-table-column>
 
@@ -139,6 +139,8 @@
 </template>
 
 <script>
+import moment from "moment/moment";
+
 export default {
   name: "MelShopStock",
   data(){
@@ -152,6 +154,17 @@ export default {
       size: 20,  // 页大小
       searchValue: '',
     }
+  },
+  filters: {
+    //时间日期格式化
+    date: function (value) {
+      return moment(value).format("YYYY-MM-DD");
+    },
+    //rmb金额格式化
+    currency: function (value) {
+      if (!value) return 0.00;
+      return `¥${value.toFixed(2)}`;
+    },
   },
   mounted() {
     this.inintShops();

@@ -136,6 +136,16 @@
               </el-table-column>
 
               <el-table-column
+                  label="分摊运费"
+                  align="center"
+                  header-align="center"
+                  width="70">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.avg_ship_fee | currency }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column
                   prop="note"
                   label="备注"
                   align="center"
@@ -206,12 +216,32 @@
 
         <el-table-column
             label="包裹信息"
-            width="300">
+            width="100">
           <template slot-scope="scope">
             <div><span class="tt">总数量: </span>{{scope.row.total_qty}}</div>
             <div><span class="tt">总箱数: </span>{{scope.row.total_box}}</div>
             <div><span class="tt">总重量: </span>{{scope.row.weight}}</div>
             <div><span class="tt">总体积: </span>{{scope.row.cbm}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="运费"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <span>{{ scope.row.shipping_fee | currency }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="杂费"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <span>{{ scope.row.extra_fee | currency }}</span>
           </template>
         </el-table-column>
 
@@ -226,8 +256,12 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
+                <el-dropdown-item :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
+                <el-dropdown-item :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
+                <el-dropdown-item :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
+                <el-dropdown-item :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -270,6 +304,50 @@
         </span>
     </el-dialog>
 
+    <!--    录入运费弹窗-->
+    <el-dialog
+        title="运单运费"
+        :visible.sync="postageVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        <el-input-number
+            style="width: 100%"
+            v-model="shipping_fee"
+            :precision="2"
+            controls-position="right"
+            :min="0"></el-input-number>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="postageVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="!shipping_fee" @click="summitPostage">确 定</el-button>
+        </span>
+    </el-dialog>
+
+    <!--    录入杂费弹窗-->
+    <el-dialog
+        title="运单杂费"
+        :visible.sync="extraVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        <el-input-number
+            style="width: 100%"
+            v-model="extra_fee"
+            :precision="2"
+            controls-position="right"
+            :min="0"></el-input-number>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="extraVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="!extra_fee" @click="summitExtrafee">确 定</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -294,6 +372,10 @@ export default {
       bookVisible: false, // fbm预约
       book_date: '', //预约日期
       ship_id: null,
+      postageVisible: false, // 运费弹窗
+      shipping_fee: 0, // 运费
+      extraVisible: false, //杂费弹窗
+      extra_fee: 0, // 运费
     }
   },
   filters: {
@@ -311,6 +393,29 @@ export default {
     this.initShips()
   },
   methods:{
+
+    // 提交杂费
+    summitExtrafee(){
+      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'extra_fee': this.extra_fee}).then(resp => {
+        if (resp) {
+          this.extraVisible = false;
+          this.initShips()
+          this.ship_id = null
+        }
+      })
+    },
+
+    // 提交运费
+    summitPostage(){
+      this.postRequest('api/ml_ship/postage/', {'shipping_fee': this.shipping_fee, 'id': this.ship_id}).then(resp => {
+        if (resp) {
+          this.postageVisible = false;
+          this.initShips()
+          this.shipping_fee = 0
+          this.ship_id = null
+        }
+      })
+    },
     //提交预定日期
     summitBookDate(){
       this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'book_date': this.book_date, 's_status': 'BOOKED'}).then(resp => {
@@ -341,6 +446,26 @@ export default {
         });
       }
 
+      // 确认入仓
+      if (command['type'] === 'in_warehouse') {
+        this.$confirm('是否确认入仓?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //确认入仓
+          this.postRequest('api/ml_ship/in_warehouse/', {'id': command['id']}).then(resp => {
+            this.initShips();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        })
+
+      }
+
       // FBM预约
       if (command['type'] === 'book') {
         this.bookVisible = true;
@@ -351,6 +476,26 @@ export default {
       if (command['type'] === 'edit_book') {
         this.bookVisible = true;
         this.book_date = command['row'].book_date
+        this.ship_id = command['row'].id
+      }
+
+      // 添加运费
+      if (command['type'] === 'postage') {
+        this.postageVisible = true;
+        this.ship_id = command['row'].id
+      }
+
+      // 修改运费
+      if (command['type'] === 'edit_postage') {
+        this.postageVisible = true;
+        this.ship_id = command['row'].id
+        this.shipping_fee = command['row'].shipping_fee
+      }
+
+      // 添加杂费
+      if (command['type'] === 'extra_fee') {
+        this.extraVisible = true;
+        this.extra_fee = command['row'].extra_fee
         this.ship_id = command['row'].id
       }
 
