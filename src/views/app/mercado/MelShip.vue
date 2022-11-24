@@ -255,13 +255,19 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
-                <el-dropdown-item :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
-                <el-dropdown-item :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
-                <el-dropdown-item :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
-                <el-dropdown-item :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
-                <el-dropdown-item :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
-                <el-dropdown-item :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
+                <el-dropdown-item
+                    v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && !scope.row.shipping_fee"
+                    :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
+                <el-dropdown-item
+                    v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && scope.row.shipping_fee"
+                    :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
+                <el-dropdown-item
+                    v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
+                    :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -321,7 +327,7 @@
             :min="0"></el-input-number>
       </div>
       <span slot="footer" class="dialog-footer">
-          <el-button size="small" @click="postageVisible = false">取 消</el-button>
+          <el-button size="small" @click="closePostage">取 消</el-button>
           <el-button size="small" type="primary" :disabled="!shipping_fee" @click="summitPostage">确 定</el-button>
         </span>
     </el-dialog>
@@ -393,6 +399,10 @@ export default {
     this.initShips()
   },
   methods:{
+    closePostage(){
+      this.postageVisible = false
+      this.shipping_fee = 0
+    },
 
     // 提交杂费
     summitExtrafee(){
