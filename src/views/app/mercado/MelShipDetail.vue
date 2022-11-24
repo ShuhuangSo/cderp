@@ -37,7 +37,7 @@
 
         <div>
           <h4 style="margin-left: 10px">包装箱</h4>
-          <el-button @click="addBoxVisible=true" style="margin-left: 10px">新增包装箱</el-button>
+          <el-button @click="createBox" style="margin-left: 10px">新增包装箱</el-button>
           <el-table
               :header-cell-style="{background:'#eef1f6'}"
               :data="boxes"
@@ -324,6 +324,11 @@ export default {
         ship: this.$route.query.id,
         carrier_box_number: '',
         note: '',
+        box_number: null,
+        weight: null,
+        length: null,
+        width: null,
+        heigth: null,
       }, //新包装箱
       rules: {
         box_number: [
@@ -383,6 +388,18 @@ export default {
     this.initBox();
   },
   methods:{
+    //新增包装箱
+    createBox(){
+      this.addBoxVisible = true
+      this.box.ship = this.shipID
+      this.box.carrier_box_number = ''
+      this.box.box_number = null
+      this.box.weight = null
+      this.box.length = null
+      this.box.width = null
+      this.box.heigth = null
+
+    },
     //发货
     sendShip(){
       this.$confirm('是否确认发货?', '提示', {

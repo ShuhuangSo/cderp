@@ -13,6 +13,10 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
+        <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
+          <el-button :disabled="!multipleSelection.length" type="primary">FBM发仓</el-button>
+        </el-badge>
+
       </div>
 
       <div>
@@ -37,7 +41,15 @@
           :data="shopStocks"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
           style="width: 100%">
+
+        <el-table-column
+            :reserve-selection="true"
+            type="selection"
+            width="42">
+        </el-table-column>
 
         <el-table-column
             label="图片"
@@ -160,7 +172,7 @@
       <div class="pagination">
         <el-pagination
             background
-            :page-sizes="[20, 30, 40, 50, 100]"
+            :page-sizes="[10, 30, 40, 50, 100]"
             @current-change="currentChange"
             @size-change="sizeChange"
             layout="sizes, prev, pager, next, jumper, ->, total"
@@ -185,8 +197,9 @@ export default {
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
-      size: 20,  // 页大小
+      size: 10,  // 页大小
       searchValue: '',
+      multipleSelection: [] // 选中行
     }
   },
   filters: {
@@ -204,6 +217,14 @@ export default {
     this.inintShops();
   },
   methods:{
+    getRowKeys(row){
+      return row.id
+    },
+    // 处理多选
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+
     // 重置搜索内容
     clearSearchValue() {
       this.searchValue = '';
