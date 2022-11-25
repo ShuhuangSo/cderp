@@ -14,7 +14,7 @@
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
         <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
-          <el-button :disabled="!multipleSelection.length" type="primary">FBM发仓</el-button>
+          <el-button :disabled="!multipleSelection.length" @click="fbmVisible=true" type="primary">FBM发仓</el-button>
         </el-badge>
 
       </div>
@@ -68,20 +68,28 @@
 
         <el-table-column
             label="产品"
+            width="300"
             show-overflow-tooltip>
           <template slot-scope="scope">
             <div>{{ scope.row.sku }}</div>
 
             <div>{{ scope.row.p_name }}</div>
+            <div>{{ scope.row.item_id }}</div>
           </template>
         </el-table-column>
 
         <el-table-column
-            label="ItemID"
-            show-overflow-tooltip
-            width="120">
+            align="center"
+            header-align="center"
+            label="所属店铺">
           <template slot-scope="scope">
-            <div>{{ scope.row.item_id }}</div>
+            <el-tag
+                style="margin-right: 5px;border: none"
+                color="#FF4500"
+                effect="dark">
+              {{ scope.row.listing_shop}}
+            </el-tag>
+
           </template>
         </el-table-column>
 
@@ -154,25 +162,12 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-            label="状态"
-            align="center"
-            header-align="center"
-            width="100">
-          <template slot-scope="scope">
-            <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
-            <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
-            <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
-            <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
-          </template>
-        </el-table-column>
-
       </el-table>
 
       <div class="pagination">
         <el-pagination
             background
-            :page-sizes="[10, 30, 40, 50, 100]"
+            :page-sizes="[20, 30, 40, 50, 100]"
             @current-change="currentChange"
             @size-change="sizeChange"
             layout="sizes, prev, pager, next, jumper, ->, total"
@@ -180,6 +175,79 @@
         </el-pagination>
       </div>
     </div>
+
+    <!--    确认发仓产品弹窗-->
+    <el-dialog
+        title="发仓列表"
+        :visible.sync="fbmVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <div>
+        <el-table
+            ref="fbmTable"
+            :data="multipleSelection"
+            :header-cell-style="{background:'#fafafa'}"
+            style="width: 100%">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="100">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 80px; height: 80px"
+                  :src="scope.row.image"
+                  :preview-src-list="[scope.row.image]"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="产品"
+              width="300"
+              show-overflow-tooltip>
+            <template slot-scope="scope">
+              <div>{{ scope.row.sku }}</div>
+
+              <div>{{ scope.row.p_name }}</div>
+              <div>{{ scope.row.item_id }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="所属店铺">
+            <template slot-scope="scope">
+              <el-tag
+                  style="margin-right: 5px;border: none"
+                  color="#E475EE"
+                  effect="dark">
+                {{ scope.row.listing_shop}}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="数量">
+            <template slot-scope="scope">
+              {{ scope.row.qty}}
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="fbmVisible=false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitFBM">确认发仓</el-button>
+        </span>
+    </el-dialog>
 
   </div>
 </template>
@@ -197,9 +265,10 @@ export default {
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
-      size: 10,  // 页大小
+      size: 20,  // 页大小
       searchValue: '',
-      multipleSelection: [] // 选中行
+      multipleSelection: [], // 选中行
+      fbmVisible: false, //弹窗
     }
   },
   filters: {
@@ -217,6 +286,16 @@ export default {
     this.inintShops();
   },
   methods:{
+    //提交fbm送仓
+    summitFBM(){
+      this.postRequest('api/ml_trans_stock/send_fbm/', this.multipleSelection).then(resp => {
+        if (resp) {
+          this.fbmVisible = false
+          this.multipleSelection = []
+          this.initTransStock();
+        }
+      })
+    },
     getRowKeys(row){
       return row.id
     },
