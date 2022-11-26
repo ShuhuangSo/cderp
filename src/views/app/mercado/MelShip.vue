@@ -65,7 +65,16 @@
 
         <!--        运单产品详情-->
         <el-table-column type="expand" width="40">
-
+          <template slot="header" slot-scope="scope">
+            <el-button size="medium" type="text" icon="el-icon-circle-plus"
+                       @click="expendChange"
+                       v-if="expandStatus">
+            </el-button>
+            <el-button size="medium" type="text" icon="el-icon-remove"
+                       @click="expendChange"
+                       v-if="!expandStatus">
+            </el-button>
+          </template>
           <template slot-scope="props">
             <el-table
                 :header-cell-style="{background:'#eef1f6'}"
@@ -256,6 +265,7 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
@@ -382,6 +392,7 @@ export default {
       shipping_fee: 0, // 运费
       extraVisible: false, //杂费弹窗
       extra_fee: 0, // 运费
+      expandStatus: true, // 所有行展开状态
     }
   },
   filters: {
@@ -399,6 +410,21 @@ export default {
     this.initShips()
   },
   methods:{
+    // 循环设置行展开、收起
+    forArr(arr, isExpand) {
+      arr.forEach(i => {
+        this.$refs.shipTable.toggleRowExpansion(i, isExpand);
+        if (i.children) {
+          this.forArr(i.children, isExpand);
+        }
+      })
+    },
+    // 行是否展开切换
+    expendChange() {
+      this.forArr(this.ships, this.expandStatus);
+      this.expandStatus = !this.expandStatus;
+    },
+
     closePostage(){
       this.postageVisible = false
       this.shipping_fee = 0
@@ -450,6 +476,16 @@ export default {
       if (command['type'] === 'packing') {
         this.$router.push({
           path: '/shipDetail',
+          query: {
+            id: command['id']
+          }
+        });
+      }
+
+      // 编辑
+      if (command['type'] === 'edit') {
+        this.$router.push({
+          path: '/editShip',
           query: {
             id: command['id']
           }
@@ -536,7 +572,6 @@ export default {
     },
     // 改变目标状态
     changeTarget(){
-      this.s_status = ''
       this.initShips()
     },
     // 重置搜索内容

@@ -27,6 +27,34 @@
               </el-col>
 
               <el-col :span="12">
+                <el-form-item label="所属店铺" prop="shop">
+                  <el-select style="width: 300px;" v-model="mlProduct.shop" placeholder="请选择">
+                    <el-option
+                        v-for="item in shops"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.name">
+                      <span style="float: left">{{ item.name }}</span>
+                      <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="12">
+                <el-form-item label="站点" prop="shop">
+                  <el-select v-model="mlProduct.site" placeholder="请选择">
+                    <el-option
+                        v-for="item in sites"
+                        :key="item.site_code"
+                        :label="item.name"
+                        :value="item.site_code">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="12">
                 <el-form-item label="产品名称" required prop="p_name">
                   <el-input v-model="mlProduct.p_name"
                             maxlength="50"
@@ -231,6 +259,8 @@ export default {
   props: ['productID'],
   data(){
     return{
+      shops: [],
+      sites: [],
       mlProduct:{
         id: null,
         sku: '',
@@ -317,6 +347,8 @@ export default {
   },
   created() {
     this.initProduct();
+    this.inintShops()
+    this.inintSites()
   },
   methods:{
     //修改产品
@@ -342,6 +374,32 @@ export default {
         }
       });
 
+    },
+    inintShops(){
+      //获取所有可选店铺
+      if(window.sessionStorage.getItem('ml_shops')) {
+        this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+      }else{
+        this.getRequest('api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time').then(resp => {
+          if (resp.results) {
+            this.shops = resp.results;
+            window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+          }
+        })
+      }
+    },
+    inintSites(){
+      //获取所有站点
+      if(window.sessionStorage.getItem('ml_sites')) {
+        this.sites = JSON.parse(window.sessionStorage.getItem('ml_sites'));
+      }else{
+        this.getRequest('api/ml_site/?page_size=1000').then(resp => {
+          if (resp.results) {
+            this.sites = resp.results;
+            window.sessionStorage.setItem('ml_sites', JSON.stringify(this.sites));
+          }
+        })
+      }
     },
     initProduct(){
       this.loading = true;
