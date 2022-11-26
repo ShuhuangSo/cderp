@@ -12,21 +12,21 @@
 
         <div style="padding-left: 50px; padding-right: 50px">
           <el-descriptions :colon="false" :column=2 size="medium" title="运单信息">
-            <el-descriptions-item label="类型:">{{ this.ship.target }}</el-descriptions-item>
+            <el-descriptions-item label="类型:">{{ this.ship.target | target }}</el-descriptions-item>
             <el-descriptions-item label="批次号:">{{ this.ship.batch }}</el-descriptions-item>
             <el-descriptions-item label="目标店铺:">{{ this.ship.shop }}</el-descriptions-item>
             <el-descriptions-item label="Envio号:">{{ this.ship.envio_number }}</el-descriptions-item>
-            <el-descriptions-item label="FBM仓库:">{{ this.ship.target_FBM }}</el-descriptions-item>
             <el-descriptions-item label="承运商:">{{ this.ship.carrier }}</el-descriptions-item>
+            <el-descriptions-item label="物流商单号:">{{ this.ship.s_number }}</el-descriptions-item>
             <el-descriptions-item label="发货方式:">{{ this.ship.ship_type }}</el-descriptions-item>
+            <el-descriptions-item></el-descriptions-item>
             <el-descriptions-item label="截单日期:">{{ this.ship.end_date }}</el-descriptions-item>
             <el-descriptions-item label="航班日期:">{{ this.ship.ship_date }}</el-descriptions-item>
-            <el-descriptions-item></el-descriptions-item>
             <el-descriptions-item label="内部备注:">
               <el-input
                   style="width: 400px;"
                   type="textarea"
-                  :rows="2"
+                  :rows="4"
                   placeholder="请输入备注"
                   @change="changeNote"
                   v-model="ship.note">
@@ -46,11 +46,15 @@
               style="width: 98%; margin: 10px">
 
             <el-table-column
-                prop="box_number"
                 label="箱号"
                 align="center"
                 header-align="center"
                 width="120">
+              <template slot-scope="scope">
+                <div>{{ scope.row.box_number}}
+                  <el-tag v-if="scope.row.size_weight > scope.row.weight && ship.ship_type==='空运'" size="mini" effect="dark" type="danger">抛</el-tag>
+                </div>
+              </template>
             </el-table-column>
 
             <el-table-column
@@ -78,6 +82,27 @@
                 width="180">
               <template slot-scope="scope">
                 <div>{{ scope.row.length | CM}} x {{ scope.row.width | CM}} x {{ scope.row.heigth | CM}}</div>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                label="体积"
+                align="center"
+                header-align="center"
+                width="120">
+              <template slot-scope="scope">
+                <div>{{ scope.row.cbm | cbm }}</div>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                v-if="ship.ship_type==='空运'"
+                label="体积重"
+                align="center"
+                header-align="center"
+                width="120">
+              <template slot-scope="scope">
+                <div>{{ scope.row.size_weight | KG }}</div>
               </template>
             </el-table-column>
 
@@ -136,7 +161,7 @@
               show-overflow-tooltip
               width="300">
             <template slot-scope="scope">
-              <div>{{ scope.row.sku }}
+              <div><span style="font-weight: bold">{{ scope.row.sku }}</span>
                 <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
               </div>
 
@@ -209,7 +234,7 @@
         <div STYLE="display: flex;justify-content: right;margin-right: 20px">
           <el-button type="success"
                      style="width: 200px"
-                     :disabled="!boxes.length"
+                     :disabled="submitStatus"
                      @click="sendShip">发 货
           </el-button>
 
@@ -362,6 +387,15 @@ export default {
       })
       return qty
     },
+    // 提交按钮状态
+    submitStatus() {
+      let status = false;
+      this.ship.ship_shipDetail.forEach(item => {
+        if (!item.box_number) status = true
+      })
+      if (!this.boxes.length) status = true
+      return status
+    },
   },
   filters: {
     //时间日期格式化
@@ -376,11 +410,21 @@ export default {
     //重量格式化
     KG: function (value) {
       if (!value) return ''
-      return `${value} kg`;
+      return `${value.toFixed(2)} kg`;
     },
     //尺寸格式化
     CM: function (value) {
       return `${value} cm`;
+    },
+    //体积格式化
+    cbm: function (value) {
+      if (!value) return 0;
+      return `${value.toFixed(4)} cbm`;
+    },
+    //target格式化
+    target: function (value) {
+      if (value==='FBM') return 'FBM入仓'
+      if (value==='TRANSIT') return '中转仓'
     },
   },
   mounted() {
@@ -398,6 +442,7 @@ export default {
       this.box.length = null
       this.box.width = null
       this.box.heigth = null
+      this.box.note = null
 
     },
     //发货

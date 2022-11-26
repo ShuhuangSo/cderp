@@ -101,7 +101,7 @@
                   label="产品"
                   show-overflow-tooltip>
                 <template slot-scope="scope">
-                  <div>{{ scope.row.sku }}
+                  <div><span style="font-weight: bold">{{ scope.row.sku }}</span>
                     <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
                   </div>
 
@@ -119,11 +119,13 @@
               </el-table-column>
 
               <el-table-column
-                  prop="qty"
                   label="数量"
                   align="center"
                   header-align="center"
                   width="180">
+                <template slot-scope="scope">
+                  <div class="zi">{{ scope.row.qty }}</div>
+                </template>
               </el-table-column>
 
               <el-table-column
@@ -187,12 +189,18 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <el-tag effect="dark" type="info">{{ scope.row.shop}}</el-tag>
+            <el-tag
+                    style="border: none"
+                    color="#539acd"
+                    effect="dark" type="info">
+              <span style="font-weight: bold">{{ scope.row.shop}}</span>
+            </el-tag>
 
           </template>
         </el-table-column>
 
         <el-table-column
+            width="200"
             label="Envio号"
             align="center"
             header-align="center">
@@ -203,17 +211,23 @@
         </el-table-column>
 
         <el-table-column
+            v-if="s_status==='BOOKED'"
             label="预约日期"
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <div>{{ scope.row.book_date}}</div>
+            <el-tag
+                style="border: none"
+                color="#d67be8"
+                effect="dark" type="info">
+              <span style="font-weight: bold">{{ scope.row.book_date}}</span>
+            </el-tag>
           </template>
         </el-table-column>
 
         <el-table-column
             label="物流商"
-            width="300">
+            width="200">
           <template slot-scope="scope">
             <div><span class="tt">物流名称: </span>{{scope.row.carrier}}</div>
             <div><span class="tt">物流单号: </span>{{scope.row.s_number}}</div>
@@ -225,31 +239,22 @@
 
         <el-table-column
             label="包裹信息"
-            width="100">
+            width="140">
           <template slot-scope="scope">
-            <div><span class="tt">总数量: </span>{{scope.row.total_qty}}</div>
-            <div><span class="tt">总箱数: </span>{{scope.row.total_box}}</div>
-            <div><span class="tt">总重量: </span>{{scope.row.weight}}</div>
-            <div><span class="tt">总体积: </span>{{scope.row.cbm}}</div>
+            <div><span class="tt">总数量: </span><span class="zi">{{scope.row.total_qty}}</span></div>
+            <div><span class="tt">总箱数: </span><span class="zi">{{scope.row.total_box}}</span></div>
+            <div><span class="tt">总重量: </span><span class="zi">{{scope.row.weight | kg}}</span></div>
+            <div><span class="tt">总体积: </span><span class="zi">{{scope.row.cbm | cbm}}</span></div>
           </template>
         </el-table-column>
 
         <el-table-column
-            label="运费"
+            label="运费 | 杂费"
             align="center"
-            header-align="center"
-            width="80">
+            header-align="center">
           <template slot-scope="scope">
             <span>{{ scope.row.shipping_fee | currency }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="杂费"
-            align="center"
-            header-align="center"
-            width="80">
-          <template slot-scope="scope">
+            <el-divider direction="vertical"></el-divider>
             <span>{{ scope.row.extra_fee | currency }}</span>
           </template>
         </el-table-column>
@@ -404,6 +409,16 @@ export default {
     currency: function (value) {
       if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
+    },
+    //体积格式化
+    cbm: function (value) {
+      if (!value) return 0;
+      return `${value.toFixed(4)} cbm`;
+    },
+    //重量格式化
+    kg: function (value) {
+      if (!value) return 0;
+      return `${value.toFixed(2)} kg`;
     },
   },
   mounted() {
@@ -655,5 +670,9 @@ export default {
 }
 .item {
   margin-right: 18px;
+}
+.zi {
+  font-weight: bold;
+  color: #E6A23C;
 }
 </style>

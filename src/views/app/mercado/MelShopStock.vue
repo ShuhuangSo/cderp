@@ -58,7 +58,7 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div>{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}</div>
 
             <div>{{ scope.row.p_name }}</div>
           </template>
@@ -78,11 +78,11 @@
             header-align="center"
             label="FBM库存 | 在途 | 中转仓">
           <template slot-scope="scope">
-            {{ scope.row.qty}}
+            <span class="stock_qty">{{ scope.row.qty}}</span>
             <el-divider direction="vertical"></el-divider>
-            {{ scope.row.onway_qty}}
+            <span class="onway_qty">{{ scope.row.onway_qty}}</span>
             <el-divider direction="vertical"></el-divider>
-            0
+            <span class="zz_qty">0</span>
           </template>
         </el-table-column>
 
@@ -240,5 +240,17 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+}
+.stock_qty {
+  font-weight: bold;
+  color: teal;
+}
+.onway_qty {
+  font-weight: bold;
+  color: #E6A23C;
+}
+.zz_qty {
+  font-weight: bold;
+  color: cornflowerblue;
 }
 </style>
