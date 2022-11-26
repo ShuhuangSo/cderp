@@ -5,10 +5,22 @@
   <div class="mainList">
 
     <el-tabs v-model="activeName">
-      <el-tab-pane :lazy="true" label="产品库" name="first"><MelProduct></MelProduct></el-tab-pane>
-      <el-tab-pane :lazy="true" label="发仓运单" name="second"><MelShip></MelShip></el-tab-pane>
-      <el-tab-pane :lazy="true" label="FBM库存" name="third"><MelShopStock></MelShopStock></el-tab-pane>
-      <el-tab-pane :lazy="true" label="中转仓" name="four"><MelTransStock></MelTransStock></el-tab-pane>
+      <el-tab-pane :lazy="true" label="产品库" name="first">
+        <span slot="label"><i class="el-icon-goods"></i> 产品库</span>
+        <MelProduct></MelProduct>
+      </el-tab-pane>
+      <el-tab-pane :lazy="true" label="发仓运单" name="second">
+        <span slot="label"><i class="el-icon-ship"></i> 发仓运单</span>
+        <MelShip></MelShip>
+      </el-tab-pane>
+      <el-tab-pane :lazy="true" label="FBM库存" name="third">
+        <span slot="label"><i class="el-icon-school"></i> FBM库存</span>
+        <MelShopStock></MelShopStock>
+      </el-tab-pane>
+      <el-tab-pane :lazy="true" label="中转仓" name="four">
+        <span slot="label"><i class="el-icon-house"></i> 中转仓</span>
+        <MelTransStock></MelTransStock>
+      </el-tab-pane>
       <el-tab-pane :lazy="true" label="销售订单" name="five">销售订单</el-tab-pane>
     </el-tabs>
   </div>

@@ -17,6 +17,10 @@
           <el-button :disabled="!multipleSelection.length" @click="fbmVisible=true" type="primary">FBM发仓</el-button>
         </el-badge>
 
+        <el-button style="margin-left: 20px" icon="el-icon-refresh"
+                   :disabled="!shopID"
+                   @click="initTransStock"></el-button>
+
       </div>
 
       <div>
@@ -85,11 +89,20 @@
           <template slot-scope="scope">
             <el-tag
                 style="margin-right: 5px;border: none"
-                color="#FF4500"
+                color="#539acd"
                 effect="dark">
               {{ scope.row.listing_shop}}
             </el-tag>
 
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="库存">
+          <template slot-scope="scope">
+            <span class="zz_qty">{{ scope.row.qty}}</span>
           </template>
         </el-table-column>
 
@@ -142,14 +155,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-            align="center"
-            header-align="center"
-            label="库存">
-          <template slot-scope="scope">
-            {{ scope.row.qty}}
-          </template>
-        </el-table-column>
 
         <el-table-column
             align="center"
@@ -225,7 +230,7 @@
             <template slot-scope="scope">
               <el-tag
                   style="margin-right: 5px;border: none"
-                  color="#E475EE"
+                  color="#539acd"
                   effect="dark">
                 {{ scope.row.listing_shop}}
               </el-tag>
@@ -374,5 +379,9 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+}
+.zz_qty {
+  font-weight: bold;
+  color: cornflowerblue;
 }
 </style>

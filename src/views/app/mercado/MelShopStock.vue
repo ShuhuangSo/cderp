@@ -82,7 +82,7 @@
             <el-divider direction="vertical"></el-divider>
             <span class="onway_qty">{{ scope.row.onway_qty}}</span>
             <el-divider direction="vertical"></el-divider>
-            <span class="zz_qty">0</span>
+            <span class="zz_qty">{{ scope.row.trans_qty}}</span>
           </template>
         </el-table-column>
 
