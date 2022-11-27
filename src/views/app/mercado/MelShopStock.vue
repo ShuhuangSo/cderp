@@ -13,9 +13,7 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-      </div>
 
-      <div>
         <el-select v-model="shopID"
                    style="width: 300px;"
                    @change="changeShop" placeholder="请选择店铺">
@@ -28,6 +26,14 @@
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
           </el-option>
         </el-select>
+      </div>
+
+      <div>
+        <el-button icon="el-icon-upload"
+                   style="margin-right: 10px"
+                   :disabled="!shopID"
+                   @click="uploadVisible=true">FBM库存导入
+        </el-button>
       </div>
     </div>
 
@@ -135,6 +141,42 @@
       </div>
     </div>
 
+    <!--    批量上传弹窗-->
+    <el-dialog
+        title="批量上传"
+        :visible.sync="uploadVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="500px"
+    >
+      <div>
+        <el-upload
+            v-loading="loading"
+            style="margin-left: 50px;"
+            ref="upload"
+            name="excel"
+            :data="{'id': this.shopID}"
+            :headers="headers"
+            :on-success="onSuccess"
+            :auto-upload="false"
+            :before-upload="beforeUpload"
+            :limit="1"
+            drag
+            action="api/ml_shopstock/fbm_upload/">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+          <div class="el-upload__tip" slot="tip">只能上传excel文件,
+            <el-link href="/media/template/ml_products_upload_ template.xlsx" target="_blank">模板下载</el-link>
+          </div>
+        </el-upload>
+
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="uploadVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="submitUpload">开始导入</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -153,6 +195,11 @@ export default {
       page: 1,  // 当前页
       size: 20,  // 页大小
       searchValue: '',
+      uploadVisible: false,
+      // 批量上传认证
+      headers: {
+        Authorization: window.localStorage.getItem('tokenStr'),
+      },
     }
   },
   filters: {
@@ -170,6 +217,22 @@ export default {
     this.inintShops();
   },
   methods:{
+    // 型号上传前的回调
+    beforeUpload() {
+      this.loading = true;
+    },
+    // 上传成功之后的回调
+    onSuccess(response, file, fileList) {
+      this.loading = false;
+      this.$refs.upload.clearFiles();
+      this.initShopStock();
+      this.uploadVisible = false;
+    },
+    // 上传
+    submitUpload() {
+      this.$refs.upload.submit();
+    },
+
     // 重置搜索内容
     clearSearchValue() {
       this.searchValue = '';

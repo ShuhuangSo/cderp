@@ -37,7 +37,7 @@
 
         <div>
           <h4 style="margin-left: 10px">包装箱</h4>
-          <el-button @click="createBox" style="margin-left: 10px">新增包装箱</el-button>
+          <el-button v-if="!action" @click="createBox" style="margin-left: 10px">新增包装箱</el-button>
           <el-table
               :header-cell-style="{background:'#eef1f6'}"
               :data="boxes"
@@ -112,6 +112,7 @@
             </el-table-column>
 
             <el-table-column
+                v-if="!action"
                 label="操作"
                 width="100"
                 align="center"
@@ -180,6 +181,7 @@
           </el-table-column>
 
           <el-table-column
+              v-if="!action"
               label="计划数量"
               align="center"
               header-align="center"
@@ -190,6 +192,18 @@
           </el-table-column>
 
           <el-table-column
+              v-if="action"
+              label="发货数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              v-if="!action"
               label="发货数量"
               align="center"
               header-align="center"
@@ -200,6 +214,18 @@
           </el-table-column>
 
           <el-table-column
+              v-if="action"
+              label="箱号"
+              align="center"
+              header-align="center"
+              width="120">
+            <template slot-scope="scope">
+              <div>{{ scope.row.box_number }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              v-if="!action"
               label="箱号"
               align="center"
               header-align="center"
@@ -217,6 +243,15 @@
           </el-table-column>
 
           <el-table-column
+              v-if="action"
+              label="简要备注">
+            <template slot-scope="scope">
+              {{scope.row.note}}
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              v-if="!action"
               label="简要备注">
             <template slot-scope="scope">
               <el-input maxlength=20 v-model="scope.row.note"></el-input>
@@ -228,10 +263,13 @@
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
             <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
+            <h3>总成本：<span style="color: green">{{ totalCost | currency }}</span> 元</h3>
           </div>
         </div>
 
-        <div STYLE="display: flex;justify-content: right;margin-right: 20px">
+        <div
+            v-if="!action"
+            STYLE="display: flex;justify-content: right;margin-right: 20px">
           <el-button type="success"
                      style="width: 200px"
                      :disabled="submitStatus"
@@ -341,6 +379,7 @@ export default {
   data(){
     return{
       shipID: this.$route.query.id, // 运单id
+      action: this.$route.query.action,
       ship: null,
       loading: false,
       boxes: [], //包装箱
@@ -387,6 +426,14 @@ export default {
       })
       return qty
     },
+    // 总成本
+    totalCost() {
+      let cost = 0;
+      this.ship.ship_shipDetail.forEach(item => {
+        cost += item.qty * item.unit_cost;
+      })
+      return cost
+    },
     // 提交按钮状态
     submitStatus() {
       let status = false;
@@ -432,6 +479,17 @@ export default {
     this.initBox();
   },
   methods:{
+
+    //保存改变的备注信息
+    changeNote(string) {
+      this.ship.note = string;
+      this.patchRequest('api/ml_ship/' + this.shipID + '/', {'note': this.ship.note}).then(resp => {
+        if (resp) {
+          this.$message.success('修改成功！')
+        }
+      })
+    },
+
     //新增包装箱
     createBox(){
       this.addBoxVisible = true

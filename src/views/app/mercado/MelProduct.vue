@@ -74,7 +74,7 @@
           <template slot-scope="scope">
             <el-image
                 style="width: 50px; height: 50px"
-                :src="scope.row.image?scope.row.image:''"
+                :src="scope.row.image?scope.row.image:'' + '?' + Math.random()"
                 :preview-src-list="[scope.row.image?scope.row.image:'']"
                 fit="fill">
             </el-image>
@@ -86,7 +86,7 @@
             show-overflow-tooltip
             width="300">
           <template slot-scope="scope">
-            <div>{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}</div>
 
             <div>{{ scope.row.p_name }}</div>
           </template>
@@ -289,6 +289,7 @@ export default {
       imageUrl: null,
       imageID: null,
       timer: null,
+      version: Math.random(),
     }
   },
   filters: {
