@@ -21,7 +21,7 @@
 
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
-                         style="width: 300px;"
+                         style="width: 350px;"
                          placeholder="请选择店铺">
                 <el-option
                     v-for="item in shops"
@@ -34,9 +34,26 @@
               </el-select>
             </el-form-item>
 
+            <el-form-item
+                v-if="ship.target==='FBM'"
+                label="目标FBM仓库" prop="fbm_warehouse">
+              <el-select v-model="ship.fbm_warehouse"
+                         style="width: 350px;"
+                         placeholder="请选择FBM仓库">
+                <el-option
+                    v-for="item in fbm_warehouses"
+                    :key="ship.w_code"
+                    :label="item.w_code"
+                    :value="item.w_code">
+                  <span style="float: left">{{ item.w_code }}</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+
             <el-form-item label="承运商" prop="carrier">
               <el-select v-model="ship.carrier"
-                         style="width: 300px;"
+                         style="width: 350px;"
                          placeholder="请选择发货物流">
                 <el-option
                     v-for="item in carriers"
@@ -49,13 +66,13 @@
 
             <el-form-item label="物流商单号" prop="s_number">
               <el-input v-model="ship.s_number"
-                        style="width: 300px;"
+                        style="width: 350px;"
                         maxlength="50"></el-input>
             </el-form-item>
 
             <el-form-item label="Envio号" prop="envio_number">
               <el-input v-model="ship.envio_number"
-                        style="width: 300px;"
+                        style="width: 350px;"
                         maxlength="50"></el-input>
             </el-form-item>
 
@@ -236,6 +253,7 @@ export default {
         shop: '',
         ship_type: '空运',
         carrier: '',
+        fbm_warehouse: '',
         end_date: '',
         ship_date: '',
         note: '',
@@ -243,6 +261,7 @@ export default {
       },
       shops: [], //可选店铺
       carriers: [], //可选物流商
+      fbm_warehouses: [], //可选fbm仓库
       addProductVisible: false,
       rules: {
         shop: [
@@ -258,6 +277,7 @@ export default {
     this.initShip();
     this.inintShops();
     this.initCarriers();
+    this.inintFBMWarehouses();
   },
   computed: {
     // 总数量
@@ -394,6 +414,14 @@ export default {
       this.getRequest('api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time').then(resp => {
         if (resp.results) {
           this.shops = resp.results;
+        }
+      })
+    },
+    inintFBMWarehouses(){
+      //获取所有可选fbm仓库
+      this.getRequest('api/ml_fbm_warehouse/?page_size=1000&ordering=create_time').then(resp => {
+        if (resp.results) {
+          this.fbm_warehouses = resp.results;
         }
       })
     },

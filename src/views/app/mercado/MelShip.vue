@@ -205,8 +205,16 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <div>{{ scope.row.envio_number}}</div>
-            <div>{{ scope.row.target_FBM}}</div>
+            <div style="font-weight: bold">{{ scope.row.envio_number}}</div>
+            <el-popover
+                placement="bottom"
+                :title="scope.row.fbm_name"
+                width="400"
+                trigger="hover"
+                :content="scope.row.fbm_address">
+              <el-button size="mini" type="text" slot="reference">{{ scope.row.fbm_warehouse}}</el-button>
+            </el-popover>
+
           </template>
         </el-table-column>
 

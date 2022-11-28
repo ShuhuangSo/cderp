@@ -15,11 +15,11 @@
             <el-descriptions-item label="类型:">{{ this.ship.target | target }}</el-descriptions-item>
             <el-descriptions-item label="批次号:">{{ this.ship.batch }}</el-descriptions-item>
             <el-descriptions-item label="目标店铺:">{{ this.ship.shop }}</el-descriptions-item>
+            <el-descriptions-item label="FBM仓库:">{{ this.ship.fbm_warehouse }}</el-descriptions-item>
             <el-descriptions-item label="Envio号:">{{ this.ship.envio_number }}</el-descriptions-item>
             <el-descriptions-item label="承运商:">{{ this.ship.carrier }}</el-descriptions-item>
             <el-descriptions-item label="物流商单号:">{{ this.ship.s_number }}</el-descriptions-item>
             <el-descriptions-item label="发货方式:">{{ this.ship.ship_type }}</el-descriptions-item>
-            <el-descriptions-item></el-descriptions-item>
             <el-descriptions-item label="截单日期:">{{ this.ship.end_date }}</el-descriptions-item>
             <el-descriptions-item label="航班日期:">{{ this.ship.ship_date }}</el-descriptions-item>
             <el-descriptions-item label="内部备注:">
@@ -79,7 +79,7 @@
                 label="尺寸"
                 align="center"
                 header-align="center"
-                width="180">
+                width="200">
               <template slot-scope="scope">
                 <div>{{ scope.row.length | CM}} x {{ scope.row.width | CM}} x {{ scope.row.heigth | CM}}</div>
               </template>
@@ -501,6 +501,7 @@ export default {
       this.box.width = null
       this.box.heigth = null
       this.box.note = null
+      this.box.id = null
 
     },
     //发货

@@ -26,6 +26,18 @@
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
           </el-option>
         </el-select>
+
+        <el-select v-model="filter_name"
+                   style="width: 150px;margin-left: 5px"
+                   :disabled="!shopID"
+                   @change="changeFilter" placeholder="请选择筛选项">
+          <el-option
+              v-for="item in filter_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
       </div>
 
       <div>
@@ -196,6 +208,30 @@ export default {
       size: 20,  // 页大小
       searchValue: '',
       uploadVisible: false,
+      sort: '', //排序变量
+      filter_name: null, // 库存筛选
+      filter_group: [
+        {
+          name: '全部产品',
+          value: ''
+        },
+        {
+          name: '有货产品',
+          value: '&qty__gt=0'
+        },
+        {
+          name: '缺货产品',
+          value: '&qty__lte=0'
+        },
+        {
+          name: '在途产品',
+          value: '&onway_qty__gt=0'
+        },
+        {
+          name: '中转仓有货产品',
+          value: '&trans_qty__gt=0'
+        },
+      ],
       // 批量上传认证
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
@@ -255,11 +291,18 @@ export default {
       this.page = page;
       this.initShopStock();
     },
-    //改变店铺动作
-    changeShop(){
+    //改变筛选动作
+    changeFilter(){
       this.page = 1;
       this.initShopStock();
     },
+    //改变店铺动作
+    changeShop(){
+      this.page = 1;
+      this.filter_name = ''
+      this.initShopStock();
+    },
+
     inintShops(){
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
@@ -278,7 +321,10 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
-      url += '&ordering=-create_time,item_id'
+      if (this.filter_name) {
+        url += this.filter_name;
+      }
+      url += '&ordering=' + this.sort + ',item_id'
 
       this.loading = true
       this.getRequest(url).then(resp => {
