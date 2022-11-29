@@ -10,7 +10,7 @@
         <MelProduct></MelProduct>
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="发仓运单" name="second">
-        <span slot="label"><i class="el-icon-ship"></i> 发仓运单</span>
+        <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
         <MelShip></MelShip>
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="FBM库存" name="third">
@@ -21,7 +21,10 @@
         <span slot="label"><i class="el-icon-house"></i> 中转仓</span>
         <MelTransStock></MelTransStock>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="销售订单" name="five">销售订单</el-tab-pane>
+      <el-tab-pane :lazy="true" label="销售订单" name="five">
+        <span slot="label"><i class="el-icon-tickets"></i> 销售订单</span>
+        <MelOrder></MelOrder>
+      </el-tab-pane>
     </el-tabs>
   </div>
 
@@ -32,11 +35,12 @@ import MelProduct from "@/views/app/mercado/MelProduct";
 import MelShopStock from "@/views/app/mercado/MelShopStock";
 import MelShip from "@/views/app/mercado/MelShip";
 import MelTransStock from "@/views/app/mercado/MelTransStock";
+import MelOrder from "@/views/app/mercado/MelOrder";
 
 export default {
   name: "MelManage",
   components:{
-    MelProduct, MelShopStock, MelShip, MelTransStock
+    MelProduct, MelShopStock, MelShip, MelTransStock, MelOrder
   },
   data(){
     return{
