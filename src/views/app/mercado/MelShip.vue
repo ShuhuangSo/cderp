@@ -280,6 +280,7 @@
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='SHIPPED' && scope.row.send_from==='LOCAL'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
