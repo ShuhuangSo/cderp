@@ -315,6 +315,11 @@ export default {
           }
         })
       }
+      if (this.shops.length) {
+        this.shopID = this.shops[0].id
+        this.filter_name = ''
+        this.initShopStock()
+      }
     },
     initShopStock(){
       let url = '/api/ml_shopstock/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size

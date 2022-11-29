@@ -77,22 +77,39 @@
             label="订单号"
             width="150">
           <template slot-scope="scope">
-            <div>{{ scope.row.order_number }}
-              <el-tag v-if="scope.row.is_ad" type="danger" size="mini" effect="dark">广告</el-tag>
-            </div>
+            <div>{{ scope.row.order_number }}</div>
+            <el-tag v-if="scope.row.is_ad" type="warning" size="mini" effect="dark">广告</el-tag>
+            <el-tag v-if="scope.row.order_status!=='FINISHED'"
+                    style="margin-left: 5px"
+                    type="danger" size="mini" effect="dark">
+              {{ scope.row.order_status | status }}</el-tag>
           </template>
         </el-table-column>
 
         <el-table-column
             label="数量"
-            width="120">
+            align="center"
+            header-align="center"
+            width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.qty }}</div>
           </template>
         </el-table-column>
 
         <el-table-column
+            label="币种"
+            align="center"
+            header-align="center"
+            width="50">
+          <template slot-scope="scope">
+            <div>{{ scope.row.currency }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             label="售价"
+            align="center"
+            header-align="center"
             width="120">
           <template slot-scope="scope">
             <div>{{ scope.row.price }}</div>
@@ -101,6 +118,8 @@
 
         <el-table-column
             label="佣金"
+            align="center"
+            header-align="center"
             width="120">
           <template slot-scope="scope">
             <div>{{ scope.row.fees }}</div>
@@ -109,6 +128,8 @@
 
         <el-table-column
             label="运费"
+            align="center"
+            header-align="center"
             width="120">
           <template slot-scope="scope">
             <div>{{ scope.row.postage }}</div>
@@ -117,6 +138,8 @@
 
         <el-table-column
             label="收入"
+            align="center"
+            header-align="center"
             width="120">
           <template slot-scope="scope">
             <div>{{ scope.row.receive_fund }}</div>
@@ -125,14 +148,19 @@
 
         <el-table-column
             label="毛利润"
+            align="center"
+            header-align="center"
             width="120">
           <template slot-scope="scope">
-            <div>{{ scope.row.profit | currency}}</div>
+            <div v-if="scope.row.profit > 0" class="positive">{{ scope.row.profit | currency}}</div>
+            <div v-if="scope.row.profit <= 0" class="negitive">{{ scope.row.profit | currency}}</div>
           </template>
         </el-table-column>
 
         <el-table-column
             label="订单日期"
+            align="center"
+            header-align="center"
             width="150">
           <template slot-scope="scope">
             <div>{{ scope.row.order_time | date}}</div>
@@ -185,7 +213,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="uploadVisible = false">取 消</el-button>
-          <el-button size="small" type="primary" @click="submitUpload">开始导入</el-button>
+          <el-button size="small" type="primary" :disabled="loading" @click="submitUpload">开始导入</el-button>
         </span>
     </el-dialog>
 
@@ -223,6 +251,12 @@ export default {
     currency: function (value) {
       if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
+    },
+    //订单状态格式化
+    status: function (value) {
+      if (value==='RETURN') return '退货';
+      if (value==='CASE') return 'CASE';
+      if (value==='CANCEL') return '取消';
     },
   },
   mounted() {
@@ -286,6 +320,10 @@ export default {
           }
         })
       }
+      if (this.shops.length) {
+        this.shopID = this.shops[0].id
+        this.initOrders()
+      }
     },
 
     initOrders(){
@@ -318,5 +356,13 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+}
+.positive {
+  font-weight: bold;
+  color: green;
+}
+.negitive {
+  font-weight: bold;
+  color: #aa0515;
 }
 </style>

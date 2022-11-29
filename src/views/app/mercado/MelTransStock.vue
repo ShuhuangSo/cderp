@@ -98,6 +98,7 @@
         </el-table-column>
 
         <el-table-column
+            width="80"
             align="center"
             header-align="center"
             label="库存">
@@ -136,11 +137,12 @@
         <el-table-column
             align="center"
             header-align="center"
+            width="150"
             label="重量 | 体积">
           <template slot-scope="scope">
             {{ scope.row.box_weight}}
             <el-divider direction="vertical"></el-divider>
-            {{ scope.row.box_cbm}}
+            {{ scope.row.box_cbm | cbm}}
           </template>
         </el-table-column>
 
@@ -286,6 +288,11 @@ export default {
       if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
     },
+    //体积格式化
+    cbm: function (value) {
+      if (!value) return 0;
+      return `${value.toFixed(4)}`;
+    },
   },
   mounted() {
     this.inintShops();
@@ -347,6 +354,11 @@ export default {
             window.sessionStorage.setItem('ml_trans_shops', JSON.stringify(this.shops));
           }
         })
+      }
+      if (this.shops.length) {
+        this.shopID = this.shops[0].id
+        this.filter_name = ''
+        this.initTransStock()
       }
     },
     initTransStock(){
