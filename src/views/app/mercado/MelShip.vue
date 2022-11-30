@@ -226,7 +226,7 @@
           <template slot-scope="scope">
             <el-tag
                 style="border: none"
-                color="#d67be8"
+                color="#539acd"
                 effect="dark" type="info">
               <span style="font-weight: bold">{{ scope.row.book_date}}</span>
             </el-tag>
@@ -268,6 +268,21 @@
         </el-table-column>
 
         <el-table-column
+            label="标签"
+            align="center"
+            header-align="center">
+          <template slot-scope="scope">
+            <el-tag
+                v-if="scope.row.tag_name"
+                style="border: none"
+                :color="scope.row.tag_color"
+                effect="dark" type="info">
+              <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             label="操作"
             width="130"
         >
@@ -279,8 +294,8 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='SHIPPED' && scope.row.send_from==='LOCAL'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
+                <el-dropdown-item :command="{type:'tag', id:scope.row.id}">添加标签</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='PREPARING' || scope.row.s_status==='SHIPPED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
@@ -379,6 +394,28 @@
         </span>
     </el-dialog>
 
+    <!--    添加标签弹窗-->
+    <el-dialog
+        title="添加标签"
+        :visible.sync="tagVisible"
+        width="400px">
+      <div style="display: flex">
+        <el-color-picker v-model="tag.tag_color" :predefine="predefineColors" style="margin-right: 5px"></el-color-picker>
+        <el-input v-model="tag.tag_name" maxlength="8" placeholder="请输入标签名称"></el-input>
+
+      </div>
+      <div>
+        <p>预览</p>
+        <el-tag :color="tag.tag_color"
+                v-if="tag.tag_name"
+                size="medium" effect="dark" style="border: none">{{ tag.tag_name }}</el-tag>
+      </div>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="tagVisible = false">取 消</el-button>
+    <el-button :disabled="tag.tag_name.trim()===''" type="primary" @click="saveTag">确 定</el-button>
+  </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -408,6 +445,23 @@ export default {
       extraVisible: false, //杂费弹窗
       extra_fee: 0, // 运费
       expandStatus: true, // 所有行展开状态
+      tagVisible: false, //标签弹窗
+      tag: {
+        tag_color: '#409EFF',
+        tag_name: '',
+      },
+      predefineColors: [
+        '#ff4500',
+        '#ff8c00',
+        '#ffd700',
+        '#90ee90',
+        '#00ced1',
+        '#1e90ff',
+        '#c75450',
+        '#c71585',
+        '#8526F1',
+        '#E475EE'
+      ],
     }
   },
   filters: {
@@ -435,6 +489,17 @@ export default {
     this.initShips()
   },
   methods:{
+    //保存标签
+    saveTag(){
+      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', this.tag).then(resp => {
+        if (resp) {
+          this.tagVisible = false;
+          this.initShips()
+          this.ship_id = null
+        }
+      })
+    },
+
     // 循环设置行展开、收起
     forArr(arr, isExpand) {
       arr.forEach(i => {
@@ -505,6 +570,12 @@ export default {
             id: command['id']
           }
         });
+      }
+
+      // 添加标签
+      if (command['type'] === 'tag') {
+        this.tagVisible = true
+        this.ship_id = command['id']
       }
 
       // 查看运单详情

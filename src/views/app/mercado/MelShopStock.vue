@@ -92,6 +92,18 @@
               :value="item.value">
           </el-option>
         </el-select>
+
+        <el-select v-model="sort"
+                   style="width: 150px;margin-left: 5px"
+                   :disabled="!shopID"
+                   @change="changeFilter" placeholder="请选择排序项">
+          <el-option
+              v-for="item in ordering_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
       </div>
 
       <div>
@@ -133,14 +145,6 @@
             <div style="font-weight: bold">{{ scope.row.sku }}</div>
 
             <div>{{ scope.row.p_name }}</div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="ItemID"
-            show-overflow-tooltip
-            width="120">
-          <template slot-scope="scope">
             <div>{{ scope.row.item_id }}</div>
           </template>
         </el-table-column>
@@ -177,6 +181,16 @@
             <div>平均毛利率: <span class="zi">{{scope.row.avg_profit_rate | rate}} </span>
             </div>
             <div>累计利润: <span class="zi">{{scope.row.total_profit | currency}}</span></div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            width="80"
+            label="退款率">
+          <template slot-scope="scope">
+            <div><span class="zi">{{scope.row.refund_rate | rate}} </span></div>
           </template>
         </el-table-column>
 
@@ -243,7 +257,7 @@
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传excel文件,
-            <el-link href="/media/template/ml_products_upload_ template.xlsx" target="_blank">模板下载</el-link>
+            <el-link href="/media/template/shop_stock_template.xlsx" target="_blank">模板下载</el-link>
           </div>
         </el-upload>
 
@@ -301,6 +315,48 @@ export default {
         {
           name: '中转仓有货产品',
           value: '&trans_qty__gt=0'
+        },
+      ],
+      ordering_group: [
+        {
+          name: '默认排序',
+          value: ''
+        },
+        {
+          name: 'FBM库存数量↓',
+          value: '-qty'
+        },
+        {
+          name: '在途数量↓',
+          value: '-onway_qty'
+        },
+        {
+          name: '中转仓数量↓',
+          value: '-trans_qty'
+        },
+        {
+          name: '总销量↓',
+          value: '-total_sold'
+        },
+        {
+          name: '30天销量↓',
+          value: '-day30_sold'
+        },
+        {
+          name: '15天销量↓',
+          value: '-day15_sold'
+        },
+        {
+          name: '退款率↓',
+          value: '-refund_rate'
+        },
+        {
+          name: '毛利率↓',
+          value: '-avg_profit_rate'
+        },
+        {
+          name: '毛利润↓',
+          value: '-avg_profit'
         },
       ],
       // 批量上传认证

@@ -217,7 +217,7 @@
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传excel文件,
-            <el-link href="/media/template/ml_products_upload_ template.xlsx" target="_blank">模板下载</el-link>
+            <el-link href="/media/template/mercado_order_template.xlsx" target="_blank">模板下载</el-link>
           </div>
         </el-upload>
 
