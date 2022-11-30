@@ -3,6 +3,60 @@
 */
 <template>
   <div>
+    <div>
+      <el-card class="small-card" shadow="never">
+        <div style="display: flex;justify-content: space-between">
+          <span class="chartTitle">店铺数据</span>
+          <span>
+            <i class="el-icon-loading" v-if="tStockLoading"></i>
+            <el-link type="info"
+                     v-if="!tStockLoading"
+                     @click.native="getTodayStock"
+                     :underline="false"
+                     icon="el-icon-refresh-right"></el-link>
+          </span>
+        </div>
+
+        <div style="display: flex;justify-content: space-between; padding-top: 5px">
+          <div style="width: 290px;text-align:center">
+            <div style="color: #6e7079;">库存</div>
+            <div class="zTitle2">
+              <animate-number ref="stockNum" from="0" :to="todayStockQty" :key="todayStockQty"
+                              duration="1000"></animate-number>
+            </div>
+          </div>
+
+          <div style="text-align:center; width: 290px">
+            <div style="color: #6e7079;">占用资金</div>
+            <div class="zTitle2">￥<animate-number ref="stockNum2" from="0" :to="todayStockAmount" :key="todayStockAmount"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+
+          <div style="width: 290px;text-align:center">
+            <div style="color: #6e7079;">30天销量</div>
+            <div class="zTitle2">
+              <animate-number ref="stockNum3" from="0" :to="sold_qty" :key="sold_qty"
+                              duration="1000"></animate-number>
+            </div>
+          </div>
+
+          <div style="text-align:center; width: 290px">
+            <div style="color: #6e7079;">30天销售额</div>
+            <div class="zTitle2">$<animate-number ref="stockNum4" from="0" :to="sold_amount" :key="sold_amount"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+
+          <div style="text-align:center; width: 290px">
+            <div style="color: #6e7079;">30天毛利润</div>
+            <div class="zTitle2">￥<animate-number ref="stockNum5" from="0" :to="sold_profit" :key="sold_profit"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
     <div class="operate">
       <div>
         <el-input size="small" placeholder="SKU 名称 ItemID UPC ML代码"
@@ -116,6 +170,17 @@
         </el-table-column>
 
         <el-table-column
+            label="利润">
+          <template slot-scope="scope">
+            <div>平均毛利润: <span class="zi">{{scope.row.avg_profit | currency}} </span>
+            </div>
+            <div>平均毛利率: <span class="zi">{{scope.row.avg_profit_rate | rate}} </span>
+            </div>
+            <div>累计利润: <span class="zi">{{scope.row.total_profit | currency}}</span></div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             align="center"
             header-align="center"
             label="均摊成本 | 均摊头程">
@@ -210,6 +275,12 @@ export default {
       uploadVisible: false,
       sort: '', //排序变量
       filter_name: null, // 库存筛选
+      tStockLoading: false,
+      todayStockQty: 0, // 今日库存量
+      sold_qty: 0, // 30天销量
+      todayStockAmount: 0.0, // 今日库存金额
+      sold_amount: 0.0, // 30天销量额
+      sold_profit: 0.0, // 30天毛利润
       filter_group: [
         {
           name: '全部产品',
@@ -248,9 +319,16 @@ export default {
       if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
     },
+    //rmb金额格式化
+    rate: function (value) {
+      if (!value) return 0;
+      value = value * 100
+      return `${value.toFixed(1)}%`;
+    },
   },
   mounted() {
     this.inintShops();
+    this.getTodayStock() // 计算库存
   },
   methods:{
     // 型号上传前的回调
@@ -301,6 +379,30 @@ export default {
       this.page = 1;
       this.filter_name = ''
       this.initShopStock();
+      this.getTodayStock() // 计算库存
+    },
+
+    //获取今日库存
+    getTodayStock() {
+      this.tStockLoading = true
+      let url = 'api/ml_shopstock/calc_stock/'
+      this.postRequest(url, {'id': this.shopID}).then(resp => {
+        this.tStockLoading = false
+        if (resp) {
+          this.todayStockQty = resp.todayStockQty
+          this.todayStockAmount = resp.todayStockAmount
+          this.sold_qty = resp.sold_qty
+          this.sold_amount = resp.sold_amount
+          this.sold_profit = resp.sold_profit
+          this.$nextTick(() => {
+            this.$refs.stockNum.start()
+            this.$refs.stockNum2.start()
+            this.$refs.stockNum3.start()
+            this.$refs.stockNum4.start()
+            this.$refs.stockNum5.start()
+          })
+        }
+      })
     },
 
     inintShops(){
@@ -366,5 +468,21 @@ export default {
 .zz_qty {
   font-weight: bold;
   color: cornflowerblue;
+}
+.small-card {
+  width: 99%;
+  height: 130px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 10px;
+}
+.chartTitle {
+  font-weight: bold;
+  margin-right: 20px
+}
+.zTitle2 {
+  font-weight: bold;
+  font-size: 30px;
+  color: #4f6782;
 }
 </style>

@@ -110,7 +110,7 @@
             label="售价"
             align="center"
             header-align="center"
-            width="120">
+            width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.price }}</div>
           </template>
@@ -120,7 +120,7 @@
             label="佣金"
             align="center"
             header-align="center"
-            width="120">
+            width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.fees }}</div>
           </template>
@@ -130,7 +130,7 @@
             label="运费"
             align="center"
             header-align="center"
-            width="120">
+            width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.postage }}</div>
           </template>
@@ -140,7 +140,7 @@
             label="收入"
             align="center"
             header-align="center"
-            width="120">
+            width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.receive_fund }}</div>
           </template>
@@ -154,6 +154,17 @@
           <template slot-scope="scope">
             <div v-if="scope.row.profit > 0" class="positive">{{ scope.row.profit | currency}}</div>
             <div v-if="scope.row.profit <= 0" class="negitive">{{ scope.row.profit | currency}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="毛利率"
+            align="center"
+            header-align="center"
+            width="120">
+          <template slot-scope="scope">
+            <div v-if="scope.row.profit_rate > 0" class="positive">{{ scope.row.profit_rate | rate}}</div>
+            <div v-if="scope.row.profit_rate <= 0" class="negitive">{{ scope.row.profit_rate | rate}}</div>
           </template>
         </el-table-column>
 
@@ -251,6 +262,12 @@ export default {
     currency: function (value) {
       if (!value) return 0.00;
       return `¥${value.toFixed(2)}`;
+    },
+    //rmb金额格式化
+    rate: function (value) {
+      if (!value) return 0;
+      value = value * 100
+      return `${value.toFixed(1)}%`;
     },
     //订单状态格式化
     status: function (value) {

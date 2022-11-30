@@ -366,7 +366,7 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
-      url += '&ordering=-create_time,item_id'
+      url += '&ordering=arrived_date,item_id'
 
       this.loading = true
       this.getRequest(url).then(resp => {
