@@ -18,6 +18,9 @@ import OrderDetail from "@/views/order/OrderDetail";
 import UserPermission from "@/views/setting/UserPermission";
 import SalesCharts from "@/views/charts/SalesCharts";
 import MonthDetail from "@/views/app/bonus/MonthDetail";
+import MelCreateShip from "@/views/app/mercado/MelCreateShip";
+import MelShipDetail from "@/views/app/mercado/MelShipDetail";
+import MelEditShip from "@/views/app/mercado/MelEditShip";
 
 
 
@@ -107,6 +110,21 @@ const routes = [
                 path: '/monthDetail',
                 name: '月份业绩详情',
                 component: MonthDetail
+            },
+            {
+                path: '/createShip',
+                name: '创建运单',
+                component: MelCreateShip
+            },
+            {
+                path: '/editShip',
+                name: '编辑运单',
+                component: MelEditShip
+            },
+            {
+                path: '/shipDetail',
+                name: '运单详情',
+                component: MelShipDetail
             },
         ]
     },
