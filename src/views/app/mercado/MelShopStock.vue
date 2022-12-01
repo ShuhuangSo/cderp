@@ -54,6 +54,14 @@
                                                   duration="1000"></animate-number>
             </div>
           </div>
+
+          <div style="text-align:center; width: 290px">
+            <div style="color: #6e7079;">30天净利润</div>
+            <div class="zTitle2">￥<animate-number ref="stockNum6" from="0" :to="real_profit" :key="real_profit"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+
         </div>
       </el-card>
     </div>
@@ -295,6 +303,7 @@ export default {
       todayStockAmount: 0.0, // 今日库存金额
       sold_amount: 0.0, // 30天销量额
       sold_profit: 0.0, // 30天毛利润
+      real_profit: 0.0, // 30天净利润
       filter_group: [
         {
           name: '全部产品',
@@ -450,12 +459,14 @@ export default {
           this.sold_qty = resp.sold_qty
           this.sold_amount = resp.sold_amount
           this.sold_profit = resp.sold_profit
+          this.real_profit = resp.real_profit
           this.$nextTick(() => {
             this.$refs.stockNum.start()
             this.$refs.stockNum2.start()
             this.$refs.stockNum3.start()
             this.$refs.stockNum4.start()
             this.$refs.stockNum5.start()
+            this.$refs.stockNum6.start()
           })
         }
       })

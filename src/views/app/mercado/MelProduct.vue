@@ -17,7 +17,7 @@
       </div>
 
       <div>
-        <el-button type="success" icon="el-icon-plus"
+        <el-button type="success" icon="el-icon-upload"
                    style="margin-right: 10px"
                    @click="uploadVisible=true">产品导入
         </el-button>
