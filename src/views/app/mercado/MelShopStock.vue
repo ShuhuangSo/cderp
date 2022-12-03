@@ -153,7 +153,7 @@
             <div style="font-weight: bold">{{ scope.row.sku }}</div>
 
             <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }}</div>
+            <div>{{ scope.row.item_id }} <el-link :href="scope.row.sale_url" :underline="false" target="_blank"><i class="el-icon-link"></i></el-link></div>
           </template>
         </el-table-column>
 
@@ -235,6 +235,7 @@
             @current-change="currentChange"
             @size-change="sizeChange"
             layout="sizes, prev, pager, next, jumper, ->, total"
+            :current-page="page"
             :total="total">
         </el-pagination>
       </div>
@@ -360,12 +361,16 @@ export default {
           value: '-refund_rate'
         },
         {
-          name: '毛利率↓',
-          value: '-avg_profit_rate'
+          name: '累计利润↓',
+          value: '-total_profit'
         },
         {
           name: '毛利润↓',
           value: '-avg_profit'
+        },
+        {
+          name: '毛利率↓',
+          value: '-avg_profit_rate'
         },
       ],
       // 批量上传认证
@@ -531,6 +536,10 @@ export default {
 .onway_qty {
   font-weight: bold;
   color: #E6A23C;
+}
+.zi {
+  font-weight: bold;
+  color: green;
 }
 .zz_qty {
   font-weight: bold;

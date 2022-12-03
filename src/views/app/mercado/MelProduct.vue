@@ -173,6 +173,7 @@
           @current-change="currentChange"
           @size-change="sizeChange"
           layout="sizes, prev, pager, next, jumper, ->, total"
+          :current-page="page"
           :total="total">
       </el-pagination>
     </div>

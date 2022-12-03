@@ -216,6 +216,7 @@
               @current-change="currentChange"
               @size-change="sizeChange"
               layout="sizes, prev, pager, next, jumper, ->, total"
+              :current-page="page"
               :total="total">
           </el-pagination>
         </div>
@@ -457,6 +458,7 @@ export default {
     changeShop(){
       this.page = 1;
       this.initFinances();
+      this.getFund()
     },
 
     // 重置搜索内容
@@ -514,6 +516,7 @@ export default {
       if (this.shops.length) {
         this.shopID = this.shops[0].id
         this.initFinances()
+        this.getFund()
       }
     },
 

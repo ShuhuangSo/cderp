@@ -205,7 +205,7 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.envio_number}}</div>
+            <div style="font-weight: bold; font-size: 20px">{{ scope.row.envio_number}}</div>
             <el-popover
                 placement="bottom"
                 :title="scope.row.fbm_name"
@@ -323,6 +323,7 @@
           @current-change="currentChange"
           @size-change="sizeChange"
           layout="sizes, prev, pager, next, jumper, ->, total"
+          :current-page="page"
           :total="total">
       </el-pagination>
     </div>
@@ -758,7 +759,7 @@ export default {
 .m_name{
   font-weight: bold;
   color: teal;
-  font-size: large;
+  font-size: 20px;
 }
 .item {
   margin-right: 18px;
