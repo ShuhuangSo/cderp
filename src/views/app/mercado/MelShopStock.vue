@@ -164,9 +164,28 @@
           <template slot-scope="scope">
             <span class="stock_qty">{{ scope.row.qty}}</span>
             <el-divider direction="vertical"></el-divider>
-            <span class="onway_qty">{{ scope.row.onway_qty}}</span>
+            <el-popover
+                @show="showTagSelect"
+                placement="top"
+                width="500"
+                trigger="click">
+              <MelStockDetail
+                            :obj="{'sku': scope.row.sku, 'op_type': 'ONWAY'}"
+                            :key="timer" v-if="isShow"></MelStockDetail>
+              <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.onway_qty }}</el-button>
+            </el-popover>
+
             <el-divider direction="vertical"></el-divider>
-            <span class="zz_qty">{{ scope.row.trans_qty}}</span>
+            <el-popover
+                @show="showTagSelect"
+                placement="top"
+                width="500"
+                trigger="click">
+              <MelStockDetail
+                  :obj="{'sku': scope.row.sku, 'op_type': 'TRANS'}"
+                  :key="timer" v-if="isShow"></MelStockDetail>
+              <el-button type="text" slot="reference" class="zz_qty">{{ scope.row.trans_qty }}</el-button>
+            </el-popover>
           </template>
         </el-table-column>
 
@@ -282,9 +301,11 @@
 
 <script>
 import moment from "moment/moment";
+import MelStockDetail from "@/components/app/mercado/MelStockDetail";
 
 export default {
   name: "MelShopStock",
+  components:{MelStockDetail},
   data(){
     return{
       shops: null,
@@ -305,6 +326,9 @@ export default {
       sold_amount: 0.0, // 30天销量额
       sold_profit: 0.0, // 30天毛利润
       real_profit: 0.0, // 30天净利润
+      stockVisible: false, //在途库存情况
+      timer: '',
+      isShow: true,
       filter_group: [
         {
           name: '全部产品',
@@ -401,6 +425,12 @@ export default {
     this.getTodayStock() // 计算库存
   },
   methods:{
+    //触发子组件更新
+    showTagSelect(){
+      this.isShow = false;
+      this.timer = new Date().getTime();
+      this.isShow = true;
+    },
     // 型号上传前的回调
     beforeUpload() {
       this.loading = true;
