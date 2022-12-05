@@ -270,6 +270,12 @@
         <div
             v-if="!action"
             STYLE="display: flex;justify-content: right;margin-right: 20px">
+          <el-button type="primary"
+                     style="width: 200px"
+                     :disabled="submitStatus"
+                     @click="saveShip">保 存
+          </el-button>
+
           <el-button type="success"
                      style="width: 200px"
                      :disabled="submitStatus"
@@ -504,6 +510,13 @@ export default {
       this.box.id = null
 
     },
+    saveShip(){
+      this.ship['action'] = 'PREPARING'
+      this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
+        if (resp) {
+        }
+      })
+    },
     //发货
     sendShip(){
       this.$confirm('是否确认发货?', '提示', {
@@ -511,6 +524,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.ship['action'] = 'SHIPPED'
         this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
           if (resp) {
             this.$router.push({

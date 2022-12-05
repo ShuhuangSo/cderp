@@ -308,6 +308,7 @@
                 <el-dropdown-item
                     v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
                     :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
+                <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -571,6 +572,16 @@ export default {
             id: command['id']
           }
         });
+      }
+
+      // 导出盛德申报单
+      if (command['type'] === 'export_sd') {
+        let url = 'api/ml_ship/export_logistic_decl/'
+        this.postRequest(url, {'id': command['id'], 'name': 'SHENGDE'}).then(resp => {
+          if (resp) {
+            window.open(resp.url, '_blank')
+          }
+        })
       }
 
       // 添加标签

@@ -19,6 +19,12 @@
 
             </el-form-item>
 
+            <el-form-item label="批次号" required prop="batch">
+              <el-input v-model="ship.batch"
+                        style="width: 350px;"
+                        maxlength="50"></el-input>
+            </el-form-item>
+
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
                          style="width: 350px;"
@@ -269,6 +275,9 @@ export default {
         ],
         carrier: [
           {required: true, message: '请选择发货物流', trigger: 'blur'},
+        ],
+        batch: [
+          {required: true, message: '批次号必填', trigger: 'blur'},
         ]
       },
     }
