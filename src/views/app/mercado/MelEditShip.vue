@@ -361,8 +361,8 @@ export default {
           let existSKU = this.ship.ship_shipDetail.find(i => {
             return i.sku === item.sku;
           })
-          // 产品不存在才添加
-          if (!existSKU){
+          // 产品不存在才添加，发中转仓下，产品存在也可以添加
+          if (!existSKU || this.ship.target === 'TRANSIT'){
             // 如果产品需要在当前目标店铺 或 发中转仓 才能添加
             if (item.shop === this.ship.shop || this.ship.target === 'TRANSIT'){
               let p = {}

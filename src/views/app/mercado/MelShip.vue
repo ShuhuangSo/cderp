@@ -219,7 +219,7 @@
         </el-table-column>
 
         <el-table-column
-            v-if="s_status==='BOOKED'"
+            v-if="s_status==='BOOKED' || s_status==='FINISHED'"
             label="预约日期"
             align="center"
             header-align="center">
