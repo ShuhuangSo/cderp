@@ -90,8 +90,8 @@
                 <template slot-scope="scope">
                   <el-image
                       style="width: 50px; height: 50px"
-                      :src="scope.row.image?scope.row.image:''"
-                      :preview-src-list="[scope.row.image?scope.row.image:'']"
+                      :src="scope.row.image | smpic"
+                      :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
                       fit="fill">
                   </el-image>
                 </template>
@@ -486,6 +486,12 @@ export default {
     kg: function (value) {
       if (!value) return 0;
       return `${value.toFixed(2)} kg`;
+    },
+    //图片地址格式化
+    smpic: function (value) {
+      if (!value) return '';
+      let url = value.slice(0, value.length-4)
+      return url + '_100x100.jpg/?' + Math.random()
     },
   },
   mounted() {

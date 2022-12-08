@@ -55,8 +55,8 @@
           <template slot-scope="scope">
             <el-image
                 style="width: 70px; height: 70px"
-                :src="scope.row.image"
-                :preview-src-list="[scope.row.image]"
+                :src="scope.row.image | smpic"
+                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
                 fit="fill">
             </el-image>
           </template>
@@ -275,6 +275,12 @@ export default {
       if (value==='RETURN') return '退货';
       if (value==='CASE') return 'CASE';
       if (value==='CANCEL') return '取消';
+    },
+    //图片地址格式化
+    smpic: function (value) {
+      if (!value) return '';
+      let url = value.slice(0, value.length-4)
+      return url + '_100x100.jpg/?' + Math.random()
     },
   },
   mounted() {
