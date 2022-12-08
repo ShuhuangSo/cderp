@@ -17,6 +17,11 @@
       </div>
 
       <div>
+        <el-button icon="el-icon-box"
+                   style="margin-right: 10px"
+                   @click="openPacking">包材管理
+        </el-button>
+
         <el-button type="success" icon="el-icon-upload"
                    style="margin-right: 10px"
                    @click="uploadVisible=true">产品导入
@@ -125,6 +130,17 @@
         </el-table-column>
 
         <el-table-column
+            label="数据"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-tag type="success" size="small" effect="plain" v-if="scope.row.is_checked">已核对</el-tag>
+            <el-tag type="warning" size="small" effect="plain" v-if="!scope.row.is_checked">待核查</el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             label="状态"
             align="center"
             header-align="center"
@@ -223,6 +239,21 @@
         </span>
     </el-dialog>
 
+    <!--    包材管理弹窗-->
+    <el-dialog
+        title="包材管理"
+        :key="timer"
+        :visible.sync="packingVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <MelPacking></MelPacking>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="packingVisible = false">关 闭</el-button>
+        </span>
+    </el-dialog>
+
     <!--    批量上传弹窗-->
     <el-dialog
         title="批量上传"
@@ -265,11 +296,12 @@
 <script>
 import moment from "moment/moment";
 import MelProductDetail from "@/views/app/mercado/MelProductDetail";
+import MelPacking from "@/views/app/mercado/MelPacking";
 
 export default {
   name: "MelProduct",
   components: {
-    MelProductDetail
+    MelProductDetail, MelPacking
   },
   data() {
     return {
@@ -287,6 +319,7 @@ export default {
       productDetailVisible: false, //产品详情弹窗
       productID: 0, // 产品id
       imageVisible: false, // 图片修改弹窗
+      packingVisible: false, // 包材弹窗
       imageUrl: null,
       imageID: null,
       timer: null,
@@ -313,6 +346,11 @@ export default {
     this.initMLProducts();
   },
   methods: {
+    //打开包材管理弹窗
+    openPacking(){
+      this.timer = new Date().getTime();
+      this.packingVisible = true
+    },
     // 图片上传前
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg';

@@ -81,20 +81,14 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="12">
-                <el-form-item label="FBM条码">
-                  <el-input v-model="mlProduct.label_code"
-                            maxlength="30"
-                            prop="label_code">
-                  </el-input>
-                </el-form-item>
-              </el-col>
+
 
               <el-col :span="12">
                 <el-form-item label="成本价" prop="unit_cost">
                   <el-input v-model="mlProduct.unit_cost"></el-input>
                 </el-form-item>
               </el-col>
+
 
               <el-col :span="12">
                 <el-form-item label="预估头程运费" prop="first_ship_cost">
@@ -162,12 +156,15 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="12">
+              <el-col :span="24">
                 <el-form-item label="品牌" prop="brand">
-                  <el-input v-model="mlProduct.brand"
+                  <el-input
+                            style="width: 200px;margin-bottom: 20px"
+                            v-model="mlProduct.brand"
                             maxlength="50"></el-input>
                 </el-form-item>
               </el-col>
+
 
               <el-col :span="12">
                 <el-form-item label="尺寸">
@@ -206,9 +203,93 @@
                   </el-input>
                 </el-form-item>
               </el-col>
-              <el-col :span="24" style="width: 100%">
-                <el-form-item label="采购链接">
+
+              <el-col :span="24">
+                <el-form-item label="包材" prop="shop">
+                  <el-select style="width: 300px;" v-model="mlProduct.packing_id" placeholder="请选择包材">
+                    <el-option
+                        v-for="item in packs"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.id">
+                      <span style="float: left">{{ item.name }}</span>
+                      <span style="float: right; color: #8492a6; font-size: 13px">{{ item.size }}</span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%;margin-bottom: 20px">
+                <el-form-item label="数据是否核对">
+                  <el-switch
+                      v-model="mlProduct.is_checked"
+                      active-color="#13ce66">
+                  </el-switch>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item label="FBM条码">
+                  <el-input v-model="mlProduct.label_code"
+                            class="label"
+                            prop="label_code">
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item label="条码标题">
+                  <el-input v-model="mlProduct.label_title"
+                            class="label"
+                            prop="label_code">
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24">
+                <el-form-item label="条码选项">
+                  <el-input v-model="mlProduct.label_option"
+                            class="label"
+                            prop="label_code">
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%;margin-top: 20px">
+                <el-form-item label="采购链接1">
                   <el-input v-model="mlProduct.buy_url">
+                    <template slot="prepend">Http://</template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%">
+                <el-form-item label="采购链接2">
+                  <el-input v-model="mlProduct.buy_url2">
+                    <template slot="prepend">Http://</template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%">
+                <el-form-item label="采购链接3">
+                  <el-input v-model="mlProduct.buy_url3">
+                    <template slot="prepend">Http://</template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%">
+                <el-form-item label="采购链接4">
+                  <el-input v-model="mlProduct.buy_url4">
+                    <template slot="prepend">Http://</template>
+                  </el-input>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="24" style="width: 100%">
+                <el-form-item label="采购链接5">
+                  <el-input v-model="mlProduct.buy_url5">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -261,6 +342,7 @@ export default {
     return{
       shops: [],
       sites: [],
+      packs: [],
       mlProduct:{
         id: null,
         sku: '',
@@ -287,10 +369,18 @@ export default {
         unit_cost: null,
         first_ship_cost: null,
         buy_url: '',
+        buy_url2: '',
+        buy_url3: '',
+        buy_url4: '',
+        buy_url5: '',
+        is_checked: false,
         sale_url: '',
         refer_url: '',
         note: '',
         create_time: null,
+        packing_id: null,
+        label_title: null,
+        label_option: null,
       },
       statusOptions: [{
         value: 'ON_SALE',
@@ -349,6 +439,7 @@ export default {
     this.initProduct();
     this.inintShops()
     this.inintSites()
+    this.initPacking()
   },
   methods:{
     //修改产品
@@ -401,6 +492,14 @@ export default {
         })
       }
     },
+    initPacking(){
+      //初始化包材
+      this.getRequest('api/ml_packing/?page_size=1000').then(resp => {
+        if (resp.results) {
+          this.packs = resp.results;
+        }
+      })
+    },
     initProduct(){
       this.loading = true;
       // 获取产品数据
@@ -416,5 +515,7 @@ export default {
 </script>
 
 <style scoped>
-
+.label{
+  width: 500px;
+}
 </style>

@@ -162,11 +162,12 @@
               show-overflow-tooltip
               width="300">
             <template slot-scope="scope">
-              <div><span style="font-weight: bold">{{ scope.row.sku }}</span>
+              <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
                 <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
               </div>
 
               <div>{{ scope.row.p_name }}</div>
+              <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}</div>
             </template>
           </el-table-column>
 
@@ -646,5 +647,8 @@ export default {
   justify-content: flex-end;
   margin-right: 50px;
   margin-bottom: 20px;
+}
+.packing{
+  color: #99a9bf;
 }
 </style>
