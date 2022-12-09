@@ -273,7 +273,6 @@
             STYLE="display: flex;justify-content: right;margin-right: 20px">
           <el-button type="primary"
                      style="width: 200px"
-                     :disabled="submitStatus"
                      @click="saveShip">保 存
           </el-button>
 

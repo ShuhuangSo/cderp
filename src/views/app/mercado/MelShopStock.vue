@@ -19,7 +19,7 @@
 
         <div style="display: flex;justify-content: space-between; padding-top: 5px">
           <div style="width: 290px;text-align:center">
-            <div style="color: #6e7079;">库存</div>
+            <div class="title">库存</div>
             <div class="zTitle2">
               <animate-number ref="stockNum" from="0" :to="todayStockQty" :key="todayStockQty"
                               duration="1000"></animate-number>
@@ -27,14 +27,28 @@
           </div>
 
           <div style="text-align:center; width: 290px">
-            <div style="color: #6e7079;">占用资金</div>
+            <div class="title">FBM库存占用</div>
             <div class="zTitle2">￥<animate-number ref="stockNum2" from="0" :to="todayStockAmount" :key="todayStockAmount"
                                                   duration="1000"></animate-number>
             </div>
           </div>
 
+          <div style="text-align:center; width: 290px">
+            <div class="title">在途占用</div>
+            <div class="zTitle2">￥<animate-number ref="stockNum7" from="0" :to="onway_amount" :key="onway_amount"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+
+          <div style="text-align:center; width: 290px">
+            <div class="title">中转占用</div>
+            <div class="zTitle2">￥<animate-number ref="stockNum8" from="0" :to="trans_amount" :key="trans_amount"
+                                                  duration="1000"></animate-number>
+            </div>
+          </div>
+
           <div style="width: 290px;text-align:center">
-            <div style="color: #6e7079;">30天销量</div>
+            <div class="title">30天销量</div>
             <div class="zTitle2">
               <animate-number ref="stockNum3" from="0" :to="sold_qty" :key="sold_qty"
                               duration="1000"></animate-number>
@@ -42,21 +56,21 @@
           </div>
 
           <div style="text-align:center; width: 290px">
-            <div style="color: #6e7079;">30天销售额</div>
+            <div class="title">30天销售额</div>
             <div class="zTitle2">$<animate-number ref="stockNum4" from="0" :to="sold_amount" :key="sold_amount"
                                                   duration="1000"></animate-number>
             </div>
           </div>
 
           <div style="text-align:center; width: 290px">
-            <div style="color: #6e7079;">30天毛利润</div>
+            <div class="title">30天毛利润</div>
             <div class="zTitle2">￥<animate-number ref="stockNum5" from="0" :to="sold_profit" :key="sold_profit"
                                                   duration="1000"></animate-number>
             </div>
           </div>
 
           <div style="text-align:center; width: 290px">
-            <div style="color: #6e7079;">30天净利润</div>
+            <div class="title">30天净利润</div>
             <div class="zTitle2">￥<animate-number ref="stockNum6" from="0" :to="real_profit" :key="real_profit"
                                                   duration="1000"></animate-number>
             </div>
@@ -322,7 +336,9 @@ export default {
       tStockLoading: false,
       todayStockQty: 0, // 今日库存量
       sold_qty: 0, // 30天销量
-      todayStockAmount: 0.0, // 今日库存金额
+      todayStockAmount: 0.0, // 今日FBM库存金额
+      onway_amount: 0.0, // 在途金额
+      trans_amount: 0.0, // 中转仓库存金额
       sold_amount: 0.0, // 30天销量额
       sold_profit: 0.0, // 30天毛利润
       real_profit: 0.0, // 30天净利润
@@ -501,6 +517,8 @@ export default {
           this.sold_amount = resp.sold_amount
           this.sold_profit = resp.sold_profit
           this.real_profit = resp.real_profit
+          this.onway_amount = resp.onway_amount
+          this.trans_amount = resp.trans_amount
           this.$nextTick(() => {
             this.$refs.stockNum.start()
             this.$refs.stockNum2.start()
@@ -508,6 +526,8 @@ export default {
             this.$refs.stockNum4.start()
             this.$refs.stockNum5.start()
             this.$refs.stockNum6.start()
+            this.$refs.stockNum7.start()
+            this.$refs.stockNum8.start()
           })
         }
       })
@@ -594,7 +614,11 @@ export default {
 }
 .zTitle2 {
   font-weight: bold;
-  font-size: 30px;
+  font-size: 25px;
   color: #4f6782;
+}
+.title{
+  color: #6e7079;
+  font-size: 14px;
 }
 </style>

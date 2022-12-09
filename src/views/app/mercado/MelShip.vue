@@ -168,36 +168,23 @@
         </el-table-column>
 
         <el-table-column
-            label="批次号"
+            label="批次号 | 目标店铺"
             align="center"
             header-align="center"
             width="150">
           <template slot-scope="scope">
             <div class="m_name">{{ scope.row.batch}}</div>
             <div style="margin-top: 10px">
-              <el-tag size="mini" type="info" v-if="scope.row.s_status=='PREPARING'">备货中</el-tag>
-              <el-tag size="mini" type="warning" v-if="scope.row.s_status=='BOOKED'">已预约</el-tag>
-              <el-tag size="mini" type="success" v-if="scope.row.s_status=='FINISHED'">已完成</el-tag>
-              <el-tag size="mini" v-if="scope.row.s_status=='SHIPPED'">已发货</el-tag>
+              <el-tag
+                  style="border: none"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.shop}}</span>
+              </el-tag>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column
-            label="目标店铺"
-            width="150"
-            align="center"
-            header-align="center">
-          <template slot-scope="scope">
-            <el-tag
-                    style="border: none"
-                    :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
-                    effect="dark" type="info">
-              <span style="font-weight: bold">{{ scope.row.shop}}</span>
-            </el-tag>
-
-          </template>
-        </el-table-column>
 
         <el-table-column
             width="200"
@@ -230,6 +217,21 @@
                 effect="dark" type="info">
               <span style="font-weight: bold">{{ scope.row.book_date}}</span>
             </el-tag>
+            <div
+                v-if="scope.row.book_days > 0"
+                style="font-weight: bold;margin-top: 10px; font-size: 20px">
+              <i class="el-icon-time"></i>
+              {{ scope.row.book_days}}</div>
+            <div
+                v-if="scope.row.book_days === 0"
+                style="font-weight: bold;margin-top: 10px; font-size: 20px; color: #FFAE00">
+              <i class="el-icon-time"></i>
+              送仓日</div>
+            <div
+                v-if="scope.row.book_days < 0"
+                style="font-weight: bold;margin-top: 10px; font-size: 20px; color: #E0050C">
+              <i class="el-icon-time"></i>
+              </div>
           </template>
         </el-table-column>
 
@@ -257,13 +259,11 @@
         </el-table-column>
 
         <el-table-column
-            label="运费 | 杂费"
-            align="center"
-            header-align="center">
+            label="费用">
           <template slot-scope="scope">
-            <span>{{ scope.row.shipping_fee | currency }}</span>
-            <el-divider direction="vertical"></el-divider>
-            <span>{{ scope.row.extra_fee | currency }}</span>
+            <div><span class="tt">货品: </span><span class="zi">{{scope.row.products_cost | currency}}</span></div>
+            <div><span class="tt">运费: </span><span class="zi">{{scope.row.shipping_fee | currency}}</span></div>
+            <div><span class="tt">杂费: </span><span class="zi">{{scope.row.extra_fee | currency}}</span></div>
           </template>
         </el-table-column>
 
@@ -294,7 +294,7 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
-                <el-dropdown-item :command="{type:'tag', id:scope.row.id}">添加标签</el-dropdown-item>
+                <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING' || scope.row.s_status==='SHIPPED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
