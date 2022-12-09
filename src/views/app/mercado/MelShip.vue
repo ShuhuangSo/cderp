@@ -191,7 +191,7 @@
           <template slot-scope="scope">
             <el-tag
                     style="border: none"
-                    color="#539acd"
+                    :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                     effect="dark" type="info">
               <span style="font-weight: bold">{{ scope.row.shop}}</span>
             </el-tag>

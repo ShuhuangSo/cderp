@@ -89,7 +89,7 @@
           <template slot-scope="scope">
             <el-tag
                 style="margin-right: 5px;border: none"
-                color="#539acd"
+                :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                 effect="dark">
               {{ scope.row.listing_shop}}
             </el-tag>
