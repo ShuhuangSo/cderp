@@ -42,6 +42,8 @@
               :header-cell-style="{background:'#eef1f6'}"
               :data="boxes"
               border
+              :summary-method="getSummaries"
+              show-summary
               size="mini"
               style="width: 98%; margin: 10px">
 
@@ -440,6 +442,30 @@ export default {
       })
       return cost
     },
+    // 箱子总重
+    totalWeight() {
+      let w = 0;
+      this.boxes.forEach(item => {
+        w += item.weight;
+      })
+      return w
+    },
+    // 箱子总体积重
+    totalSizeWeight() {
+      let w = 0;
+      this.boxes.forEach(item => {
+        w += item.size_weight;
+      })
+      return w.toFixed(2)
+    },
+    // 箱子总体积
+    totalCBM() {
+      let c = 0;
+      this.boxes.forEach(item => {
+        c += item.cbm;
+      })
+      return c
+    },
     // 提交按钮状态
     submitStatus() {
       let status = false;
@@ -491,6 +517,30 @@ export default {
     this.initBox();
   },
   methods:{
+    getSummaries(param) {
+      const { columns, data } = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '汇总';
+          return;
+        }
+        if (index === 2) {
+          sums[index] = this.totalWeight + ' kg';
+          return;
+        }
+        if (index === 4) {
+          sums[index] = this.totalCBM.toFixed(4) + ' cbm';
+          return;
+        }
+        if (index === 5) {
+          sums[index] = this.totalSizeWeight + ' kg';
+          return;
+        }
+      });
+
+      return sums;
+    },
 
     //保存改变的备注信息
     changeNote(string) {
@@ -562,7 +612,7 @@ export default {
         type: 'warning'
       }).then(() => {
         //调用删除箱子
-        this.deleteRequest('api/ml_ship_box/' + id + '/').then(resp => {
+        this.postRequest('api/ml_ship_box/delete_shipbox/', {'id': id, 'ship_id': this.shipID}).then(resp => {
           this.initBox();
         }).catch(() => {
           this.$message({
