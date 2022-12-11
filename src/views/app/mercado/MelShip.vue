@@ -254,6 +254,7 @@
             <div><span class="tt">总数量: </span><span class="zi">{{scope.row.total_qty}}</span></div>
             <div><span class="tt">总箱数: </span><span class="zi">{{scope.row.total_box}}</span></div>
             <div><span class="tt">总重量: </span><span class="zi">{{scope.row.weight | kg}}</span></div>
+            <div><span class="tt">总净量: </span><span class="zi">{{scope.row.products_weight | kg}}</span></div>
             <div><span class="tt">总体积: </span><span class="zi">{{scope.row.cbm | cbm}}</span></div>
           </template>
         </el-table-column>

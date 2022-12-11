@@ -14,6 +14,29 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
+
+        <el-select v-model="is_check"
+                   style="width: 150px;margin-left: 5px"
+                   @change="initMLProducts" placeholder="请选择筛选项">
+          <el-option
+              v-for="item in check_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
+
+        <el-select v-model="p_status"
+                   style="width: 150px;margin-left: 5px"
+                   @change="initMLProducts" placeholder="请选择筛选项">
+          <el-option
+              v-for="item in status_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
+
       </div>
 
       <div>
@@ -324,6 +347,40 @@ export default {
       imageID: null,
       timer: null,
       version: Math.random(),
+      is_check: '',
+      p_status: '',
+      check_group: [
+        {
+          name: '全部数据',
+          value: ''
+        },
+        {
+          name: '已核对',
+          value: '&is_checked=true'
+        },
+        {
+          name: '待核查',
+          value: '&is_checked=false'
+        }
+      ],
+      status_group: [
+        {
+          name: '全部状态',
+          value: ''
+        },
+        {
+          name: '在售',
+          value: '&p_status=ON_SALE'
+        },
+        {
+          name: '清仓',
+          value: '&p_status=CLEAN'
+        },
+        {
+          name: '停售',
+          value: '&p_status=OFFLINE'
+        }
+      ],
     }
   },
   filters: {
@@ -468,6 +525,12 @@ export default {
       let url = '/api/ml_products/?page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
+      }
+      if (this.is_check!=='') {
+        url += '&is_check=' + this.is_check;
+      }
+      if (this.p_status!=='') {
+        url += '&p_status=' + this.p_status;
       }
       url += '&ordering=-create_time,item_id'
 

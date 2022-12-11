@@ -55,7 +55,7 @@
               style="margin-left: 20px"
               @change="changeType" v-model="finance.f_type">
             <el-radio-button label="WD">店铺提现</el-radio-button>
-            <el-radio-button label="EXC">资金结汇</el-radio-button>
+            <el-radio-button label="EXC" v-if="user.is_superuser">资金结汇</el-radio-button>
           </el-radio-group>
 
         </div>
@@ -70,7 +70,7 @@
           </el-button>
 
           <el-button icon="el-icon-plus"
-                     v-if="finance.f_type==='EXC'"
+                     v-if="finance.f_type==='EXC' && user.is_superuser"
                      style="margin-right: 10px"
                      :disabled="!shopID"
                      type="success"
@@ -144,7 +144,7 @@
               header-align="center">
             <template slot-scope="scope">
               <el-button size="mini" plain type="success"
-                         v-if="!scope.row.is_received"
+                         v-if="!scope.row.is_received && user.is_superuser"
                          @click="openConfirmReceived(scope.row.id)">确认到账</el-button>
             </template>
           </el-table-column>
@@ -333,6 +333,7 @@ export default {
   name: "MelFinance",
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       shops: null,
       shopID: null,
       loading: false,

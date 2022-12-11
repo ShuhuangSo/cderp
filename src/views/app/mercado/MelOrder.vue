@@ -66,7 +66,11 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-link @click.native="copyText(scope.row.sku)"
+                       style="margin-bottom: 3px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            </div>
 
             <div>{{ scope.row.p_name }}</div>
             <div>{{ scope.row.item_id }}</div>
@@ -169,12 +173,12 @@
         </el-table-column>
 
         <el-table-column
-            label="订单日期"
+            label="订单日期(本土)"
             align="center"
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div>{{ scope.row.order_time | date}}</div>
+            <div :title="scope.row.order_time_bj | bjdate">{{ scope.row.order_time | date}}</div>
           </template>
         </el-table-column>
 
@@ -259,6 +263,10 @@ export default {
     date: function (value) {
       return moment(value).format("YYYY-MM-DD HH:mm");
     },
+    //时间日期格式化
+    bjdate: function (value) {
+      return '北京时间' + moment(value).format("YYYY-MM-DD HH:mm");
+    },
     //rmb金额格式化
     currency: function (value) {
       if (!value) return 0.00;
@@ -287,6 +295,30 @@ export default {
     this.inintShops();
   },
   methods:{
+    //点击复制
+    copyText(value){
+      let text = value;
+      if (navigator.clipboard) {
+        // clipboard api 复制
+        navigator.clipboard.writeText(text);
+      } else {
+        let textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        // 隐藏此输入框
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        // 赋值
+        textarea.value = text;
+        // 选中
+        textarea.select();
+        // 复制
+        document.execCommand('copy', true);
+        // 移除输入框
+        document.body.removeChild(textarea);
+      }
+      this.$message.success('已复制！')
+    },
     // 型号上传前的回调
     beforeUpload() {
       this.loading = true;

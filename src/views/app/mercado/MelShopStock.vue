@@ -164,10 +164,19 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-link @click.native="copyText(scope.row.sku)"
+                       style="margin-bottom: 3px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            </div>
 
             <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }} <el-link :href="scope.row.sale_url" :underline="false" target="_blank"><i class="el-icon-link"></i></el-link></div>
+            <div>{{ scope.row.item_id }}
+              <el-link :href="scope.row.sale_url" :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
+              <el-link @click.native="selectItemID(scope.row.item_id)"
+                       style="margin-left: 5px"
+                       :underline="false"><i class="el-icon-connection"></i></el-link>
+            </div>
           </template>
         </el-table-column>
 
@@ -322,6 +331,7 @@ export default {
   components:{MelStockDetail},
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       shops: null,
       shopID: null,
       shopStocks: null,
@@ -447,6 +457,36 @@ export default {
     this.getTodayStock() // 计算库存
   },
   methods:{
+    //点击复制
+    copyText(value){
+      let text = value;
+      if (navigator.clipboard) {
+        // clipboard api 复制
+        navigator.clipboard.writeText(text);
+      } else {
+        let textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        // 隐藏此输入框
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        // 赋值
+        textarea.value = text;
+        // 选中
+        textarea.select();
+        // 复制
+        document.execCommand('copy', true);
+        // 移除输入框
+        document.body.removeChild(textarea);
+      }
+      this.$message.success('已复制！')
+    },
+
+    //快速筛选itemID
+    selectItemID(item_id){
+      this.searchValue = item_id
+      this.initShopStock();
+    },
     //触发子组件更新
     showTagSelect(){
       this.isShow = false;
@@ -538,7 +578,11 @@ export default {
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
       }else{
-        this.getRequest('api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time').then(resp => {
+        let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
+        if (!this.user.is_superuser) {
+          url += '&user=' + this.user.id;
+        }
+        this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
