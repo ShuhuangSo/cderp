@@ -32,7 +32,7 @@
         <template slot-scope="scope">
           <el-image
               style="width: 40px; height: 40px"
-              :src="scope.row.image"
+              :src="scope.row.image | smpic"
               fit="fill">
           </el-image>
         </template>
@@ -73,6 +73,8 @@
 </template>
 
 <script>
+import moment from "moment";
+
 export default {
   name: "MelAddProduct",
   data(){
@@ -85,6 +87,14 @@ export default {
       mlProducts: [],
       multipleSelection: [] // 选中行
     }
+  },
+  filters: {
+    //图片地址格式化
+    smpic: function (value) {
+      if (!value) return '';
+      let url = value.slice(0, value.length-4)
+      return url + '_100x100.jpg/?' + Math.random()
+    },
   },
   methods:{
     handleSelectionChange(val) {

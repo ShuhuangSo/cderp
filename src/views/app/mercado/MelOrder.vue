@@ -16,7 +16,7 @@
         </el-input>
 
         <el-select v-model="shopID"
-                   style="width: 300px;"
+                   style="width: 300px;margin-right: 50px"
                    @change="changeShop" placeholder="请选择店铺">
           <el-option
               v-for="item in shops"
@@ -25,6 +25,35 @@
               :value="item.id">
             <span style="float: left">{{ item.name }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
+          </el-option>
+        </el-select>
+
+        <span>筛选：</span>
+        <el-date-picker
+            v-model="cus_date"
+            :editable="false"
+            :clearable="false"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd"
+            style="width: 250px"
+            @change="changeFilter"
+            :picker-options="pickerOptions">
+        </el-date-picker>
+
+        <el-select v-model="filter_name"
+                   style="width: 150px;margin-left: 5px"
+                   :disabled="!shopID"
+                   @change="changeFilter" placeholder="请选择筛选项">
+          <el-option
+              v-for="item in filter_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
           </el-option>
         </el-select>
 
@@ -73,7 +102,12 @@
             </div>
 
             <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }}</div>
+            <div>{{ scope.row.item_id }}
+              <el-link :href="scope.row.sale_url" :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
+              <el-link @click.native="copyText(scope.row.item_id)"
+                       style="margin-left: 5px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            </div>
           </template>
         </el-table-column>
 
@@ -256,6 +290,78 @@ export default {
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
       },
+      cus_date: '', // 订单日期筛选
+      start_date: '', // 订单日期筛选
+      end_date: '', // 订单日期筛选
+      pickerOptions: {
+        shortcuts: [{
+          text: '昨天',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+            end.setTime(end.getTime() - 3600 * 1000 * 24 * 1);
+            picker.$emit('pick', [start, end]);
+          }
+        },
+          {
+            text: '最近一周',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+            picker.$emit('pick', [start, end]);
+          }
+        }]
+      },
+      filter_name: '', // 库存筛选
+      filter_group: [
+        {
+          name: '全部订单',
+          value: ''
+        },
+        {
+          name: '有广告',
+          value: '&is_ad=True'
+        },
+        {
+          name: '无广告',
+          value: '&is_ad=False'
+        },
+        {
+          name: '退货订单',
+          value: '&order_status=RETURN'
+        },
+        {
+          name: 'CASE',
+          value: '&order_status=CASE'
+        },
+        {
+          name: '取消订单',
+          value: '&order_status=CANCEL'
+        },
+        {
+          name: '完成订单',
+          value: '&order_status=FINISHED'
+        },
+      ],
     }
   },
   filters: {
@@ -292,6 +398,13 @@ export default {
     },
   },
   mounted() {
+    //设置默认订单统计时间
+    this.startSaleDate = new Date();
+    this.endSaleDate = new Date();
+    this.startSaleDate.setTime(this.startSaleDate.getTime() - 3600 * 1000 * 24 * 30);
+
+    this.cus_date = [this.startSaleDate, this.endSaleDate]
+
     this.inintShops();
   },
   methods:{
@@ -337,6 +450,11 @@ export default {
 
     //改变店铺动作
     changeShop(){
+      this.page = 1;
+      this.initOrders();
+    },
+    //改变筛选动作
+    changeFilter(){
       this.page = 1;
       this.initOrders();
     },
@@ -387,6 +505,14 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
+      if (this.filter_name) {
+        url += this.filter_name;
+      }
+
+      this.start_date =String(moment(this.cus_date[0]).format("YYYY-MM-DD"))+' 00:00:00'
+      this.end_date = String(moment(this.cus_date[1]).format("YYYY-MM-DD"))+' 23:59:59'
+
+      url += '&order_time__gte='+ this.start_date + '&order_time__lte=' + this.end_date
       url += '&ordering=-order_time'
 
       this.loading = true

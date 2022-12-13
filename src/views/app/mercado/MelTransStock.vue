@@ -75,7 +75,12 @@
             width="300"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div>{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag size="mini" @click="selectGroup(scope.row.box_number)" v-if="scope.row.group">拼箱({{scope.row.group}})</el-tag>
+              <el-tag size="mini" type="info" effect="dark"
+                      style="margin-left: 5px"
+                      v-if="scope.row.group">{{scope.row.box_number}}</el-tag>
+            </div>
 
             <div>{{ scope.row.p_name }}</div>
             <div>{{ scope.row.item_id }}</div>
@@ -207,7 +212,7 @@
             <template slot-scope="scope">
               <el-image
                   style="width: 80px; height: 80px"
-                  :src="scope.row.image"
+                  :src="scope.row.image | smpic"
                   :preview-src-list="[scope.row.image]"
                   fit="fill">
               </el-image>
@@ -219,7 +224,12 @@
               width="300"
               show-overflow-tooltip>
             <template slot-scope="scope">
-              <div>{{ scope.row.sku }}</div>
+              <div>{{ scope.row.sku }}
+                <el-tag size="mini" v-if="scope.row.group">拼箱({{scope.row.group}})</el-tag>
+                <el-tag size="mini" type="info" effect="dark"
+                        style="margin-left: 5px"
+                        v-if="scope.row.group">{{scope.row.box_number}}</el-tag>
+              </div>
 
               <div>{{ scope.row.p_name }}</div>
               <div>{{ scope.row.item_id }}</div>
@@ -233,7 +243,7 @@
             <template slot-scope="scope">
               <el-tag
                   style="margin-right: 5px;border: none"
-                  color="#539acd"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                   effect="dark">
                 {{ scope.row.listing_shop}}
               </el-tag>
@@ -305,6 +315,11 @@ export default {
     this.inintShops();
   },
   methods:{
+    //筛选拼箱产品
+    selectGroup(num){
+      this.searchValue = num
+      this.initTransStock();
+    },
     //提交fbm送仓
     summitFBM(){
       this.postRequest('api/ml_trans_stock/send_fbm/', this.multipleSelection).then(resp => {
