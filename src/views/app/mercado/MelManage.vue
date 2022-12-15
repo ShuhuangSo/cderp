@@ -29,6 +29,10 @@
         <span slot="label"><i class="el-icon-money"></i> 财务管理</span>
         <MelFinance></MelFinance>
       </el-tab-pane>
+      <el-tab-pane :lazy="true" label="操作日志" name="seven">
+        <span slot="label"><i class="el-icon-notebook-2"></i> 操作日志</span>
+        <MelOperateLog></MelOperateLog>
+      </el-tab-pane>
     </el-tabs>
   </div>
 
@@ -41,11 +45,12 @@ import MelShip from "@/views/app/mercado/MelShip";
 import MelTransStock from "@/views/app/mercado/MelTransStock";
 import MelOrder from "@/views/app/mercado/MelOrder";
 import MelFinance from "@/views/app/mercado/MelFinance";
+import MelOperateLog from "@/views/app/mercado/MelOperateLog";
 
 export default {
   name: "MelManage",
   components:{
-    MelProduct, MelShopStock, MelShip, MelTransStock, MelOrder, MelFinance
+    MelProduct, MelShopStock, MelShip, MelTransStock, MelOrder, MelFinance, MelOperateLog
   },
   data(){
     return{

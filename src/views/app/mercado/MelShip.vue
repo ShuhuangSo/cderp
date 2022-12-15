@@ -532,7 +532,7 @@ export default {
 
     // 提交杂费
     summitExtrafee(){
-      this.patchRequest('api/ml_ship/'+ this.ship_id +'/', {'extra_fee': this.extra_fee}).then(resp => {
+      this.postRequest('api/ml_ship/extra_fee/', {'extra_fee': this.extra_fee, 'id': this.ship_id}).then(resp => {
         if (resp) {
           this.extraVisible = false;
           this.initShips()
