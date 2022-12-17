@@ -80,10 +80,17 @@
               <el-tag size="mini" type="info" effect="dark"
                       style="margin-left: 5px"
                       v-if="scope.row.group">{{scope.row.box_number}}</el-tag>
+              <el-link @click.native="copyText(scope.row.sku)"
+                       style="margin-left: 5px;margin-bottom: 3px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
             </div>
 
             <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }}</div>
+            <div>{{ scope.row.item_id }}
+              <el-link @click.native="copyText(scope.row.item_id)"
+                       style="margin-left: 5px;margin-bottom: 2px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            </div>
           </template>
         </el-table-column>
 
@@ -277,6 +284,7 @@ export default {
   name: "MelTransStock",
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       shops: null,
       shopID: null,
       shopStocks: null,
@@ -315,6 +323,31 @@ export default {
     this.inintShops();
   },
   methods:{
+    //点击复制
+    copyText(value){
+      let text = value;
+      if (navigator.clipboard) {
+        // clipboard api 复制
+        navigator.clipboard.writeText(text);
+      } else {
+        let textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        // 隐藏此输入框
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        // 赋值
+        textarea.value = text;
+        // 选中
+        textarea.select();
+        // 复制
+        document.execCommand('copy', true);
+        // 移除输入框
+        document.body.removeChild(textarea);
+      }
+      this.$message.success('已复制！')
+    },
+
     //筛选拼箱产品
     selectGroup(num){
       this.searchValue = num
@@ -370,7 +403,8 @@ export default {
       if(window.sessionStorage.getItem('ml_trans_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_trans_shops'));
       }else{
-        this.getRequest('api/ml_shops/?warehouse_type=TRANSIT&page_size=1000&ordering=create_time').then(resp => {
+        let url = 'api/ml_shops/?warehouse_type=TRANSIT&page_size=1000&ordering=create_time'
+        this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_trans_shops', JSON.stringify(this.shops));
@@ -387,6 +421,9 @@ export default {
       let url = '/api/ml_trans_stock/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
+      }
+      if (!this.user.is_superuser) {
+        url += '&user_id=' + this.user.id;
       }
       url += '&ordering=arrived_date,item_id'
 

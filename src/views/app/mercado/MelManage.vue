@@ -29,7 +29,7 @@
         <span slot="label"><i class="el-icon-money"></i> 财务管理</span>
         <MelFinance></MelFinance>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="操作日志" name="seven">
+      <el-tab-pane :lazy="true" label="操作日志" name="seven" v-if="user.is_superuser">
         <span slot="label"><i class="el-icon-notebook-2"></i> 操作日志</span>
         <MelOperateLog></MelOperateLog>
       </el-tab-pane>
@@ -55,6 +55,7 @@ export default {
   data(){
     return{
       activeName: this.$route.query.activeName?this.$route.query.activeName:'second',
+      user: JSON.parse(window.sessionStorage.getItem('user')),
     }
   },
 }

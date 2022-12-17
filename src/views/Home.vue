@@ -49,6 +49,7 @@
         </el-breadcrumb>
         <router-view/>
       </el-main>
+      <el-backtop target=".el-main" :bottom="100"></el-backtop>
     </el-container>
 
 </template>

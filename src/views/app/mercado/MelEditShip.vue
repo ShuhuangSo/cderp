@@ -222,6 +222,10 @@
         </div>
 
       </el-card>
+
+      <div style="margin-top: 20px">
+        <ShipLog :shipID="shipID"></ShipLog>
+      </div>
     </div>
 
     <!--    添加产品弹窗-->
@@ -245,14 +249,16 @@
 <script>
 import MelAddProduct from "@/views/app/mercado/MelAddProduct";
 import moment from "moment/moment";
+import ShipLog from "@/components/app/mercado/ShipLog";
 
 export default {
   name: "MelEditShip",
   components:{
-    MelAddProduct
+    MelAddProduct, ShipLog
   },
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       shipID: this.$route.query.id, // 运单id
       loading: false,
       ship: {
@@ -429,7 +435,11 @@ export default {
     },
     inintShops(){
       //获取所有可选店铺
-      this.getRequest('api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time').then(resp => {
+      let url = 'api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time'
+      if (!this.user.is_superuser && this.ship.target==='FBM') {
+        url += '&user=' + this.user.id;
+      }
+      this.getRequest(url).then(resp => {
         if (resp.results) {
           this.shops = resp.results;
         }

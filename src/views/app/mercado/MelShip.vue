@@ -293,11 +293,11 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
                 <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='PREPARING' || scope.row.s_status==='SHIPPED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
                 <el-dropdown-item
@@ -430,6 +430,7 @@ export default {
   name: "MelShip",
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
@@ -770,6 +771,9 @@ export default {
       let url = '/api/ml_ship/?page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
+      }
+      if (!this.user.is_superuser) {
+        url += '&user_id=' + this.user.id;
       }
       url += '&target=' + this.target
       url += '&s_status=' + this.s_status

@@ -277,6 +277,7 @@ export default {
   name: "MelOrder",
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       orders: [],
       shops: null,
       shopID: null,
@@ -487,7 +488,11 @@ export default {
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
       }else{
-        this.getRequest('api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time').then(resp => {
+        let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
+        if (!this.user.is_superuser) {
+          url += '&user=' + this.user.id;
+        }
+        this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));

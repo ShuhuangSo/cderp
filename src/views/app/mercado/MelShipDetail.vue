@@ -375,15 +375,22 @@
         </span>
       </el-dialog>
 
+      <div style="margin-top: 20px">
+        <ShipLog :shipID="shipID"></ShipLog>
+      </div>
+
     </div>
+
   </div>
 </template>
 
 <script>
 import moment from "moment/moment";
+import ShipLog from "@/components/app/mercado/ShipLog";
 
 export default {
   name: "MelShipDetail",
+  components:{ShipLog},
   data(){
     return{
       shipID: this.$route.query.id, // 运单id

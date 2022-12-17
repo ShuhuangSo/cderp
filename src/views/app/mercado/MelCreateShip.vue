@@ -217,6 +217,7 @@ export default {
   },
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       ship: {
         target: 'FBM',
         shop: '',
@@ -365,7 +366,11 @@ export default {
     },
     inintShops(){
       //获取所有可选店铺
-      this.getRequest('api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time').then(resp => {
+      let url = 'api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time'
+      if (!this.user.is_superuser && this.ship.target==='FBM') {
+        url += '&user=' + this.user.id;
+      }
+      this.getRequest(url).then(resp => {
         if (resp.results) {
           this.shops = resp.results;
         }

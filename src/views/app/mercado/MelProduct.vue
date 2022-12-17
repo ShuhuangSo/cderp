@@ -15,6 +15,17 @@
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
 
+        <el-select v-model="selectedUser"
+                   style="width: 150px;margin-left: 5px"
+                   @change="initMLProducts" placeholder="请选择筛选项">
+          <el-option
+              v-for="item in user_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
+
         <el-select v-model="is_check"
                    style="width: 150px;margin-left: 5px"
                    @change="initMLProducts" placeholder="请选择筛选项">
@@ -34,6 +45,19 @@
               :key="item.name"
               :label="item.name"
               :value="item.value">
+          </el-option>
+        </el-select>
+
+        <el-select v-model="shop"
+                   style="width: 300px;margin-left: 5px"
+                   @change="initMLProducts" placeholder="请选择店铺">
+          <el-option
+              v-for="item in shops"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
+            <span style="float: left">{{ item.name }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
           </el-option>
         </el-select>
 
@@ -114,7 +138,17 @@
             show-overflow-tooltip
             width="300">
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}</div>
+            <div>
+              <el-link
+                  style="font-weight: bold"
+                  @click.native="productDetail(scope.row.id)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
+              <el-link @click.native="copyText(scope.row.sku)"
+                       style="margin-left: 5px"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            </div>
 
             <div>{{ scope.row.p_name }}</div>
           </template>
@@ -328,6 +362,10 @@ export default {
   },
   data() {
     return {
+      user: JSON.parse(window.sessionStorage.getItem('user')),
+      selectedUser: 1,
+      shop: '全部店铺',
+      shops: [],
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
@@ -381,6 +419,16 @@ export default {
           value: '&p_status=OFFLINE'
         }
       ],
+      user_group: [
+        {
+          name: '我的产品',
+          value: 1
+        },
+        {
+          name: '全部产品',
+          value: 0
+        }
+      ],
     }
   },
   filters: {
@@ -406,9 +454,36 @@ export default {
     },
   },
   mounted() {
+    if (this.user.is_superuser) this.selectedUser = 0
     this.initMLProducts();
+    this.inintShops();
   },
   methods: {
+    //点击复制
+    copyText(value){
+      let text = value;
+      if (navigator.clipboard) {
+        // clipboard api 复制
+        navigator.clipboard.writeText(text);
+      } else {
+        let textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        // 隐藏此输入框
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        // 赋值
+        textarea.value = text;
+        // 选中
+        textarea.select();
+        // 复制
+        document.execCommand('copy', true);
+        // 移除输入框
+        document.body.removeChild(textarea);
+      }
+      this.$message.success('已复制！')
+    },
+
     //打开包材管理弹窗
     openPacking(){
       this.timer = new Date().getTime();
@@ -442,7 +517,6 @@ export default {
 
       // 编辑产品
       if (command['type'] === 'edit') {
-        this.timer = new Date().getTime();
         this.productDetail(command['id'])
       }
 
@@ -468,6 +542,7 @@ export default {
     },
     // 打开产品详情弹窗
     productDetail(id) {
+      this.timer = new Date().getTime();
       this.productID = id;
       this.productDetailVisible = true;
     },
@@ -521,6 +596,26 @@ export default {
       this.page = page;
       this.initMLProducts();
     },
+    inintShops(){
+      //获取所有可选店铺
+      if(window.sessionStorage.getItem('ml_shops')) {
+        this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+      }else{
+        let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
+
+        if (!this.user.is_superuser) {
+          url += '&user=' + this.user.id;
+        }
+        this.getRequest(url).then(resp => {
+          if (resp.results) {
+            this.shops = resp.results;
+            window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+          }
+        })
+      }
+      this.shops.unshift({'name': '全部店铺', 'id': '', 'nickname': ''})
+    },
+
     initMLProducts() {
       let url = '/api/ml_products/?page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
@@ -531,6 +626,12 @@ export default {
       }
       if (this.p_status!=='') {
         url += '&p_status=' + this.p_status;
+      }
+      if (this.shop!=='全部店铺') {
+        url += '&shop=' + this.shop;
+      }
+      if (this.selectedUser && !this.user.is_superuser) {
+        url += '&user_id=' + this.user.id;
       }
       url += '&ordering=-create_time,item_id'
 
