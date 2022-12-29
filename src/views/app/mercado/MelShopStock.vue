@@ -484,6 +484,7 @@ export default {
 
     //快速筛选itemID
     selectItemID(item_id){
+      this.page = 1;
       this.searchValue = item_id
       this.initShopStock();
     },

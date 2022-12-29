@@ -202,7 +202,7 @@
         :visible.sync="fbmVisible"
         :destroy-on-close="true"
         :close-on-click-modal="false"
-        width="800px"
+        width="1000px"
     >
       <div>
         <el-table
@@ -244,6 +244,7 @@
           </el-table-column>
 
           <el-table-column
+              width="100"
               align="center"
               header-align="center"
               label="所属店铺">
@@ -258,6 +259,25 @@
           </el-table-column>
 
           <el-table-column
+              align="center"
+              header-align="center"
+              label="运单编号">
+            <template slot-scope="scope">
+              {{ scope.row.s_number}}
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="箱唛号">
+            <template slot-scope="scope">
+              {{ scope.row.carrier_box_number}}
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="80"
               align="center"
               header-align="center"
               label="数量">
