@@ -111,6 +111,45 @@
       </el-table-column>
 
     </el-table>
+
+    <el-table
+        v-if="obj.op_type==='FINISH'"
+        ref="stockTable"
+        :data="onway_stocks"
+        :header-cell-style="{background:'#fafafa'}"
+        v-loading="loading"
+        style="width: 100%">
+
+      <el-table-column
+          width="80"
+          label="入仓数量"
+          align="center"
+          header-align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.qty}}</div>
+        </template>
+      </el-table-column>
+
+      <el-table-column
+          label="入仓批次"
+          align="center"
+          header-align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.batch}}</div>
+        </template>
+      </el-table-column>
+
+      <el-table-column
+          label="入仓日期"
+          align="center"
+          header-align="center"
+          width="100">
+        <template slot-scope="scope">
+          <div>{{ scope.row.book_date }}</div>
+        </template>
+      </el-table-column>
+
+    </el-table>
   </div>
 </template>
 

@@ -185,7 +185,16 @@
             header-align="center"
             label="FBM库存 | 在途 | 中转仓">
           <template slot-scope="scope">
-            <span class="stock_qty">{{ scope.row.qty}}</span>
+            <el-popover
+                @show="showTagSelect"
+                placement="top"
+                width="500"
+                trigger="click">
+              <MelStockDetail
+                  :obj="{'sku': scope.row.sku, 'op_type': 'FINISH'}"
+                  :key="timer" v-if="isShow"></MelStockDetail>
+              <el-button type="text" slot="reference" class="stock_qty">{{ scope.row.qty }}</el-button>
+            </el-popover>
             <el-divider direction="vertical"></el-divider>
             <el-popover
                 @show="showTagSelect"
