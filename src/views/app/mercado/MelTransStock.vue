@@ -21,6 +21,13 @@
                    :disabled="!shopID"
                    @click="initTransStock"></el-button>
 
+        <el-radio-group
+            style="margin-left: 50px"
+            @input="changeOutStatus" v-model="isOut">
+          <el-radio-button label="false">在仓</el-radio-button>
+          <el-radio-button label="true">已出仓</el-radio-button>
+        </el-radio-group>
+
       </div>
 
       <div>
@@ -147,6 +154,7 @@
         </el-table-column>
 
         <el-table-column
+            v-if="isOut==='false'"
             align="center"
             header-align="center"
             width="150"
@@ -159,6 +167,7 @@
         </el-table-column>
 
         <el-table-column
+            v-if="isOut==='false'"
             align="center"
             header-align="center"
             label="到仓日期 | 库龄">
@@ -166,6 +175,26 @@
             {{ scope.row.arrived_date | date}}
             <el-divider direction="vertical"></el-divider>
             {{ scope.row.stock_days}}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="isOut==='true'"
+            align="center"
+            header-align="center"
+            label="到仓日期">
+          <template slot-scope="scope">
+            {{ scope.row.arrived_date | date}}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="isOut==='true'"
+            align="center"
+            header-align="center"
+            label="出仓日期">
+          <template slot-scope="scope">
+            {{ scope.row.out_time | date}}
           </template>
         </el-table-column>
 
@@ -315,6 +344,7 @@ export default {
       searchValue: '',
       multipleSelection: [], // 选中行
       fbmVisible: false, //弹窗
+      isOut: 'false', //是否已出仓
     }
   },
   filters: {
@@ -343,6 +373,10 @@ export default {
     this.inintShops();
   },
   methods:{
+    // 改变出仓状态
+    changeOutStatus(){
+      this.inintShops();
+    },
     //点击复制
     copyText(value){
       let text = value;
@@ -445,7 +479,13 @@ export default {
       if (!this.user.is_superuser) {
         url += '&user_id=' + this.user.id;
       }
-      url += '&ordering=arrived_date,item_id'
+      url += '&is_out=' + this.isOut;
+      if (this.isOut==='false') {
+        url += '&ordering=arrived_date,item_id'
+      } else {
+        url += '&ordering=-out_time,item_id'
+      }
+
 
       this.loading = true
       this.getRequest(url).then(resp => {
