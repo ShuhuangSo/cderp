@@ -277,6 +277,25 @@
           </template>
         </el-table-column>
 
+        <el-table-column
+            label="操作"
+            align="center"
+            header-align="center"
+            width="50"
+        >
+          <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
+                <el-dropdown-item :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+
       </el-table>
 
       <div class="pagination">
@@ -328,6 +347,76 @@
         </span>
     </el-dialog>
 
+    <!--    库存盘点弹窗-->
+    <el-dialog
+        title="库存盘点"
+        :visible.sync="changeStockVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        盘点数量：
+        <el-input-number
+            style="width: 100%; margin-bottom: 20px"
+            v-model="changeStockQty"
+            :precision="0"
+            controls-position="right"
+            :min="0"></el-input-number>
+      </div>
+      <div>
+        盘点原因：
+        <el-select v-model="reason"
+                   style="width: 100%"
+                   placeholder="请选择原因">
+          <el-option
+              v-for="item in reason_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="changeStockVisible = false">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :disabled="!reason"
+                     :loading="tStockLoading"
+                     @click="submitChangeStock">确认修改</el-button>
+        </span>
+    </el-dialog>
+
+    <!--    修改状态弹窗-->
+    <el-dialog
+        title="库存产品状态"
+        :visible.sync="changeStatusVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        <el-select v-model="changeStatus"
+                   style="width: 100%"
+                   placeholder="请选择产品状态">
+          <el-option
+              v-for="item in status_group"
+              :key="item.name"
+              :label="item.name"
+              :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="changeStatusVisible = false">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :disabled="!changeStatus"
+                     :loading="tStockLoading"
+                     @click="submitChangeStatus">确认修改</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -362,6 +451,12 @@ export default {
       sold_profit: 0.0, // 30天毛利润
       real_profit: 0.0, // 30天净利润
       stockVisible: false, //在途库存情况
+      changeStockVisible: false, //库存盘点弹窗显示
+      changeStatusVisible: false, //库存状态弹窗显示
+      changeStockQty: null, // 盘点数量
+      changeStockID: null, // 盘点的sku id
+      changeStatus: null, // 修改状态
+      reason: '', // 盘点理由
       timer: '',
       isShow: true,
       filter_group: [
@@ -432,6 +527,34 @@ export default {
           value: '-avg_profit_rate'
         },
       ],
+      reason_group: [
+        {
+          name: '产品下架，库存销毁',
+          value: '产品下架，库存销毁'
+        },
+        {
+          name: '销售出入',
+          value: '销售出入'
+        },
+      ],
+      status_group: [
+        {
+          name: '普通',
+          value: 'NORMAL'
+        },
+        {
+          name: '热卖',
+          value: 'HOT_SALE'
+        },
+        {
+          name: '清仓',
+          value: 'CLEAN'
+        },
+        {
+          name: '停售',
+          value: 'OFFLINE'
+        },
+      ],
       // 批量上传认证
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
@@ -466,6 +589,48 @@ export default {
     this.getTodayStock() // 计算库存
   },
   methods:{
+    // 盘点库存
+    submitChangeStock(){
+      this.tStockLoading = true
+      let url = 'api/ml_shopstock/change_stock/'
+      this.postRequest(url, {'id': this.changeStockID, 'qty': this.changeStockQty, 'reason': this.reason}).then(resp => {
+        this.tStockLoading = false
+        if (resp) {
+          this.inintShops();
+          this.changeStockVisible = false
+        }
+      })
+    },
+    // 盘点库存
+    submitChangeStatus(){
+      this.tStockLoading = true
+      let url = 'api/ml_shopstock/change_status/'
+      this.postRequest(url, {'id': this.changeStockID, 'status': this.changeStatus}).then(resp => {
+        this.tStockLoading = false
+        if (resp) {
+          this.inintShops();
+          this.changeStatusVisible = false
+        }
+      })
+    },
+    // 产品更多操作
+    handleProductOp(command) {
+      // 编辑图片
+      if (command['type'] === 'editQty') {
+        this.changeStockQty = command['obj'].qty
+        this.changeStockID = command['obj'].id
+        this.reason = ''
+        this.changeStockVisible = true
+      }
+
+      // 编辑产品状态
+      if (command['type'] === 'editStatus') {
+        this.changeStatus= command['obj'].p_status
+        this.changeStockID = command['obj'].id
+        this.changeStatusVisible = true
+      }
+    },
+
     //点击复制
     copyText(value){
       let text = value;
