@@ -57,6 +57,12 @@
           </el-option>
         </el-select>
 
+        <el-link type="info"
+                 style="margin-left: 10px"
+                 @click.native="showChart"
+                 :underline="false"
+                 icon="el-icon-s-data"></el-link>
+
       </div>
 
       <div>
@@ -267,14 +273,48 @@
         </span>
     </el-dialog>
 
+    <!--    图表弹窗-->
+    <el-dialog
+        title="销售图表"
+        :visible.sync="chartVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="80%"
+    >
+      <el-select v-model="chartType"
+                 @change="changeChartType"
+                 size="mini" placeholder="请选择">
+        <el-option
+            v-for="item in chart_options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+        </el-option>
+      </el-select>
+      <div class="chart">
+        <MelSaleChart
+            :key="timer"
+            :shop="shopID"
+            :chartType="chartType"
+        :startSaleDate="start_date | dateFormat"
+        :endSaleDate="end_date | dateFormat"></MelSaleChart>
+
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="chartVisible = false">关 闭</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import MelSaleChart from "@/views/app/mercado/MelSaleChart";
 
 export default {
   name: "MelOrder",
+  components: {MelSaleChart},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -287,6 +327,8 @@ export default {
       size: 20,  // 页大小
       searchValue: '',
       uploadVisible: false,
+      chartVisible: false,
+      timer: '',
       // 批量上传认证
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
@@ -363,12 +405,28 @@ export default {
           value: '&order_status=FINISHED'
         },
       ],
+      chart_options: [{
+        value: 'ORDER',
+        label: '订单图表'
+      }, {
+        value: 'AMOUNT',
+        label: '销售额图表'
+      }, {
+        value: 'PROFIT',
+        label: '毛利润图表'
+      }],
+      chartType: 'ORDER',
     }
   },
   filters: {
     //时间日期格式化
     date: function (value) {
       return moment(value).format("YYYY-MM-DD HH:mm");
+    },
+    //时间日期格式化
+    dateFormat: function (value) {
+      if (value === '') return value
+      return moment(value).format("YYYY-MM-DD");
     },
     //时间日期格式化
     bjdate: function (value) {
@@ -409,6 +467,11 @@ export default {
     this.inintShops();
   },
   methods:{
+    //打开图表
+    showChart(){
+      this.timer = new Date().getTime();
+      this.chartVisible = true
+    },
     //点击复制
     copyText(value){
       let text = value;
@@ -551,5 +614,8 @@ export default {
 .negitive {
   font-weight: bold;
   color: #aa0515;
+}
+.chart{
+  height: 500px;
 }
 </style>
