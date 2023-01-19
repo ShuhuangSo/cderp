@@ -596,19 +596,19 @@ export default {
       this.postRequest(url, {'id': this.changeStockID, 'qty': this.changeStockQty, 'reason': this.reason}).then(resp => {
         this.tStockLoading = false
         if (resp) {
-          this.inintShops();
+          this.initShopStock();
           this.changeStockVisible = false
         }
       })
     },
-    // 盘点库存
+    // 修改状态
     submitChangeStatus(){
       this.tStockLoading = true
       let url = 'api/ml_shopstock/change_status/'
       this.postRequest(url, {'id': this.changeStockID, 'status': this.changeStatus}).then(resp => {
         this.tStockLoading = false
         if (resp) {
-          this.inintShops();
+          this.initShopStock();
           this.changeStatusVisible = false
         }
       })
