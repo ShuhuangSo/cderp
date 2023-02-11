@@ -302,7 +302,7 @@ export default {
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
-      size: 20,  // 页大小
+      size: 50,  // 页大小
       accountSalesList: [],
       accountVisible: false,
       accountSales: {

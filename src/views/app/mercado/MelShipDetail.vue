@@ -165,7 +165,7 @@
               width="300">
             <template slot-scope="scope">
               <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
-                <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
+                <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
               </div>
 
               <div>{{ scope.row.p_name }}</div>
@@ -265,6 +265,7 @@
 
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
+            <h3>SKU数：<span style="color: green">{{ ship.ship_shipDetail.length }}</span> 个</h3>
             <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
             <h3>总成本：<span style="color: green">{{ totalCost | currency }}</span> 元</h3>
           </div>

@@ -209,6 +209,7 @@
 
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
+            <h3>SKU数：<span style="color: green">{{ ship.ship_shipDetail.length }}</span> 个</h3>
             <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
           </div>
         </div>

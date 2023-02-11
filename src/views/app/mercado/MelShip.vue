@@ -101,8 +101,8 @@
                   label="产品"
                   show-overflow-tooltip>
                 <template slot-scope="scope">
-                  <div><span style="font-weight: bold">{{ scope.row.sku }}</span>
-                    <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
+                  <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
+                    <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
                   </div>
 
                   <div>{{ scope.row.p_name }}</div>
