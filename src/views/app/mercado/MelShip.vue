@@ -228,7 +228,7 @@
               <i class="el-icon-time"></i>
               送仓日</div>
             <div
-                v-if="scope.row.book_days < 0"
+                v-if="scope.row.book_days < 0 && scope.row.s_status !=='FINISHED'"
                 style="font-weight: bold;margin-top: 10px; font-size: 20px; color: #E0050C">
               <i class="el-icon-time"></i>
               </div>
@@ -293,7 +293,9 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'"
+                                  :disabled="!scope.row.shipping_fee && !scope.row.send_from"
+                                  :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
                 <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
                 <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>

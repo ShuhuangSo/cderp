@@ -66,6 +66,7 @@
       <div>
         <el-button icon="el-icon-box"
                    style="margin-right: 10px"
+                   v-if="user.is_superuser"
                    @click="openPacking">包材管理
         </el-button>
 
@@ -213,7 +214,7 @@
             label="创建日期"
             align="center"
             header-align="center"
-            width="90">
+            width="100">
           <template slot-scope="scope">
             <span>{{ scope.row.create_time | date }}</span>
           </template>
