@@ -407,4 +407,5 @@ export default {
   margin-right: 50px;
   margin-bottom: 20px;
 }
+
 </style>

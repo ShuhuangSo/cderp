@@ -152,6 +152,10 @@
               <div>{{ scope.row.sku }}</div>
 
               <div>{{ scope.row.p_name }}</div>
+
+              <div class="plan3" v-if="scope.row.plan_qty>0 && scope.row.plan_qty === scope.row.qty"><i class="el-icon-circle-check"></i> 计划 {{ scope.row.plan_qty }}</div>
+              <div class="plan1" v-if="scope.row.plan_qty>0 && scope.row.plan_qty !== scope.row.qty"><i class="el-icon-warning-outline"></i> 计划 {{ scope.row.plan_qty }}</div>
+              <div class="plan2" v-if="scope.row.plan_qty === 0"><i class="el-icon-circle-close"></i> 计划 无</div>
             </template>
           </el-table-column>
 
@@ -183,12 +187,14 @@
 
           <el-table-column
               label="操作"
-              width="100"
+              width="125"
               align="center"
               header-align="center"
           >
             <template slot-scope="scope">
-
+              <el-button
+                  @click="changePlan(scope.row)"
+                  type="" size="mini"circle>计</el-button>
               <el-button
                   v-if="scope.row.s_type === 'NEW'"
                   title="取消标新"
@@ -348,6 +354,23 @@ export default {
 
     },
 
+    //改变计划数量
+    changePlan(row){
+      this.$prompt('请输入计划数量', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^(0|[1-9][0-9]*)$/,
+        inputErrorMessage: '数值格式不正确'
+      }).then(({ value }) => {
+        row.plan_qty = value
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        });
+      });
+    },
+
     // 改变标新状态
     changeType(row){
       if (row.s_type === 'REFILL') {
@@ -383,6 +406,7 @@ export default {
             if (item.shop === this.ship.shop || this.ship.target === 'TRANSIT'){
               let p = {}
               p['qty'] = 1; // 添加数量1
+              p['plan_qty'] = 1; // 计划数量1
               p['sku'] = item.sku;
               p['p_name'] = item.p_name;
               p['item_id'] = item.item_id;
@@ -476,5 +500,14 @@ export default {
   justify-content: flex-end;
   margin-right: 50px;
   margin-bottom: 20px;
+}
+.plan1{
+  color: darkorange;
+}
+.plan2{
+  color: red;
+}
+.plan3{
+  color: darkseagreen;
 }
 </style>
