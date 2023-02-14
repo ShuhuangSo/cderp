@@ -120,11 +120,20 @@
           </el-form>
         </div>
 
-        <el-button type="primary" icon="el-icon-plus"
-                   style="margin-left: 10px"
-                   :disabled="!ship.shop"
-                   @click="addProduct">添加产品
-        </el-button>
+        <div style="display: flex; justify-content: space-between">
+          <el-button type="primary" icon="el-icon-plus"
+                     style="margin-left: 10px"
+                     :disabled="!ship.shop"
+                     @click="addProduct">添加产品
+          </el-button>
+
+          <el-button icon="el-icon-edit-outline"
+                     :type="show_plan?'warning':''"
+                     style="margin-right: 15px"
+                     :disabled="!ship.shop"
+                     @click="changePlan">FBM计划
+          </el-button>
+        </div>
         <el-table
             :header-cell-style="{background:'#eef1f6'}"
             :data="ship.ship_shipDetail"
@@ -153,9 +162,16 @@
 
               <div>{{ scope.row.p_name }}</div>
 
-              <div class="plan3" v-if="scope.row.plan_qty>0 && scope.row.plan_qty === scope.row.qty"><i class="el-icon-circle-check"></i> 计划 {{ scope.row.plan_qty }}</div>
-              <div class="plan1" v-if="scope.row.plan_qty>0 && scope.row.plan_qty !== scope.row.qty"><i class="el-icon-warning-outline"></i> 计划 {{ scope.row.plan_qty }}</div>
-              <div class="plan2" v-if="scope.row.plan_qty === 0"><i class="el-icon-circle-close"></i> 计划 无</div>
+              <div>
+                <el-input-number v-if="show_plan" size="mini" v-model="scope.row.plan_qty" :min="0"></el-input-number>
+                <span class="plan3" v-if="scope.row.plan_qty>0 && scope.row.plan_qty === scope.row.qty">
+                <i class="el-icon-circle-check"></i> 计划 {{ scope.row.plan_qty }}</span>
+                <span class="plan1" v-if="scope.row.plan_qty>0 && scope.row.plan_qty !== scope.row.qty">
+                <i class="el-icon-warning-outline"></i> 计划 {{ scope.row.plan_qty }}</span>
+                <span class="plan2" v-if="scope.row.plan_qty === 0">
+                <i class="el-icon-circle-close"></i> 计划 无</span>
+              </div>
+
             </template>
           </el-table-column>
 
@@ -187,14 +203,11 @@
 
           <el-table-column
               label="操作"
-              width="125"
+              width="100"
               align="center"
               header-align="center"
           >
             <template slot-scope="scope">
-              <el-button
-                  @click="changePlan(scope.row)"
-                  type="" size="mini"circle>计</el-button>
               <el-button
                   v-if="scope.row.s_type === 'NEW'"
                   title="取消标新"
@@ -215,8 +228,11 @@
 
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
-            <h3>SKU数：<span style="color: green">{{ ship.ship_shipDetail.length }}</span> 个</h3>
-            <h3>总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
+            <h3>FBM计划SKU数：<span style="color: darkorange;">{{ totalPlanSKU }}</span> 个</h3>
+            <h3>FBM计划总数量：<span style="color: darkorange;">{{ totalPlanQuantity }}</span> 个</h3>
+            <h3>运单SKU数：<span style="color: green">{{ ship.ship_shipDetail.length }}</span> 个</h3>
+            <h3>运单总数量：<span style="color: green">{{ totalQuantity }}</span> 个</h3>
+            <div v-if="percent"><h4>超出计划：<span style="color: red">{{ percent }}%</span></h4></div>
           </div>
         </div>
 
@@ -282,6 +298,7 @@ export default {
       shops: [], //可选店铺
       carriers: [], //可选物流商
       fbm_warehouses: [], //可选fbm仓库
+      show_plan: false, // 计划数量修改框可见状态
       addProductVisible: false,
       rules: {
         shop: [
@@ -319,6 +336,37 @@ export default {
       })
       return qty
     },
+    // fbm计划总数量
+    totalPlanQuantity() {
+      let qty = 0;
+      this.ship.ship_shipDetail.forEach(item => {
+        qty += item.plan_qty;
+      })
+      return qty
+    },
+    // fbm计划总sku
+    totalPlanSKU() {
+      let qty = 0;
+      this.ship.ship_shipDetail.forEach(item => {
+        if (item.plan_qty > 0) qty += 1
+      })
+      return qty
+    },
+    // 运单数量超出比例
+    percent() {
+      let qty = 0;
+      let plan_qty = 0;
+      this.ship.ship_shipDetail.forEach(item => {
+        qty += item.qty;
+        plan_qty += item.plan_qty;
+      })
+      if (qty > plan_qty) {
+        let p = (qty - plan_qty) / plan_qty * 100
+        return p.toFixed(2)
+      } else {
+        return 0
+      }
+    },
   },
   methods:{
 
@@ -354,21 +402,9 @@ export default {
 
     },
 
-    //改变计划数量
-    changePlan(row){
-      this.$prompt('请输入计划数量', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /^(0|[1-9][0-9]*)$/,
-        inputErrorMessage: '数值格式不正确'
-      }).then(({ value }) => {
-        row.plan_qty = value
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '取消输入'
-        });
-      });
+    //改变计划数量编辑框可见状态
+    changePlan(){
+      this.show_plan = !this.show_plan
     },
 
     // 改变标新状态
@@ -506,6 +542,7 @@ export default {
 }
 .plan2{
   color: red;
+  font-weight: bold;
 }
 .plan3{
   color: darkseagreen;
