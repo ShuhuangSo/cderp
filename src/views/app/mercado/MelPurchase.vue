@@ -5,7 +5,24 @@
   <div>
 
     <div class="operate">
+      <div class="filter">
+        <div>
 
+            <el-button size="small" :type="p_status==='WAITBUY'?'primary':''" @click="changeStatus('WAITBUY')">待采购</el-button>
+            <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+
+            <el-button size="small" :type="p_status==='PURCHASED'?'primary':''" @click="changeStatus('PURCHASED')">已采购</el-button>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+
+            <el-button size="small" :type="p_status==='RECEIVED'?'primary':''" @click="changeStatus('RECEIVED')">已到货</el-button>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+
+          <el-button size="small" :type="p_status==='PACKED'?'primary':''" @click="changeStatus('PACKED')">已打包</el-button>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+          <el-button size="small" :type="p_status==='USED'?'primary':''" @click="changeStatus('USED')">已出库</el-button>
+
+        </div>
+      </div>
       <div class="filter">
 
       </div>
@@ -20,6 +37,9 @@
                     style="width: 350px; margin-right: 5px">
             <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
           </el-input>
+          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
+            <el-button :disabled="!multipleSelection.length" type="primary" plain>下单采购</el-button>
+          </el-badge>
 
         </div>
 
@@ -41,6 +61,8 @@
           :data="purchaseList"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
           style="width: 100%">
 
         <el-table-column
@@ -68,10 +90,22 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}</div>
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
+              <el-tag v-if="scope.row.is_renew" type="danger" size="mini" effect="dark">需求变动</el-tag>
+            </div>
             <div>{{ scope.row.p_name }}</div>
             <div>{{ scope.row.item_id }}
             </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
           </template>
         </el-table-column>
 
@@ -96,7 +130,7 @@
         </el-table-column>
 
         <el-table-column
-            label="目标店铺"
+            label="所属店铺"
             align="center"
             header-align="center"
             width="150">
@@ -113,7 +147,7 @@
         </el-table-column>
 
         <el-table-column
-            label="创建时间"
+            label="更新时间"
             align="center"
             header-align="center"
             width="150">
@@ -124,10 +158,21 @@
 
 
         <el-table-column
+            align="center"
+            header-align="center"
             label="操作"
-            width="130"
+            width="50"
         >
           <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'editQty', obj:scope.row}">知会更新</el-dropdown-item>
+                <el-dropdown-item :command="{type:'editStatus', obj:scope.row}">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -160,6 +205,8 @@ export default {
       page: 1,  // 当前页
       size: 20,  // 页大小
       searchValue: '',
+      p_status: 'WAITBUY',// 筛选状态
+      multipleSelection: [], // 选中行
     }
   },
   filters: {
@@ -178,6 +225,20 @@ export default {
     this.initPurchaseList()
   },
   methods:{
+    getRowKeys(row){
+      return row.id
+    },
+    // 处理多选
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    // 改变筛选状态
+    changeStatus(value){
+      this.p_status = value
+      this.initPurchaseList()
+    },
+
+    //新增采购
     handleCommand(command) {
       if (command === 'sys') this.pullPurchase()
     },
@@ -219,6 +280,7 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
+      url += '&p_status=' + this.p_status
       url += '&ordering=shop,item_id'
 
       this.loading = true
@@ -250,5 +312,10 @@ export default {
   margin-top: 10px;
   display: flex;
   justify-content: space-between;
+}
+.jiantou{
+  margin-left: 5px;
+  margin-right: 5px;
+  color: #6e7079;
 }
 </style>
