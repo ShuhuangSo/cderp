@@ -104,6 +104,11 @@
                 <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
               <span class="plan2" v-if="scope.row.need_qty === 0">
                 <i class="el-icon-circle-close"></i> 运单需求 无</span>
+
+              <span class="plan4" v-if="scope.row.total_onway_qty">
+                在途 {{ scope.row.total_onway_qty }}</span>
+              <span class="plan4" v-if="scope.row.total_rec_qty">
+                库存 {{ scope.row.total_rec_qty }}</span>
             </div>
           </template>
         </el-table-column>
@@ -119,12 +124,24 @@
         </el-table-column>
 
         <el-table-column
+            v-if="p_status==='WAITBUY'"
             label="采购数量"
             align="center"
             header-align="center"
             width="160">
           <template slot-scope="scope">
             <el-input-number v-model="scope.row.buy_qty" :min="1"></el-input-number>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="p_status==='PURCHASED'"
+            label="采购数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <div>{{ scope.row.buy_qty}}</div>
           </template>
         </el-table-column>
 
@@ -156,15 +173,15 @@
         </el-table-column>
 
         <el-table-column
-            label="更新时间"
+            :label="timeLabel"
             align="center"
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div>{{ scope.row.create_time | date}}</div>
+            <div v-if="p_status==='WAITBUY'">{{ scope.row.create_time | date}}</div>
+            <div v-if="p_status==='PURCHASED'">{{ scope.row.buy_time | date}}</div>
           </template>
         </el-table-column>
-
 
         <el-table-column
             align="center"
@@ -179,7 +196,7 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'editQty', obj:scope.row}">知会更新</el-dropdown-item>
-                <el-dropdown-item :command="{type:'editStatus', obj:scope.row}">删除</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -254,7 +271,7 @@
               width="160">
             <template slot-scope="scope">
               <div v-if="!changPrice">{{ scope.row.unit_cost | currency}}</div>
-              <div v-if="changPrice"><el-input-number v-model="scope.row.unit_cost" :precision="2" :min="0"></el-input-number></div>
+              <div v-if="changPrice"><el-input-number v-model="scope.row.unit_cost" :precision="2" :min="0.01"></el-input-number></div>
             </template>
           </el-table-column>
 
@@ -299,6 +316,17 @@ export default {
       buyVisible: false, // 下单采购弹窗
     }
   },
+  computed: {
+    // 时间名称
+    timeLabel() {
+      if (this.p_status === 'WAITBUY') return '更新时间'
+      if (this.p_status === 'PURCHASED') return '采购时间'
+      if (this.p_status === 'RECEIVED') return '到货时间'
+      if (this.p_status === 'PACKED') return '打包时间'
+      if (this.p_status === 'USED') return '出库时间'
+      return ''
+    },
+  },
   filters: {
     //rmb金额格式化
     currency: function (value) {
@@ -320,6 +348,26 @@ export default {
     this.initPurchaseList()
   },
   methods:{
+    handleProductOp(command){
+      // 产品删除
+      if (command['type'] === 'delete') {
+        this.$confirm('是否删除产品?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //调用删除产品
+          this.deleteRequest('api/ml_purchase/' + command['id'] + '/').then(resp => {
+            this.initPurchaseList();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        })
+      }
+    },
     getRowKeys(row){
       return row.id
     },
@@ -331,6 +379,7 @@ export default {
     changeStatus(value){
       this.page = 1;
       this.p_status = value
+      this.$refs.purchaseTable.clearSelection() //清除选中的数据
       this.initPurchaseList()
     },
 
@@ -365,6 +414,7 @@ export default {
       this.postRequest('api/ml_purchase/place_buy/', {'products':this.multipleSelection, 'is_change': this.changPrice}).then(resp => {
         if (resp) {
           this.buyVisible = false
+          this.changPrice = false
           this.multipleSelection = []
           this.$refs.purchaseTable.clearSelection() //清除选中的数据
           this.initPurchaseList();
@@ -434,5 +484,9 @@ export default {
 }
 .plan3{
   color: darkseagreen;
+}
+.plan4{
+  color: #409EFF;
+  margin-left: 10px;
 }
 </style>
