@@ -38,7 +38,7 @@
             <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
           </el-input>
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
-            <el-button :disabled="!multipleSelection.length" type="primary" plain>下单采购</el-button>
+            <el-button :disabled="!multipleSelection.length" @click="buyVisible=true" type="primary" plain>下单采购</el-button>
           </el-badge>
 
         </div>
@@ -92,30 +92,29 @@
           <template slot-scope="scope">
             <div style="font-weight: bold">{{ scope.row.sku }}
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
-              <el-tag v-if="scope.row.is_renew" type="danger" size="mini" effect="dark">需求变动</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }}
+            <div>
+              <span style="margin-right: 5px" v-if="scope.row.create_type==='MANUAL'">
+              <el-tag type="warning" size="mini" effect="plain">手动</el-tag>
+              </span>
+              <span class="plan3" v-if="scope.row.need_qty === scope.row.buy_qty">
+                <i class="el-icon-circle-check"></i> 运单需求 {{ scope.row.need_qty }}</span>
+              <span class="plan1" v-if="scope.row.need_qty !== scope.row.buy_qty">
+                <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
+              <span class="plan2" v-if="scope.row.need_qty === 0">
+                <i class="el-icon-circle-close"></i> 运单需求 无</span>
             </div>
           </template>
         </el-table-column>
 
         <el-table-column
-            width="180"
-            label="简要备注"
-            show-overflow-tooltip>
-          <template slot-scope="scope">
-            <div>{{ scope.row.note }}</div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="需求数量"
+            label="成本价"
             align="center"
             header-align="center"
             width="80">
           <template slot-scope="scope">
-            <div>{{ scope.row.need_qty }}</div>
+            <div>{{ scope.row.unit_cost | currency}}</div>
           </template>
         </el-table-column>
 
@@ -130,12 +129,13 @@
         </el-table-column>
 
         <el-table-column
-            label="所属店铺"
+            label="源批次|店铺"
             align="center"
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div style="margin-top: 10px">
+            <div>{{ scope.row.from_batch }}</div>
+            <div style="margin-top: 5px">
               <el-tag
                   style="border: none"
                   :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
@@ -143,6 +143,15 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
           </template>
         </el-table-column>
 
@@ -189,6 +198,85 @@
           :total="total">
       </el-pagination>
     </div>
+
+    <!--    下单采购弹窗-->
+    <el-dialog
+        title="采购列表"
+        :visible.sync="buyVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="1000px"
+    >
+      <div>
+        <el-checkbox v-model="changPrice">修改并同步价格到产品库</el-checkbox>
+        <el-table
+            ref="fbmTable"
+            :data="multipleSelection"
+            :header-cell-style="{background:'#fafafa'}"
+            style="width: 100%">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="100">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 80px; height: 80px"
+                  :src="scope.row.image | smpic"
+                  :preview-src-list="[scope.row.image]"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="产品"
+              show-overflow-tooltip>
+            <template slot-scope="scope">
+              <div style="font-weight: bold">{{ scope.row.sku }}</div>
+              <div>{{ scope.row.p_name }}</div>
+              <div>
+                <span class="plan3" v-if="scope.row.need_qty === scope.row.buy_qty">
+                <i class="el-icon-circle-check"></i> 运单需求 {{ scope.row.need_qty }}</span>
+                <span class="plan1" v-if="scope.row.need_qty !== scope.row.buy_qty">
+                <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
+                <span class="plan2" v-if="scope.row.need_qty === 0">
+                <i class="el-icon-circle-close"></i> 运单需求 无</span>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="成本价"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <div v-if="!changPrice">{{ scope.row.unit_cost | currency}}</div>
+              <div v-if="changPrice"><el-input-number v-model="scope.row.unit_cost" :precision="2" :min="0"></el-input-number></div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="采购数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.buy_qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="buyVisible=false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitBuy">确认下单</el-button>
+        </span>
+    </el-dialog>
+
+
   </div>
 </template>
 
@@ -207,9 +295,16 @@ export default {
       searchValue: '',
       p_status: 'WAITBUY',// 筛选状态
       multipleSelection: [], // 选中行
+      changPrice: false, // 修改并同步价格到产品库
+      buyVisible: false, // 下单采购弹窗
     }
   },
   filters: {
+    //rmb金额格式化
+    currency: function (value) {
+      if (!value) return 0.00;
+      return `¥${value.toFixed(2)}`;
+    },
     //时间日期格式化
     date: function (value) {
       return moment(value).format("YYYY-MM-DD HH:mm");
@@ -234,6 +329,7 @@ export default {
     },
     // 改变筛选状态
     changeStatus(value){
+      this.page = 1;
       this.p_status = value
       this.initPurchaseList()
     },
@@ -263,6 +359,17 @@ export default {
     currentChange(page) {
       this.page = page;
       this.initPurchaseList();
+    },
+    //提交下单采购
+    summitBuy(){
+      this.postRequest('api/ml_purchase/place_buy/', {'products':this.multipleSelection, 'is_change': this.changPrice}).then(resp => {
+        if (resp) {
+          this.buyVisible = false
+          this.multipleSelection = []
+          this.$refs.purchaseTable.clearSelection() //清除选中的数据
+          this.initPurchaseList();
+        }
+      })
     },
     //自动拉取采购产品
     pullPurchase(){
@@ -317,5 +424,15 @@ export default {
   margin-left: 5px;
   margin-right: 5px;
   color: #6e7079;
+}
+.plan1{
+  color: darkorange;
+}
+.plan2{
+  color: red;
+  font-weight: bold;
+}
+.plan3{
+  color: darkseagreen;
 }
 </style>
