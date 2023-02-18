@@ -12,14 +12,17 @@
           <el-badge :value="pre_qty" :hidden="!pre_qty" class="item">
             <el-button size="small" :type="s_status==='PREPARING'?'primary':''" @click="changeStatus('PREPARING')">备货中</el-button>
           </el-badge>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
           <el-badge :value="shipped_qty" :hidden="!shipped_qty" class="item">
             <el-button size="small" :type="s_status==='SHIPPED'?'primary':''" @click="changeStatus('SHIPPED')">运输中</el-button>
           </el-badge>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
           <el-badge :value="booked_qty" :hidden="!booked_qty" class="item">
             <el-button size="small" :type="s_status==='BOOKED'?'primary':''" @click="changeStatus('BOOKED')">已预约</el-button>
           </el-badge>
+          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
             <el-button size="small" :type="s_status==='FINISHED'?'primary':''" @click="changeStatus('FINISHED')">已完成</el-button>
 
@@ -819,11 +822,14 @@ export default {
   color: teal;
   font-size: 20px;
 }
-.item {
-  margin-right: 18px;
-}
+
 .zi {
   font-weight: bold;
   color: #E6A23C;
+}
+.jiantou{
+  margin-left: 8px;
+  margin-right: 8px;
+  color: #6e7079;
 }
 </style>

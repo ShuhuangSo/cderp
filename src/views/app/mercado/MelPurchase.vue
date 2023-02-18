@@ -8,16 +8,24 @@
       <div class="filter">
         <div>
 
+          <el-badge is-dot :value="wait_buy_num" :hidden="!wait_buy_num" class="item">
             <el-button size="small" :type="p_status==='WAITBUY'?'primary':''" @click="changeStatus('WAITBUY')">待采购</el-button>
+          </el-badge>
             <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
+          <el-badge is-dot :value="purchased_num" :hidden="!purchased_num" class="item">
             <el-button size="small" :type="p_status==='PURCHASED'?'primary':''" @click="changeStatus('PURCHASED')">已采购</el-button>
+          </el-badge>
           <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
+          <el-badge is-dot :value="rec_num" :hidden="!rec_num" class="item">
             <el-button size="small" :type="p_status==='RECEIVED'?'primary':''" @click="changeStatus('RECEIVED')">已到货</el-button>
+          </el-badge>
           <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
 
-          <el-button size="small" :type="p_status==='PACKED'?'primary':''" @click="changeStatus('PACKED')">已打包</el-button>
+          <el-badge is-dot :value="pack_num" :hidden="!pack_num" class="item">
+            <el-button size="small" :type="p_status==='PACKED'?'primary':''" @click="changeStatus('PACKED')">已打包</el-button>
+          </el-badge>
           <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
           <el-button size="small" :type="p_status==='USED'?'primary':''" @click="changeStatus('USED')">已出库</el-button>
 
@@ -37,13 +45,47 @@
                     style="width: 350px; margin-right: 5px">
             <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
           </el-input>
-          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
+
+          <el-select v-model="shop"
+                     style="width: 300px;margin-left: 5px"
+                     @change="changeFilter" placeholder="请选择店铺">
+            <el-option
+                v-for="item in shops"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.nickname }}</span>
+            </el-option>
+          </el-select>
+
+          <el-select v-model="filter_name"
+                     v-if="p_status==='WAITBUY'"
+                     style="width: 150px;margin-left: 5px; "
+                     @change="changeFilter" placeholder="请选择筛选项">
+            <el-option
+                v-for="item in filter_group"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
+
+          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='WAITBUY'">
             <el-button :disabled="!multipleSelection.length" @click="buyVisible=true" type="primary" plain>下单采购</el-button>
+          </el-badge>
+
+          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='PURCHASED'">
+            <el-button :disabled="!multipleSelection.length" @click="summitRec" type="primary" plain>确认收货</el-button>
+          </el-badge>
+
+          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
+            <el-button :disabled="!multipleSelection.length" @click="summitPack" type="primary" plain>确认打包</el-button>
           </el-badge>
 
         </div>
 
-        <el-dropdown @command="handleCommand">
+        <el-dropdown @command="handleCommand" v-if="p_status==='WAITBUY'">
           <el-button type="success">
             新增采购<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
@@ -56,7 +98,9 @@
     </div>
 
     <div style="margin-top: 5px">
+      <!--      待采购表格-->
       <el-table
+          v-if="p_status==='WAITBUY'"
           ref="purchaseTable"
           :data="purchaseList"
           :header-cell-style="{background:'#fafafa'}"
@@ -91,7 +135,7 @@
             show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="font-weight: bold">{{ scope.row.sku }}
-              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新入仓</el-tag>
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
             <div>
@@ -100,7 +144,7 @@
               </span>
               <span class="plan3" v-if="scope.row.need_qty === scope.row.buy_qty">
                 <i class="el-icon-circle-check"></i> 运单需求 {{ scope.row.need_qty }}</span>
-              <span class="plan1" v-if="scope.row.need_qty !== scope.row.buy_qty">
+              <span class="plan1" v-if="scope.row.need_qty>0 && scope.row.need_qty !== scope.row.buy_qty">
                 <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
               <span class="plan2" v-if="scope.row.need_qty === 0">
                 <i class="el-icon-circle-close"></i> 运单需求 无</span>
@@ -124,34 +168,21 @@
         </el-table-column>
 
         <el-table-column
-            v-if="p_status==='WAITBUY'"
-            label="采购数量"
+            label="采购建议"
             align="center"
             header-align="center"
             width="160">
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.buy_qty" :min="1"></el-input-number>
+            <el-input-number v-model="scope.row.buy_qty" :min="0"></el-input-number>
           </template>
         </el-table-column>
 
         <el-table-column
-            v-if="p_status==='PURCHASED'"
-            label="采购数量"
-            align="center"
-            header-align="center"
-            width="160">
-          <template slot-scope="scope">
-            <div>{{ scope.row.buy_qty}}</div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="源批次|店铺"
+            label="店铺"
             align="center"
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div>{{ scope.row.from_batch }}</div>
             <div style="margin-top: 5px">
               <el-tag
                   style="border: none"
@@ -178,8 +209,7 @@
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div v-if="p_status==='WAITBUY'">{{ scope.row.create_time | date}}</div>
-            <div v-if="p_status==='PURCHASED'">{{ scope.row.buy_time | date}}</div>
+            <div>{{ scope.row.create_time | date}}</div>
           </template>
         </el-table-column>
 
@@ -195,19 +225,522 @@
                 <i class="el-icon-more"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'editQty', obj:scope.row}">知会更新</el-dropdown-item>
+                <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
+
+      <!--      已采购表格-->
+      <el-table
+          v-if="p_status==='PURCHASED'"
+          ref="purchaseTable"
+          :data="purchaseList"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
+          style="width: 100%">
+
+        <el-table-column
+            :reserve-selection="true"
+            type="selection"
+            width="42">
+        </el-table-column>
+
+        <el-table-column
+            label="图片"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 70px; height: 70px"
+                :src="scope.row.image | smpic"
+                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
+                fit="fill">
+            </el-image>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="产品"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+            </div>
+            <div>{{ scope.row.p_name }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="成本价"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <div>{{ scope.row.unit_cost | currency}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="采购数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <div>{{ scope.row.buy_qty}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="p_status==='PURCHASED'"
+            label="收货数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.rec_qty" :min="1"></el-input-number>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="店铺"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div style="margin-top: 5px">
+              <el-tag
+                  style="border: none"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.shop}}</span>
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            :label="timeLabel"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div>{{ scope.row.buy_time | date}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="操作"
+            width="50"
+        >
+          <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+
+<!--      已到货表格-->
+      <el-table
+          v-if="p_status==='RECEIVED'"
+          ref="purchaseTable"
+          :data="purchaseList"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
+          style="width: 100%">
+
+        <el-table-column
+            :reserve-selection="true"
+            type="selection"
+            width="42">
+        </el-table-column>
+
+        <el-table-column
+            label="图片"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 70px; height: 70px"
+                :src="scope.row.image | smpic"
+                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
+                fit="fill">
+            </el-image>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="产品"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+            </div>
+            <div>{{ scope.row.p_name }}</div>
+            <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="成本价"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <div>{{ scope.row.unit_cost | currency}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="到货数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <div>{{ scope.row.rec_qty}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="打包数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.pack_qty" :min="1"></el-input-number>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="店铺"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div style="margin-top: 5px">
+              <el-tag
+                  style="border: none"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.shop}}</span>
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            :label="timeLabel"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div>{{ scope.row.rec_time | date}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="操作"
+            width="50"
+        >
+          <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+
+<!--      已打包表格-->
+      <el-table
+          v-if="p_status==='PACKED'"
+          ref="purchaseTable"
+          :data="purchaseList"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
+          style="width: 100%">
+
+        <el-table-column
+            :reserve-selection="true"
+            type="selection"
+            width="42">
+        </el-table-column>
+
+        <el-table-column
+            label="图片"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 70px; height: 70px"
+                :src="scope.row.image | smpic"
+                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
+                fit="fill">
+            </el-image>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="产品"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+            </div>
+            <div>{{ scope.row.p_name }}</div>
+            <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}
+              <el-tag type="warning" size="small" effect="plain" v-if="!scope.row.is_checked">待核查</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="成本价"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <div>{{ scope.row.unit_cost | currency}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="在仓数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <div>{{ scope.row.pack_qty}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="店铺"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div style="margin-top: 5px">
+              <el-tag
+                  style="border: none"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.shop}}</span>
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            :label="timeLabel"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div>{{ scope.row.pack_time | date}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="操作"
+            width="50"
+        >
+          <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'check_product', obj:scope.row}">数据核查</el-dropdown-item>
+                <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+
+<!--      已出库表格-->
+      <el-table
+          v-if="p_status==='USED'"
+          ref="purchaseTable"
+          :data="purchaseList"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
+          style="width: 100%">
+
+        <el-table-column
+            :reserve-selection="true"
+            type="selection"
+            width="42">
+        </el-table-column>
+
+        <el-table-column
+            label="图片"
+            align="center"
+            header-align="center"
+            width="100">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 70px; height: 70px"
+                :src="scope.row.image | smpic"
+                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
+                fit="fill">
+            </el-image>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="产品"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="font-weight: bold">{{ scope.row.sku }}
+              <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+            </div>
+            <div>{{ scope.row.p_name }}</div>
+            <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="使用批次"
+            align="center"
+            header-align="center"
+            width="80">
+          <template slot-scope="scope">
+            <div>{{ scope.row.used_batch}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="出库数量"
+            align="center"
+            header-align="center"
+            width="160">
+          <template slot-scope="scope">
+            <div>{{ scope.row.used_qty}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="店铺"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div style="margin-top: 5px">
+              <el-tag
+                  style="border: none"
+                  :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.shop}}</span>
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="180"
+            label="简要备注"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.note }}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            :label="timeLabel"
+            align="center"
+            header-align="center"
+            width="150">
+          <template slot-scope="scope">
+            <div>{{ scope.row.used_time | date}}</div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            align="center"
+            header-align="center"
+            label="操作"
+            width="50"
+        >
+          <template slot-scope="scope">
+            <el-dropdown @command="handleProductOp">
+              <el-button type="text">
+                <i class="el-icon-more"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+
     </div>
 
     <div class="pagination">
       <el-pagination
           background
-          :page-sizes="[20, 30, 40, 50, 100]"
+          :page-sizes="[50, 100]"
           @current-change="currentChange"
           @size-change="sizeChange"
           layout="sizes, prev, pager, next, jumper, ->, total"
@@ -253,14 +786,6 @@
             <template slot-scope="scope">
               <div style="font-weight: bold">{{ scope.row.sku }}</div>
               <div>{{ scope.row.p_name }}</div>
-              <div>
-                <span class="plan3" v-if="scope.row.need_qty === scope.row.buy_qty">
-                <i class="el-icon-circle-check"></i> 运单需求 {{ scope.row.need_qty }}</span>
-                <span class="plan1" v-if="scope.row.need_qty !== scope.row.buy_qty">
-                <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
-                <span class="plan2" v-if="scope.row.need_qty === 0">
-                <i class="el-icon-circle-close"></i> 运单需求 无</span>
-              </div>
             </template>
           </el-table-column>
 
@@ -293,27 +818,152 @@
         </span>
     </el-dialog>
 
+    <!--    添加产品弹窗-->
+    <el-dialog
+        title="添加产品"
+        :visible.sync="addProductVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <MelAddProduct ref="addProduct" @func="getAddProducts"></MelAddProduct>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="addProductVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="confirmAddProduct">确 定</el-button>
+        </span>
+    </el-dialog>
+
+    <!--    修改备注弹窗-->
+    <el-dialog
+        title="编辑备注"
+        :visible.sync="noteVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="300px"
+    >
+      <div>
+        <el-input maxlength="50" v-model="note_value" placeholder="请输入备注"></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="noteVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="!noteVisible" @click="summitEditNote">确 定</el-button>
+        </span>
+    </el-dialog>
+
+    <!--    产品数据核查弹窗-->
+    <el-dialog
+        title="数据核查"
+        :visible.sync="checkVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="400px"
+    >
+
+      <el-form>
+        <el-form-item prop="length">
+          <el-input v-model="mlProduct.length">
+            <template slot="prepend">长cm</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="width">
+          <el-input v-model="mlProduct.width">
+            <template slot="prepend">宽cm</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="mlProduct.heigth">
+            <template slot="prepend">高cm</template>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item prop="weight">
+          <el-input v-model="mlProduct.weight">
+            <template slot="prepend">重量kg</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="包材" prop="shop">
+          <el-select style="width: 300px;" v-model="mlProduct.packing_id" placeholder="请选择包材">
+            <el-option
+                v-for="item in packs"
+                :key="item.name"
+                :label="item.name"
+                :value="item.id">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.size }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据是否核对">
+          <el-switch
+              v-model="mlProduct.is_checked"
+              active-color="#13ce66">
+          </el-switch>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="checkVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitCheck">确 定</el-button>
+        </span>
+    </el-dialog>
 
   </div>
 </template>
 
 <script>
 import moment from "moment/moment";
+import MelAddProduct from "@/views/app/mercado/MelAddProduct";
 
 export default {
   name: "MelPurchase",
+  components:{MelAddProduct},
   data() {
     return {
       purchaseList: [],
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
-      size: 20,  // 页大小
+      size: 50,  // 页大小
       searchValue: '',
       p_status: 'WAITBUY',// 筛选状态
       multipleSelection: [], // 选中行
       changPrice: false, // 修改并同步价格到产品库
       buyVisible: false, // 下单采购弹窗
+      shop: '全部店铺',
+      shops: [],
+      wait_buy_num: 0, // 待采购单数量
+      purchased_num: 0, // 已采购单数量
+      rec_num: 0, // 已收货单数量
+      pack_num: 0, // 已打包单数量
+      addProductVisible: false, // 添加产品弹窗
+      noteVisible: false, // 编辑备注弹窗
+      note_value: '', // 备注
+      checkVisible: false, // 产品数据核查弹窗
+      packs: [],
+      mlProduct: {
+        pm_id: null,
+        length: null,
+        width: null,
+        heigth: null,
+        weight: null,
+        is_checked: false,
+        packing_id: null
+      },
+      filter_name: '', // 库存筛选
+      filter_group: [
+        {
+          name: '全部采购需求',
+          value: ''
+        },
+        {
+          name: '库存未满足',
+          value: '&buy_qty__gt=0'
+        },
+        {
+          name: '库存已满足',
+          value: '&buy_qty=0'
+        },
+      ],
     }
   },
   computed: {
@@ -346,9 +996,31 @@ export default {
   },
   mounted() {
     this.initPurchaseList()
+    this.inintShops()
+    this.calcPurchases();
   },
   methods:{
     handleProductOp(command){
+      // 数据核查
+      if (command['type'] === 'check_product') {
+        this.initPacking()
+        this.mlProduct.pm_id = command['obj'].id
+        this.mlProduct.length = command['obj'].length
+        this.mlProduct.width = command['obj'].width
+        this.mlProduct.heigth = command['obj'].heigth
+        this.mlProduct.weight = command['obj'].weight
+        this.mlProduct.is_checked = command['obj'].is_checked
+        this.mlProduct.packing_id = command['obj'].packing_id
+        this.checkVisible = true;
+      }
+
+      // 编辑备注
+      if (command['type'] === 'edit_note') {
+        this.noteVisible = true;
+        this.note_value = command['obj'].note
+        this.purchase_id = command['obj'].id
+      }
+
       // 产品删除
       if (command['type'] === 'delete') {
         this.$confirm('是否删除产品?', '提示', {
@@ -382,10 +1054,16 @@ export default {
       this.$refs.purchaseTable.clearSelection() //清除选中的数据
       this.initPurchaseList()
     },
+    //改变筛选动作
+    changeFilter(){
+      this.page = 1;
+      this.initPurchaseList();
+    },
 
     //新增采购
     handleCommand(command) {
       if (command === 'sys') this.pullPurchase()
+      if (command === 'manuel') this.addProductVisible = true
     },
     // 重置搜索内容
     clearSearchValue() {
@@ -409,6 +1087,91 @@ export default {
       this.page = page;
       this.initPurchaseList();
     },
+    // 添加产品弹窗确认
+    confirmAddProduct() {
+      this.$refs.addProduct.submitSelectProduct();
+    },
+    //获取子组件 添加产品的信息
+    getAddProducts(data){
+      if (data.length > 0) {
+        let exist = false
+        data.forEach(item=>{
+          let existSKU = this.purchaseList.find(i => {
+            return i.sku === item.sku;
+          })
+          if (existSKU) exist = true
+        })
+        if (!exist) {
+          this.postRequest('api/ml_purchase/manuel_create_buy/', data).then(resp => {
+            if (resp) {
+              this.initPurchaseList();
+            }
+          })
+        } else {
+          this.$message.error('有产品已在待采购中！')
+        }
+      }
+      this.addProductVisible = false;
+    },
+    summitEditNote(){
+      this.patchRequest('api/ml_purchase/'+ this.purchase_id +'/', {'note': this.note_value}).then(resp => {
+        if (resp) {
+          this.noteVisible = false;
+          this.initPurchaseList();
+          this.note_value = ''
+          this.purchase_id = null
+        }
+      })
+    },
+    //提交确认打包
+    summitPack(){
+      this.$confirm('是否确认打包?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //调用提交确认收货
+        this.postRequest('api/ml_purchase/pack_buy/', this.multipleSelection).then(resp => {
+          this.multipleSelection = []
+          this.$refs.purchaseTable.clearSelection() //清除选中的数据
+          this.initPurchaseList();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消打包'
+          });
+        });
+      })
+    },
+    //提交确认收货
+    summitRec(){
+      this.$confirm('是否确认收货?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //调用提交确认收货
+        this.postRequest('api/ml_purchase/rec_buy/', this.multipleSelection).then(resp => {
+          this.multipleSelection = []
+          this.$refs.purchaseTable.clearSelection() //清除选中的数据
+          this.initPurchaseList();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消收货'
+          });
+        });
+      })
+    },
+    //提交产品数据核查
+    summitCheck(){
+      this.postRequest('api/ml_purchase/check_product/', this.mlProduct).then(resp => {
+        if (resp) {
+          this.checkVisible = false
+          this.initPurchaseList();
+        }
+      })
+    },
     //提交下单采购
     summitBuy(){
       this.postRequest('api/ml_purchase/place_buy/', {'products':this.multipleSelection, 'is_change': this.changPrice}).then(resp => {
@@ -431,6 +1194,41 @@ export default {
         }
       })
     },
+    inintShops(){
+      //获取所有可选店铺
+      if(window.sessionStorage.getItem('ml_shops')) {
+        this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+      }else{
+        let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
+
+        this.getRequest(url).then(resp => {
+          if (resp.results) {
+            this.shops = resp.results;
+            window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+          }
+        })
+      }
+      this.shops.unshift({'name': '全部店铺', 'id': '', 'nickname': ''})
+    },
+    // 计算各状态运单数量
+    calcPurchases(){
+      this.getRequest('/api/ml_purchase/calc_purchase/').then(resp => {
+        if (resp) {
+          this.wait_buy_num = resp.wait_buy_num
+          this.purchased_num = resp.purchased_num
+          this.rec_num = resp.rec_num
+          this.pack_num = resp.pack_num
+        }
+      })
+    },
+    initPacking(){
+      //初始化包材
+      this.getRequest('api/ml_packing/?page_size=1000').then(resp => {
+        if (resp.results) {
+          this.packs = resp.results;
+        }
+      })
+    },
     //初始化采购列表
     initPurchaseList() {
       let url = '/api/ml_purchase/?page=' + this.page + '&page_size=' + this.size
@@ -438,7 +1236,19 @@ export default {
         url += '&search=' + this.searchValue;
       }
       url += '&p_status=' + this.p_status
-      url += '&ordering=shop,item_id'
+
+      if (this.shop!=='全部店铺') {
+        url += '&shop=' + this.shop;
+      }
+      if (this.filter_name) {
+        url += this.filter_name;
+      }
+
+      if (this.p_status === 'USED') {
+        url += '&ordering=-used_time'
+      } else {
+        url += '&ordering=shop,item_id'
+      }
 
       this.loading = true
       this.getRequest(url).then(resp => {
@@ -449,7 +1259,7 @@ export default {
         }
       })
 
-      // this.calcShips();
+      this.calcPurchases();
     }
   }
 }
@@ -488,5 +1298,11 @@ export default {
 .plan4{
   color: #409EFF;
   margin-left: 10px;
+}
+.packing{
+  color: #99a9bf;
+}
+.item_main{
+  margin-left: 20px;
 }
 </style>
