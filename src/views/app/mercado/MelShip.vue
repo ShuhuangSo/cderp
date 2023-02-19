@@ -109,12 +109,14 @@
                   </div>
 
                   <div>{{ scope.row.p_name }}</div>
-                  <span class="plan4" v-if="scope.row.total_onway_qty">
+                  <div v-if="s_status==='PREPARING'">
+                    <span class="plan4" v-if="scope.row.total_onway_qty">
                 <i class="el-icon-truck"></i>在途 {{ scope.row.total_onway_qty }}</span>
-                  <span class="plan3" v-if="scope.row.total_rec_qty">
+                    <span class="plan3" v-if="scope.row.total_rec_qty">
                 <i class="el-icon-receiving"></i>到货 {{ scope.row.total_rec_qty }}</span>
-                  <span class="plan5" v-if="!scope.row.total_rec_qty && !scope.row.total_onway_qty">
+                    <span class="plan5" v-if="!scope.row.total_rec_qty && !scope.row.total_onway_qty">
                 <i class="el-icon-warning-outline"></i>未采购</span>
+                  </div>
                 </template>
               </el-table-column>
 
