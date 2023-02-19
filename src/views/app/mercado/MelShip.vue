@@ -109,6 +109,12 @@
                   </div>
 
                   <div>{{ scope.row.p_name }}</div>
+                  <span class="plan4" v-if="scope.row.total_onway_qty">
+                <i class="el-icon-truck"></i>在途 {{ scope.row.total_onway_qty }}</span>
+                  <span class="plan3" v-if="scope.row.total_rec_qty">
+                <i class="el-icon-receiving"></i>到货 {{ scope.row.total_rec_qty }}</span>
+                  <span class="plan5" v-if="!scope.row.total_rec_qty && !scope.row.total_onway_qty">
+                <i class="el-icon-warning-outline"></i>未采购</span>
                 </template>
               </el-table-column>
 
@@ -831,5 +837,15 @@ export default {
   margin-left: 8px;
   margin-right: 8px;
   color: #6e7079;
+}
+.plan4{
+  color: #409EFF;
+  margin-right: 10px;
+}
+.plan3{
+  color: darkseagreen;
+}
+.plan5{
+  color: darkorange;
 }
 </style>

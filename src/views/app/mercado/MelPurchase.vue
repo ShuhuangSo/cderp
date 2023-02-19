@@ -80,6 +80,10 @@
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
+            <el-button :disabled="!multipleSelection.length" @click="summitQC" type="success" plain>产品质检</el-button>
+          </el-badge>
+
+          <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
             <el-button :disabled="!multipleSelection.length" @click="summitPack" type="primary" plain>确认打包</el-button>
           </el-badge>
 
@@ -287,7 +291,7 @@
         </el-table-column>
 
         <el-table-column
-            label="采购数量"
+            label="在途数量"
             align="center"
             header-align="center"
             width="160">
@@ -408,12 +412,13 @@
         </el-table-column>
 
         <el-table-column
-            label="成本价"
+            label="产品质检"
             align="center"
             header-align="center"
             width="80">
           <template slot-scope="scope">
-            <div>{{ scope.row.unit_cost | currency}}</div>
+            <el-tag type="success" size="small" effect="plain" v-if="scope.row.is_qc">已质检</el-tag>
+            <el-tag type="warning" size="small" effect="plain" v-if="!scope.row.is_qc">未质检</el-tag>
           </template>
         </el-table-column>
 
@@ -534,7 +539,7 @@
             </div>
             <div>{{ scope.row.p_name }}</div>
             <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}
-              <el-tag type="warning" size="small" effect="plain" v-if="!scope.row.is_checked">待核查</el-tag>
+              <el-tag type="warning" size="small" effect="plain" v-if="!scope.row.is_checked">数据待核查</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -1123,6 +1128,26 @@ export default {
         }
       })
     },
+    //提交产品质检
+    summitQC(){
+      this.$confirm('是否已完成质检?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //调用提交产品质检
+        this.postRequest('api/ml_purchase/product_qc/', this.multipleSelection).then(resp => {
+          this.multipleSelection = []
+          this.$refs.purchaseTable.clearSelection() //清除选中的数据
+          this.initPurchaseList();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消质检'
+          });
+        });
+      })
+    },
     //提交确认打包
     summitPack(){
       this.$confirm('是否确认打包?', '提示', {
@@ -1130,17 +1155,28 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        //调用提交确认收货
-        this.postRequest('api/ml_purchase/pack_buy/', this.multipleSelection).then(resp => {
-          this.multipleSelection = []
-          this.$refs.purchaseTable.clearSelection() //清除选中的数据
-          this.initPurchaseList();
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消打包'
+        let all_qc = true
+        this.multipleSelection.forEach(item=>{
+          if (!item.is_qc) all_qc = false
+        })
+        if (all_qc) {
+          //调用提交确认收货
+          this.postRequest('api/ml_purchase/pack_buy/', this.multipleSelection).then(resp => {
+            this.multipleSelection = []
+            this.$refs.purchaseTable.clearSelection() //清除选中的数据
+            this.initPurchaseList();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消打包'
+            });
           });
-        });
+        } else {
+          this.$message({
+            type: 'error',
+            message: '打包失败，有未质检产品！'
+          });
+        }
       })
     },
     //提交确认收货

@@ -169,6 +169,10 @@ export default {
           value: '&op_module=PRODUCT'
         },
         {
+          name: '采购管理',
+          value: '&op_module=PURCHASE'
+        },
+        {
           name: '发仓运单',
           value: '&op_module=SHIP'
         },
@@ -227,6 +231,7 @@ export default {
       if (value === 'TRANS') return '中转仓';
       if (value === 'ORDER') return '销售订单';
       if (value === 'FINANCE') return '财务管理';
+      if (value === 'PURCHASE') return '采购管理';
     },
   },
   mounted() {
