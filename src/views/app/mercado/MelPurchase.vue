@@ -865,6 +865,9 @@
     >
 
       <el-form>
+        <el-form-item prop="unit_colst" label="成本价">
+          <el-input-number v-model="mlProduct.unit_cost" :precision="2" :min="0.01"></el-input-number>
+        </el-form-item>
         <el-form-item prop="length">
           <el-input v-model="mlProduct.length">
             <template slot="prepend">长cm</template>
@@ -947,6 +950,7 @@ export default {
       packs: [],
       mlProduct: {
         pm_id: null,
+        unit_cost: null,
         length: null,
         width: null,
         heigth: null,
@@ -1010,6 +1014,7 @@ export default {
       if (command['type'] === 'check_product') {
         this.initPacking()
         this.mlProduct.pm_id = command['obj'].id
+        this.mlProduct.unit_cost = command['obj'].unit_cost
         this.mlProduct.length = command['obj'].length
         this.mlProduct.width = command['obj'].width
         this.mlProduct.heigth = command['obj'].heigth
