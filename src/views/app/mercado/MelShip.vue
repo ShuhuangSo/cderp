@@ -184,7 +184,14 @@
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div class="m_name">{{ scope.row.batch}}</div>
+            <div>
+              <el-link
+                  class="m_name"
+                  @click.native="checkShipDetail(scope.row.id)"
+                  :underline="false">
+                {{ scope.row.batch }}
+              </el-link>
+            </div>
             <div style="margin-top: 10px">
               <el-tag
                   style="border: none"
@@ -297,37 +304,78 @@
         <el-table-column
             label="操作"
             width="130"
+            align="center"
+            header-align="center"
         >
           <template slot-scope="scope">
-            <el-dropdown @command="handleShipOp">
-              <el-button type="text">
-                操作<i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'"
-                                  :disabled="!scope.row.shipping_fee && !scope.row.send_from"
-                                  :command="{type:'in_warehouse', id:scope.row.id}">确认入仓</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='PREPARING'" :command="{type:'packing', id:scope.row.id}">打包发货</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status!=='PREPARING'" :command="{type:'detail', id:scope.row.id}">查看运单详情</el-dropdown-item>
-                <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='SHIPPED'" :command="{type:'book', id:scope.row.id}">FBM预约</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.s_status==='BOOKED'" :command="{type:'edit_book', row:scope.row}">修改预约日期</el-dropdown-item>
-                <el-dropdown-item
-                    v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && !scope.row.shipping_fee"
-                    :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
-                <el-dropdown-item
-                    v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && scope.row.shipping_fee"
-                    :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
-                <el-dropdown-item
-                    v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
-                    :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
-                <el-dropdown-item :command="{type:'export_purchase', id:scope.row.id}">导出采购单</el-dropdown-item>
-                <el-dropdown-item :command="{type:'export_qc', id:scope.row.id}">导出质检单</el-dropdown-item>
-                <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
+            <div v-if="scope.row.s_status==='PREPARING'">
+              <el-button
+                  @click="packAndSend(scope.row.id)"
+                  size="mini" type="primary" plain round><i class="el-icon-box"></i> 打包</el-button>
+            </div>
+            <div v-if="scope.row.s_status==='BOOKED'">
+              <el-button
+                  :disabled="!scope.row.shipping_fee && !scope.row.send_from"
+                  key="test"
+                  @click="confirmInWarehouse(scope.row.id)"
+                  size="mini" type="primary" plain round><i class="el-icon-circle-check"></i> 入仓</el-button>
+            </div>
+            <div v-if="scope.row.s_status==='SHIPPED'">
+              <el-button
+                  @click="createBook(scope.row.id)"
+                  size="mini" type="primary" plain round><i class="el-icon-date"></i> 预约</el-button>
+            </div>
+            <div v-if="scope.row.s_status==='BOOKED'"  style="margin-top: 5px">
+              <el-button
+                  @click="editeBook(scope.row)"
+                  size="mini" type="danger" plain round><i class="el-icon-date"></i> 改约</el-button>
+            </div>
+
+            <div style="margin-top: 5px">
+              <el-dropdown @command="handleShipOp">
+                <el-button size="mini" type="warning" plain round>
+                  <i class="el-icon-arrow-down"></i> 编辑
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+
+            <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING'">
+              <el-dropdown @command="handleShipOp">
+                <el-button size="mini" type="info" plain round>
+                  <i class="el-icon-arrow-down"></i> 导出
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item :command="{type:'export_purchase', id:scope.row.id}">导出采购单</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'export_qc', id:scope.row.id}">导出质检单</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+
+            <div style="margin-top: 5px" v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'">
+              <el-dropdown @command="handleShipOp">
+                <el-button size="mini" :type="scope.row.shipping_fee? 'success': ''" plain round>
+                  <i class="el-icon-arrow-down"></i> 费用
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                      v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && !scope.row.shipping_fee"
+                      :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
+                  <el-dropdown-item
+                      v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && scope.row.shipping_fee"
+                      :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
+                  <el-dropdown-item
+                      v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
+                      :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+
           </template>
         </el-table-column>
       </el-table>
@@ -582,6 +630,60 @@ export default {
     changeStatus(value){
       this.s_status = value
       this.initShips()
+    },
+
+    // 打包发货
+    packAndSend(id){
+      this.$router.push({
+        path: '/shipDetail',
+        query: {
+          id: id
+        }
+      });
+    },
+
+    // FBM预约
+    createBook(id){
+      this.bookVisible = true;
+      this.ship_id = id
+    },
+
+    // 修改FBM预约
+    editeBook(row){
+      this.bookVisible = true;
+      this.book_date = row.book_date
+      this.ship_id = row.id
+    },
+
+    // 查看运单详情
+    checkShipDetail(id){
+      // 查看运单详情
+      this.$router.push({
+        path: '/shipDetail',
+        query: {
+          id: id,
+          action: 'DETAIL',
+        }
+      });
+    },
+
+    // 确认入仓
+    confirmInWarehouse(id){
+      this.$confirm('是否确认入仓?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //确认入仓
+        this.postRequest('api/ml_ship/in_warehouse/', {'id': id}).then(resp => {
+          this.initShips();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消入仓'
+          });
+        });
+      })
     },
 
     // 运单更多操作
