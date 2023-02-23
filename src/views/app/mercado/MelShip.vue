@@ -323,6 +323,7 @@
                     v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
                     :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
                 <el-dropdown-item :command="{type:'export_purchase', id:scope.row.id}">导出采购单</el-dropdown-item>
+                <el-dropdown-item :command="{type:'export_qc', id:scope.row.id}">导出质检单</el-dropdown-item>
                 <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
               </el-dropdown-menu>
@@ -626,6 +627,27 @@ export default {
           type: 'warning'
         }).then(() => {
           this.postRequest('api/ml_ship/export_purchase/', {'id': command['id']}).then(resp => {
+            if (resp) {
+              window.open(resp.url, '_blank')
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+
+      // 导出质检单
+      if (command['type'] === 'export_qc') {
+        this.$confirm('是否导出质检单?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.postRequest('api/ml_ship/export_qc/', {'id': command['id']}).then(resp => {
             if (resp) {
               window.open(resp.url, '_blank')
             }

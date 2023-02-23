@@ -375,6 +375,8 @@ export default {
   methods:{
     // 改变出仓状态
     changeOutStatus(){
+      this.page = 1
+      this.$refs.productTable.clearSelection() //清除选中的数据
       this.inintShops();
     },
     //点击复制

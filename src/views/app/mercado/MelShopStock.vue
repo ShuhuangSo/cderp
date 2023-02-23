@@ -172,8 +172,11 @@
 
             <div>{{ scope.row.p_name }}</div>
             <div>{{ scope.row.item_id }}
-              <el-link :href="scope.row.sale_url" :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
+              <el-link :href="scope.row.sale_url"
+                       title="查看平台链接"
+                       :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
               <el-link @click.native="selectItemID(scope.row.item_id)"
+                       title="筛选当前ItemID"
                        style="margin-left: 5px"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
             </div>

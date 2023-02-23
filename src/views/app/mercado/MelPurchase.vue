@@ -1055,6 +1055,7 @@ export default {
     // 改变筛选状态
     changeStatus(value){
       this.page = 1;
+      this.filter_name = ''
       this.p_status = value
       this.$refs.purchaseTable.clearSelection() //清除选中的数据
       this.initPurchaseList()
