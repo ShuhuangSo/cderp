@@ -263,6 +263,75 @@
 
         </el-table>
 
+        <div style="margin-left: 10px">
+          <h4>遗弃清单</h4>
+        </div>
+        <el-table
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="removeItems"
+            border
+            size="mini"
+            style="width: 650px; margin: 10px">
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image | smpic"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="产品"
+              show-overflow-tooltip
+              width="300">
+            <template slot-scope="scope">
+              <div><span class="remove">{{ scope.row.sku }} </span>
+                <el-tag type="danger" size="mini" v-if="scope.row.item_type==='REMOVE'">移除</el-tag>
+                <el-tag type="warning" size="mini" v-if="scope.row.item_type==='REDUCE'">减量</el-tag>
+              </div>
+
+              <div class="remove">{{ scope.row.p_name }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="计划数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.plan_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="实发数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.send_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="操作">
+            <template slot-scope="scope">
+              <el-button type="text" style="color: darkolivegreen"
+                         @click="restoreRemove(scope.row.id)"
+                         v-if="scope.row.item_type==='REMOVE' && !action">恢复</el-button>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
             <h3>SKU数：<span style="color: green">{{ ship.ship_shipDetail.length }}</span> 个</h3>
@@ -398,6 +467,7 @@ export default {
       action: this.$route.query.action,
       ship: null,
       loading: false,
+      removeItems: [], //遗弃清单
       boxes: [], //包装箱
       addBoxVisible: false,
       box: {
@@ -523,6 +593,7 @@ export default {
   mounted() {
     this.initShip();
     this.initBox();
+    this.initRemoveItem()
   },
   methods:{
     getSummaries(param) {
@@ -574,10 +645,31 @@ export default {
       this.box.id = null
 
     },
+    //恢复删除项
+    restoreRemove(id){
+      this.$confirm('是否恢复该产品?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.postRequest('api/ml_ship_item_remove/restore_remove/', {'id': id}).then(resp => {
+          this.initShip()
+          this.initRemoveItem()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消恢复'
+          });
+        });
+      })
+    },
+    //保存运单
     saveShip(){
       this.ship['action'] = 'PREPARING'
       this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
         if (resp) {
+          this.initShip()
+          this.initRemoveItem()
         }
       })
     },
@@ -686,6 +778,16 @@ export default {
         }
       })
     },
+
+    // 初始化遗弃清单
+    initRemoveItem(){
+      this.getRequest('api/ml_ship_item_remove/?ship='+ this.shipID +'&page_size=1000&ordering=-item_type').then(resp => {
+        if (resp.results) {
+          this.removeItems = resp.results;
+        }
+      })
+    },
+
     // 初始化包装箱
     initBox(){
       this.getRequest('api/ml_ship_box/?ship='+ this.shipID +'&page_size=1000&ordering=id').then(resp => {
@@ -713,5 +815,8 @@ export default {
 }
 .packing{
   color: #99a9bf;
+}
+.remove{
+  color: #cac6c6;
 }
 </style>
