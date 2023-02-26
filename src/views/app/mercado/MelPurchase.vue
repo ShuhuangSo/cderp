@@ -72,25 +72,33 @@
           </el-select>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='WAITBUY'">
-            <el-button :disabled="!multipleSelection.length" @click="buyVisible=true" type="primary" plain>下单采购</el-button>
+            <el-button :disabled="!multipleSelection.length"
+                       v-if="permission.purchase_buy"
+                       @click="buyVisible=true" type="primary" plain>下单采购</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='PURCHASED'">
-            <el-button :disabled="!multipleSelection.length" @click="summitRec" type="primary" plain>确认收货</el-button>
+            <el-button :disabled="!multipleSelection.length"
+                       v-if="permission.purchase_receive"
+                       @click="summitRec" type="primary" plain>确认收货</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
-            <el-button :disabled="!multipleSelection.length" @click="summitQC" type="success" plain>产品质检</el-button>
+            <el-button :disabled="!multipleSelection.length"
+                       v-if="permission.purchase_qc"
+                       @click="summitQC" type="success" plain>产品质检</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
-            <el-button :disabled="!multipleSelection.length" @click="summitPack" type="primary" plain>确认打包</el-button>
+            <el-button :disabled="!multipleSelection.length"
+                       v-if="permission.purchase_pack"
+                       @click="summitPack" type="primary" plain>确认打包</el-button>
           </el-badge>
 
         </div>
 
         <el-dropdown @command="handleCommand" v-if="p_status==='WAITBUY'">
-          <el-button type="success">
+          <el-button type="success" :disabled="!permission.purchase_create">
             新增采购<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
@@ -230,7 +238,8 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
+                                  v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -360,7 +369,8 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
+                                  v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -491,7 +501,8 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
+                                  v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -612,9 +623,11 @@
                 <i class="el-icon-more"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'check_product', obj:scope.row}">数据核查</el-dropdown-item>
+                <el-dropdown-item :command="{type:'check_product', obj:scope.row}"
+                                  v-if="permission.purchase_dataCheck">数据核查</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除</el-dropdown-item>
+                <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
+                                  v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -763,7 +776,7 @@
         width="1000px"
     >
       <div>
-        <el-checkbox v-model="changPrice">修改并同步价格到产品库</el-checkbox>
+        <el-checkbox v-model="changPrice" v-if="permission.purchase_changePrice">修改并同步价格到产品库</el-checkbox>
         <el-table
             ref="fbmTable"
             :data="multipleSelection"
@@ -928,6 +941,7 @@ export default {
   data() {
     return {
       purchaseList: [],
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页

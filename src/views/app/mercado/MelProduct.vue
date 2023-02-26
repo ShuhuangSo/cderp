@@ -71,6 +71,7 @@
         </el-button>
 
         <el-button type="success" icon="el-icon-upload"
+                   v-if="permission.product_upload"
                    style="margin-right: 10px"
                    @click="uploadVisible=true">产品导入
         </el-button>

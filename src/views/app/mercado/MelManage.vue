@@ -8,7 +8,7 @@
         <span slot="label"><i class="el-icon-goods"></i> 产品库</span>
         <MelProduct></MelProduct>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="采购管理" name="purchase"  v-if="user.is_superuser">
+      <el-tab-pane :lazy="true" label="采购管理" name="purchase"  v-if="permission.purchase">
         <span slot="label"><i class="el-icon-shopping-cart-full"></i> 采购管理</span>
         <MelPurchase></MelPurchase>
       </el-tab-pane>

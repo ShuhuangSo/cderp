@@ -79,6 +79,7 @@ export default {
           // 清空用户信息
           window.localStorage.removeItem('tokenStr');
           window.sessionStorage.removeItem('user');
+          window.sessionStorage.removeItem('ml_permission');
           //清空vuex里的菜单信息
           this.$store.commit('initRoutes', []);
           //跳转到登录页
