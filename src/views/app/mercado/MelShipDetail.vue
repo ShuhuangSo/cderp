@@ -263,10 +263,11 @@
 
         </el-table>
 
-        <div style="margin-left: 10px">
-          <h4>遗弃清单</h4>
+        <div style="margin-left: 10px" v-if="removeItems.length > 0">
+          <h4>变动清单</h4>
         </div>
         <el-table
+            v-if="removeItems.length > 0"
             :header-cell-style="{background:'#eef1f6'}"
             :data="removeItems"
             border

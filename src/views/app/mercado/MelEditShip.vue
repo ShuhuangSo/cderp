@@ -226,6 +226,73 @@
           </el-table-column>
         </el-table>
 
+        <div style="margin-left: 10px" v-if="removeItems.length > 0">
+          <h4>变动清单</h4>
+        </div>
+        <el-table
+            v-if="removeItems.length > 0"
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="removeItems"
+            border
+            size="mini"
+            style="width: 650px; margin: 10px">
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image | smpic"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="产品"
+              show-overflow-tooltip
+              width="300">
+            <template slot-scope="scope">
+              <div><span class="remove">{{ scope.row.sku }} </span>
+                <el-tag type="danger" size="mini" v-if="scope.row.item_type==='REMOVE'">移除</el-tag>
+                <el-tag type="warning" size="mini" v-if="scope.row.item_type==='REDUCE'">减量</el-tag>
+              </div>
+
+              <div class="remove">{{ scope.row.p_name }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="计划数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.plan_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="实发数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div>{{ scope.row.send_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="操作">
+            <template slot-scope="scope">
+            </template>
+          </el-table-column>
+
+        </el-table>
+
         <div class="total" v-if="ship.ship_shipDetail.length">
           <div style="float: left; width: 250px">
             <h3>FBM计划SKU数：<span style="color: darkorange;">{{ totalPlanSKU }}</span> 个</h3>
@@ -298,6 +365,7 @@ export default {
       shops: [], //可选店铺
       carriers: [], //可选物流商
       fbm_warehouses: [], //可选fbm仓库
+      removeItems: [], //遗弃清单
       show_plan: false, // 计划数量修改框可见状态
       addProductVisible: false,
       rules: {
@@ -326,6 +394,7 @@ export default {
     this.inintShops();
     this.initCarriers();
     this.inintFBMWarehouses();
+    this.initRemoveItem()
   },
   computed: {
     // 总数量
@@ -494,6 +563,16 @@ export default {
         }
       })
     },
+
+    // 初始化遗弃清单
+    initRemoveItem(){
+      this.getRequest('api/ml_ship_item_remove/?ship='+ this.shipID +'&page_size=1000&ordering=-item_type').then(resp => {
+        if (resp.results) {
+          this.removeItems = resp.results;
+        }
+      })
+    },
+
     inintShops(){
       //获取所有可选店铺
       let url = 'api/ml_shops/?warehouse_type='+ this.ship.target + '&page_size=1000&ordering=create_time'
@@ -546,5 +625,8 @@ export default {
 }
 .plan3{
   color: darkseagreen;
+}
+.remove{
+  color: #cac6c6;
 }
 </style>
