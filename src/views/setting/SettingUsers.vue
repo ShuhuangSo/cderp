@@ -67,7 +67,7 @@
 
               <el-table-column
                   label="操作"
-                  width="150"
+                  width="200"
                   align="center"
                   header-align="center"
               >
@@ -83,7 +83,14 @@
                       @click="goUserPermission(scope.row)"
                       type="text"
                       size="small">
-                    权限设置
+                    菜单权限
+                  </el-button>
+                  <el-divider direction="vertical"></el-divider>
+                  <el-button
+                      @click="goMLPermission(scope.row)"
+                      type="text"
+                      size="small">
+                    美客多权限
                   </el-button>
                 </template>
               </el-table-column>
@@ -155,7 +162,7 @@
 
               <el-table-column
                   label="操作"
-                  width="150"
+                  width="200"
                   align="center"
                   header-align="center"
               >
@@ -171,7 +178,7 @@
                       @click="goUserPermission(scope.row)"
                       type="text"
                       size="small">
-                    权限设置
+                    菜单权限
                   </el-button>
                 </template>
               </el-table-column>
@@ -453,6 +460,17 @@ export default {
     goUserPermission(obj) {
       this.$router.push({
         path: '/userPermission',
+        query: {
+          id: obj.id,
+          name: obj.first_name
+        }
+      })
+    },
+
+    //查看用户权限
+    goMLPermission(obj) {
+      this.$router.push({
+        path: '/mlPermission',
         query: {
           id: obj.id,
           name: obj.first_name

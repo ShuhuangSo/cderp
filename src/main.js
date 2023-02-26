@@ -36,6 +36,21 @@ router.beforeEach((to, from, next) => {
     if (window.localStorage.getItem('tokenStr')) {
         initMenu(router, store); // 初始化菜单
         initProduct(store); // 初始化简易产品
+
+        // ml用户权限
+        if (!window.sessionStorage.getItem('ml_permission')) {
+            return getRequest('api/settings/get_ml_permission/').then(resp => {
+                if (resp) {
+                    let data = {}
+                    resp.forEach(item=>{
+                        data[item.component] = item.is_active
+                    })
+                    //存入信息
+                    window.sessionStorage.setItem('ml_permission', JSON.stringify(data));
+                }
+            })
+        }
+
         if (!window.sessionStorage.getItem('user')) {
             //判断用户信息是否存在
             return getRequest('api/settings/users/user_info/').then(resp => {
@@ -46,7 +61,6 @@ router.beforeEach((to, from, next) => {
                 }
             })
         }
-
 
         //在登录状态下去登录页，自动跳到home
         if (to.path == '/') {

@@ -21,6 +21,7 @@ import MonthDetail from "@/views/app/bonus/MonthDetail";
 import MelCreateShip from "@/views/app/mercado/MelCreateShip";
 import MelShipDetail from "@/views/app/mercado/MelShipDetail";
 import MelEditShip from "@/views/app/mercado/MelEditShip";
+import MLPermission from "@/views/setting/MLPermission";
 
 
 
@@ -105,6 +106,11 @@ const routes = [
                 path: '/userPermission',
                 name: '用户权限',
                 component: UserPermission
+            },
+            {
+                path: '/mlPermission',
+                name: '美客多权限',
+                component: MLPermission
             },
             {
                 path: '/monthDetail',

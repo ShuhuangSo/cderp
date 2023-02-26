@@ -3,9 +3,8 @@
 */
 <template>
   <div class="mainList">
-
     <el-tabs v-model="activeName">
-      <el-tab-pane :lazy="true" label="产品库" name="first">
+      <el-tab-pane :lazy="true" label="产品库" name="first" v-if="permission.product">
         <span slot="label"><i class="el-icon-goods"></i> 产品库</span>
         <MelProduct></MelProduct>
       </el-tab-pane>
@@ -61,6 +60,7 @@ export default {
     return{
       activeName: this.$route.query.activeName?this.$route.query.activeName:'second',
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission'))
     }
   },
 }

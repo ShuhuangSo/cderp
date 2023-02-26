@@ -66,7 +66,7 @@
       <div>
         <el-button icon="el-icon-box"
                    style="margin-right: 10px"
-                   v-if="user.is_superuser"
+                   v-if="permission.product_packing"
                    @click="openPacking">包材管理
         </el-button>
 
@@ -364,6 +364,7 @@ export default {
   data() {
     return {
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       selectedUser: 1,
       shop: '全部店铺',
       shops: [],
