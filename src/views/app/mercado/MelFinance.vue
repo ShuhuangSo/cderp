@@ -4,7 +4,7 @@
 <template>
   <div style="display: flex">
 <!--    左侧-->
-    <div class="left_side">
+    <div class="left_side" v-if="permission.finance_shopFinance">
       <el-card shadow="never">
         <div style="display: flex;justify-content: center">
           <span class="chartTitle">店铺资金</span>
@@ -55,7 +55,7 @@
               style="margin-left: 20px"
               @change="changeType" v-model="finance.f_type">
             <el-radio-button label="WD">店铺提现</el-radio-button>
-            <el-radio-button label="EXC" v-if="user.is_superuser">资金结汇</el-radio-button>
+            <el-radio-button label="EXC" v-if="permission.finance_exchangeList">资金结汇</el-radio-button>
           </el-radio-group>
 
         </div>
@@ -64,15 +64,15 @@
           <el-button icon="el-icon-plus"
                      v-if="finance.f_type==='WD'"
                      style="margin-right: 10px"
-                     :disabled="!shopID"
+                     :disabled="!shopID || !permission.finance_shopCreate"
                      type="success"
                      @click="openCreateWD">新增店铺提现
           </el-button>
 
           <el-button icon="el-icon-plus"
-                     v-if="finance.f_type==='EXC' && user.is_superuser"
+                     v-if="finance.f_type==='EXC'"
                      style="margin-right: 10px"
-                     :disabled="!shopID"
+                     :disabled="!shopID || !permission.finance_exchangeCreate"
                      type="success"
                      @click="openCreateEXC">新增结汇
           </el-button>
@@ -334,6 +334,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       shops: null,
       shopID: null,
       loading: false,

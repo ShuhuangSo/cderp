@@ -68,6 +68,7 @@
       <div>
         <el-button icon="el-icon-upload"
                    style="margin-right: 10px"
+                   v-if="permission.order_import"
                    :disabled="!shopID"
                    @click="uploadVisible=true">销售订单导入
         </el-button>
@@ -325,6 +326,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       orders: [],
       shops: null,
       shopID: null,

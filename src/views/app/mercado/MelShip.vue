@@ -52,6 +52,7 @@
         </div>
 
         <el-button type="success" icon="el-icon-plus"
+                   :disabled="!permission.ship_create"
                    style="margin-right: 10px"
                    @click="createShip">创建运单
         </el-button>
@@ -310,11 +311,13 @@
           <template slot-scope="scope">
             <div v-if="scope.row.s_status==='PREPARING'">
               <el-button
+                  :disabled="!permission.ship_packing"
                   @click="packAndSend(scope.row.id)"
                   size="mini" type="primary" plain round><i class="el-icon-box"></i> 打包</el-button>
             </div>
             <div v-if="scope.row.s_status==='BOOKED'">
               <el-button
+                  v-if="permission.ship_inwarehouse"
                   :disabled="!scope.row.shipping_fee && !scope.row.send_from"
                   key="test"
                   @click="confirmInWarehouse(scope.row.id)"
@@ -322,11 +325,13 @@
             </div>
             <div v-if="scope.row.s_status==='SHIPPED'">
               <el-button
+                  :disabled="!permission.ship_book"
                   @click="createBook(scope.row.id)"
                   size="mini" type="primary" plain round><i class="el-icon-date"></i> 预约</el-button>
             </div>
             <div v-if="scope.row.s_status==='BOOKED'"  style="margin-top: 5px">
               <el-button
+                  :disabled="!permission.ship_rebook"
                   @click="editeBook(scope.row)"
                   size="mini" type="danger" plain round><i class="el-icon-date"></i> 改约</el-button>
             </div>
@@ -337,16 +342,19 @@
                   <i class="el-icon-arrow-down"></i> 编辑
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'" :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
+                  <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'"
+                                    :disabled="!permission.ship_edit"
+                                    :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
-                  <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
+                  <el-dropdown-item :disabled="!permission.ship_delete"
+                                    :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
 
             <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING'">
               <el-dropdown @command="handleShipOp">
-                <el-button size="mini" type="info" plain round>
+                <el-button :disabled="!permission.ship_export" size="mini" type="info" plain round>
                   <i class="el-icon-arrow-down"></i> 导出
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
@@ -359,7 +367,9 @@
 
             <div style="margin-top: 5px" v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'">
               <el-dropdown @command="handleShipOp">
-                <el-button size="mini" :type="scope.row.shipping_fee? 'success': ''" plain round>
+                <el-button size="mini"
+                           :disabled="!permission.ship_fees"
+                           :type="scope.row.shipping_fee? 'success': ''" plain round>
                   <i class="el-icon-arrow-down"></i> 费用
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
@@ -493,6 +503,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
@@ -909,7 +920,7 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
-      if (!this.user.is_superuser) {
+      if (!this.permission.ship_allShopCheck) {
         url += '&user_id=' + this.user.id;
       }
       url += '&target=' + this.target

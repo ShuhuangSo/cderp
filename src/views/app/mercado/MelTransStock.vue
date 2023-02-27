@@ -13,7 +13,9 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-        <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item">
+        <el-badge  :hidden="!multipleSelection.length"
+                   v-if="permission.tranStock_send"
+                   :value="multipleSelection.length" class="item">
           <el-button :disabled="!multipleSelection.length" @click="fbmVisible=true" type="primary">FBM发仓</el-button>
         </el-badge>
 
@@ -334,6 +336,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       shops: null,
       shopID: null,
       shopStocks: null,

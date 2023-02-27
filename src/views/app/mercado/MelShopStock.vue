@@ -3,7 +3,7 @@
 */
 <template>
   <div>
-    <div>
+    <div v-if="permission.fbmStock_shopData">
       <el-card class="small-card" shadow="never">
         <div style="display: flex;justify-content: space-between">
           <span class="chartTitle">店铺数据</span>
@@ -130,6 +130,7 @@
 
       <div>
         <el-button icon="el-icon-upload"
+                   v-if="permission.fbmStock_import"
                    style="margin-right: 10px"
                    :disabled="!shopID"
                    @click="uploadVisible=true">FBM库存导入
@@ -292,8 +293,10 @@
                 <i class="el-icon-more"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
-                <el-dropdown-item :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
+                <el-dropdown-item :disabled="!permission.fbmStock_pandian"
+                                  :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
+                <el-dropdown-item :disabled="!permission.fbmStock_changeStatus"
+                                  :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -433,6 +436,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       shops: null,
       shopID: null,
       shopStocks: null,

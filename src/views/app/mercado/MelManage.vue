@@ -12,27 +12,27 @@
         <span slot="label"><i class="el-icon-shopping-cart-full"></i> 采购管理</span>
         <MelPurchase></MelPurchase>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="发仓运单" name="second">
+      <el-tab-pane :lazy="true" label="发仓运单" name="second"  v-if="permission.ship">
         <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
         <MelShip></MelShip>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="FBM库存" name="third">
+      <el-tab-pane :lazy="true" label="FBM库存" name="third" v-if="permission.fbmStock">
         <span slot="label"><i class="el-icon-school"></i> FBM库存</span>
         <MelShopStock></MelShopStock>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="中转仓" name="four">
+      <el-tab-pane :lazy="true" label="中转仓" name="four" v-if="permission.tranStock">
         <span slot="label"><i class="el-icon-house"></i> 中转仓</span>
         <MelTransStock></MelTransStock>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="销售订单" name="five">
+      <el-tab-pane :lazy="true" label="销售订单" name="five" v-if="permission.order">
         <span slot="label"><i class="el-icon-tickets"></i> 销售订单</span>
         <MelOrder></MelOrder>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="财务管理" name="six">
+      <el-tab-pane :lazy="true" label="财务管理" name="six" v-if="permission.finance">
         <span slot="label"><i class="el-icon-money"></i> 财务管理</span>
         <MelFinance></MelFinance>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="操作日志" name="seven" v-if="user.is_superuser">
+      <el-tab-pane :lazy="true" label="操作日志" name="seven"  v-if="permission.log">
         <span slot="label"><i class="el-icon-notebook-2"></i> 操作日志</span>
         <MelOperateLog></MelOperateLog>
       </el-tab-pane>

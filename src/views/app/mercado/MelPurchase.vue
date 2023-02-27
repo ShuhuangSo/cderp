@@ -8,26 +8,36 @@
       <div class="filter">
         <div>
 
-          <el-badge is-dot :value="wait_buy_num" :hidden="!wait_buy_num" class="item">
+          <el-badge is-dot :value="wait_buy_num"
+                    v-if="permission.purchase_checkWaitBuy"
+                    :hidden="!wait_buy_num" class="item">
             <el-button size="small" :type="p_status==='WAITBUY'?'primary':''" @click="changeStatus('WAITBUY')">待采购</el-button>
           </el-badge>
-            <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+            <span class="jiantou" v-if="permission.purchase_checkWaitBuy"><i class="el-icon-d-arrow-right"></i></span>
 
-          <el-badge is-dot :value="purchased_num" :hidden="!purchased_num" class="item">
+          <el-badge is-dot :value="purchased_num"
+                    v-if="permission.purchase_checkAlreadyBuy"
+                    :hidden="!purchased_num" class="item">
             <el-button size="small" :type="p_status==='PURCHASED'?'primary':''" @click="changeStatus('PURCHASED')">已采购</el-button>
           </el-badge>
-          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+          <span class="jiantou" v-if="permission.purchase_checkAlreadyBuy"><i class="el-icon-d-arrow-right"></i></span>
 
-          <el-badge is-dot :value="rec_num" :hidden="!rec_num" class="item">
+          <el-badge is-dot :value="rec_num"
+                    v-if="permission.purchase_checkReceived"
+                    :hidden="!rec_num" class="item">
             <el-button size="small" :type="p_status==='RECEIVED'?'primary':''" @click="changeStatus('RECEIVED')">已到货</el-button>
           </el-badge>
-          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
+          <span class="jiantou" v-if="permission.purchase_checkReceived"><i class="el-icon-d-arrow-right"></i></span>
 
-          <el-badge is-dot :value="pack_num" :hidden="!pack_num" class="item">
+          <el-badge is-dot :value="pack_num"
+                    v-if="permission.purchase_checkPacked"
+                    :hidden="!pack_num" class="item">
             <el-button size="small" :type="p_status==='PACKED'?'primary':''" @click="changeStatus('PACKED')">已打包</el-button>
           </el-badge>
-          <span class="jiantou"><i class="el-icon-d-arrow-right"></i></span>
-          <el-button size="small" :type="p_status==='USED'?'primary':''" @click="changeStatus('USED')">已出库</el-button>
+          <span class="jiantou" v-if="permission.purchase_checkPacked"><i class="el-icon-d-arrow-right"></i></span>
+          <el-button size="small" :type="p_status==='USED'?'primary':''"
+                     v-if="permission.purchase_checkOut"
+                     @click="changeStatus('USED')">已出库</el-button>
 
         </div>
       </div>
@@ -1018,6 +1028,11 @@ export default {
     },
   },
   mounted() {
+    if (this.permission.purchase_checkWaitBuy) {
+      this.p_status = 'WAITBUY'
+    } else {
+      this.p_status = 'PACKED'
+    }
     this.initPurchaseList()
     this.inintShops()
     this.calcPurchases();
