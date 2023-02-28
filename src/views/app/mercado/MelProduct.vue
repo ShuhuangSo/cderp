@@ -21,6 +21,7 @@
           <el-option
               v-for="item in user_group"
               :key="item.name"
+              :disabled="item.disabled"
               :label="item.name"
               :value="item.value">
           </el-option>
@@ -231,9 +232,11 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
+                <el-dropdown-item :disabled="!permission.product_editAll && selectedUser === 0"
+                                  :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit', id:scope.row.id}">编辑产品</el-dropdown-item>
-                <el-dropdown-item :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
+                <el-dropdown-item :disabled="!permission.product_deleteAll && selectedUser === 0"
+                                  :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -267,7 +270,9 @@
                         @closeProductDetail="closeProductDetail"></MelProductDetail>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="productDetailVisible = false">取 消</el-button>
-          <el-button size="small" type="primary" @click="productDetailUpdate">确 定</el-button>
+          <el-button size="small" type="primary"
+                     :disabled="!permission.product_editAll && selectedUser === 0"
+                     @click="productDetailUpdate">确 定</el-button>
         </span>
     </el-dialog>
 
@@ -425,11 +430,13 @@ export default {
       user_group: [
         {
           name: '我的产品',
-          value: 1
+          value: 1,
+          disabled: false
         },
         {
           name: '全部产品',
-          value: 0
+          value: 0,
+          disabled: false
         }
       ],
     }
@@ -457,7 +464,9 @@ export default {
     },
   },
   mounted() {
-    if (this.user.is_superuser) this.selectedUser = 0
+    if (this.permission.product_defaultCheckAll) this.selectedUser = 0
+    if (!this.permission.product_checkAll) this.user_group.find(curr => curr.name === '全部产品').disabled = true
+
     this.initMLProducts();
     this.inintShops();
   },
@@ -606,7 +615,7 @@ export default {
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
 
-        if (!this.user.is_superuser) {
+        if (!this.permission.product_editAll) {
           url += '&user=' + this.user.id;
         }
         this.getRequest(url).then(resp => {

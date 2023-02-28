@@ -19,10 +19,6 @@
           <el-button :disabled="!multipleSelection.length" @click="fbmVisible=true" type="primary">FBM发仓</el-button>
         </el-badge>
 
-        <el-button style="margin-left: 20px" icon="el-icon-refresh"
-                   :disabled="!shopID"
-                   @click="initTransStock"></el-button>
-
         <el-radio-group
             style="margin-left: 50px"
             @input="changeOutStatus" v-model="isOut">
@@ -337,7 +333,7 @@ export default {
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
-      shops: null,
+      shops: null, //中转仓
       shopID: null,
       shopStocks: null,
       loading: false,
@@ -458,7 +454,7 @@ export default {
       this.initTransStock();
     },
     inintShops(){
-      //获取所有可选店铺
+      //获取所有可选中转店铺
       if(window.sessionStorage.getItem('ml_trans_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_trans_shops'));
       }else{
@@ -476,6 +472,7 @@ export default {
         this.initTransStock()
       }
     },
+
     initTransStock(){
       let url = '/api/ml_trans_stock/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
