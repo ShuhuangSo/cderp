@@ -22,6 +22,7 @@ import MelCreateShip from "@/views/app/mercado/MelCreateShip";
 import MelShipDetail from "@/views/app/mercado/MelShipDetail";
 import MelEditShip from "@/views/app/mercado/MelEditShip";
 import MLPermission from "@/views/setting/MLPermission";
+import MelDashboard from "@/views/app/mercado/MelDashboard";
 
 
 
@@ -55,12 +56,17 @@ const routes = [
         path: '/home',
         name: 'Home',
         component: Home,
-        redirect: '/dashboard',
+        redirect: '/mel_dashboard',
         children:[
             {
                 path: '/dashboard',
                 name: 'Dashboard',
                 component: Dashboard
+            },
+            {
+                path: '/mel_dashboard',
+                name: '美客多FBM',
+                component: MelDashboard
             },
             {
                 path: '/stockInoutDetail',

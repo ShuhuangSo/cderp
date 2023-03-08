@@ -296,9 +296,9 @@ export default {
     if (user.role === 'SUPPLIER') {
       this.$router.replace('/supplierHome');
     }
-    if (user.role === 'STAFF') {
-      this.$router.replace('/melManage');
-    }
+    // if (user.role === 'STAFF') {
+    //   this.$router.replace('/melManage');
+    // }
     this.initSettings();
     this.getTodaySales();
     this.getTodayStock();
