@@ -40,6 +40,7 @@ export default {
 
       // 请求远程数据
       let url = 'api/ml_shop_reports/?calc_date__gte=' + this.startSaleDate + '&calc_date__lte=' + this.endSaleDate
+
       this.getRequest(url).then(resp => {
         if (resp) {
           myChart.hideLoading() // 关闭loading
@@ -77,7 +78,7 @@ export default {
               smooth: true,
               symbolSize: 0,
             })
-            this.selected[s] = false  // 其它系列默认不选中显示
+            this.selected[s] = true  // 其它系列默认显示
           }
           //手动插入总销量
           this.series.unshift({

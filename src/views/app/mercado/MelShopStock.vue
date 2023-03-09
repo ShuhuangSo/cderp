@@ -759,6 +759,12 @@ export default {
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+
+        if (this.shops.length) {
+          this.shopID = this.shops[0].id
+          this.filter_name = ''
+          this.initShopStock()
+        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
         if (!this.user.is_superuser) {
@@ -768,14 +774,16 @@ export default {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+
+            if (this.shops.length) {
+              this.shopID = this.shops[0].id
+              this.filter_name = ''
+              this.initShopStock()
+            }
           }
         })
       }
-      if (this.shops.length) {
-        this.shopID = this.shops[0].id
-        this.filter_name = ''
-        this.initShopStock()
-      }
+
     },
     initShopStock(){
       let url = '/api/ml_shopstock/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size

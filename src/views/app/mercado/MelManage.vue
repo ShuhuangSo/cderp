@@ -10,11 +10,11 @@
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="采购管理" name="purchase"  v-if="permission.purchase">
         <span slot="label"><i class="el-icon-shopping-cart-full"></i> 采购管理</span>
-        <MelPurchase></MelPurchase>
+        <MelPurchase :buyStatusName="buyStatusName"></MelPurchase>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="发仓运单" name="second"  v-if="permission.ship">
+      <el-tab-pane :lazy="true" label="发仓运单" name="ship"  v-if="permission.ship">
         <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
-        <MelShip></MelShip>
+        <MelShip :shipStatusName="shipStatusName"></MelShip>
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="FBM库存" name="third" v-if="permission.fbmStock">
         <span slot="label"><i class="el-icon-school"></i> FBM库存</span>
@@ -58,7 +58,9 @@ export default {
   },
   data(){
     return{
-      activeName: this.$route.query.activeName?this.$route.query.activeName:'second',
+      activeName: this.$route.query.activeName?this.$route.query.activeName:'ship',
+      buyStatusName: this.$route.query.activeName==='purchase'?this.$route.query.partName:'',
+      shipStatusName: this.$route.query.activeName==='ship'?this.$route.query.partName:'',
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission'))
     }

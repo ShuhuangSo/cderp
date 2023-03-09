@@ -3,7 +3,6 @@
 */
 <template>
   <div>
-
     <div class="operate">
       <div class="filter">
         <div>
@@ -947,6 +946,7 @@ import MelAddProduct from "@/views/app/mercado/MelAddProduct";
 
 export default {
   name: "MelPurchase",
+  props: ["buyStatusName"],
   components:{MelAddProduct},
   data() {
     return {
@@ -1029,7 +1029,7 @@ export default {
   },
   mounted() {
     if (this.permission.purchase_checkWaitBuy) {
-      this.p_status = 'WAITBUY'
+      this.p_status = this.buyStatusName?this.buyStatusName:'WAITBUY'
     } else {
       this.p_status = 'PACKED'
     }

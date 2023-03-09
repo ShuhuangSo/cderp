@@ -457,20 +457,28 @@ export default {
       //获取所有可选中转店铺
       if(window.sessionStorage.getItem('ml_trans_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_trans_shops'));
+
+        if (this.shops.length) {
+          this.shopID = this.shops[0].id
+          this.filter_name = ''
+          this.initTransStock()
+        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=TRANSIT&page_size=1000&ordering=create_time'
         this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_trans_shops', JSON.stringify(this.shops));
+
+            if (this.shops.length) {
+              this.shopID = this.shops[0].id
+              this.filter_name = ''
+              this.initTransStock()
+            }
           }
         })
       }
-      if (this.shops.length) {
-        this.shopID = this.shops[0].id
-        this.filter_name = ''
-        this.initTransStock()
-      }
+
     },
 
     initTransStock(){

@@ -3,7 +3,6 @@
 */
 <template>
   <div>
-
     <div class="operate">
 
       <div class="filter">
@@ -500,6 +499,7 @@ import moment from "moment/moment";
 
 export default {
   name: "MelShip",
+  props: ["shipStatusName"],
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -510,7 +510,7 @@ export default {
       size: 20,  // 页大小
       searchValue: '',
       target: '',
-      s_status: 'PREPARING',// 筛选状态
+      s_status: this.shipStatusName? this.shipStatusName : 'PREPARING',// 筛选状态
       ships: [],
       pre_qty: 0, // 备货运单数量
       shipped_qty: 0, // 发货运单数量

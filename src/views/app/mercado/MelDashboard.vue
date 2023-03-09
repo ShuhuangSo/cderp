@@ -16,68 +16,117 @@
           </span>
         </div>
 
-        <div style="display: flex;padding-top: 20px">
+        <div style="display: flex;padding-top: 20px" v-if="permission.dashboard_ship">
           <div class="msg_title">
             发货运单
           </div>
           <div style="width: 100px;text-align:center">
-            <div class="zTitle">
-              {{this.daiban.pre_qty}}
+            <div >
+              <el-link
+                  @click.native="goDetail('ship', 'PREPARING')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.pre_qty}}</span>
+              </el-link>
             </div>
             <div  class="small_zi">备货中</div>
           </div>
 
           <div style="text-align:center; width: 100px">
-
-            <div class="zTitle">
-              {{this.daiban.shipped_qty}}
+            <div>
+              <el-link
+                  @click.native="goDetail('ship', 'SHIPPED')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.shipped_qty}}</span>
+              </el-link>
             </div>
             <div class="small_zi">运输中</div>
           </div>
 
           <div style="text-align:center; width: 100px">
-
-            <div class="zTitle">
-              {{this.daiban.booked_qty}}
+            <div>
+              <el-link
+                  @click.native="goDetail('ship', 'BOOKED')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.booked_qty}}</span>
+              </el-link>
             </div>
             <div class="small_zi">已预约</div>
           </div>
 
         </div>
 
-        <div style="display: flex;padding-top: 20px">
+
+
+        <div style="display: flex;padding-top: 20px"  v-if="permission.dashboard_purchase">
           <div class="msg_title">
             采购管理
           </div>
           <div style="width: 100px;text-align:center">
-            <div class="zTitle">
-              {{this.daiban.wait_buy_num}}
+            <div>
+              <el-link
+                  @click.native="goDetail('purchase', 'WAITBUY')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.wait_buy_num}}</span>
+              </el-link>
+
             </div>
             <div  class="small_zi">待采购</div>
           </div>
 
           <div style="text-align:center; width: 100px">
 
-            <div class="zTitle">
-              {{this.daiban.purchased_num}}
+            <div>
+              <el-link
+                  @click.native="goDetail('purchase', 'PURCHASED')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.purchased_num}}</span>
+              </el-link>
             </div>
             <div class="small_zi">已采购</div>
           </div>
 
           <div style="text-align:center; width: 100px">
 
-            <div class="zTitle">
-              {{this.daiban.rec_num}}
+            <div>
+              <el-link
+                  @click.native="goDetail('purchase', 'RECEIVED')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.rec_num}}</span>
+              </el-link>
+
             </div>
             <div class="small_zi">已到货</div>
           </div>
 
           <div style="text-align:center; width: 100px">
 
-            <div class="zTitle">
-              {{this.daiban.pack_num}}
+            <div>
+              <el-link
+                  @click.native="goDetail('purchase', 'PACKED')"
+                  :underline="false">
+                <span class="zTitle">{{this.daiban.pack_num}}</span>
+              </el-link>
+
             </div>
             <div class="small_zi">已打包</div>
+          </div>
+
+        </div>
+
+        <div style="display: flex;padding-top: 20px" v-if="daiban.overtime_ship">
+          <div class="msg_title">
+            操作提醒
+          </div>
+          <div style="width: 100px;text-align:center">
+            <div>
+              <el-link
+                  @click.native="goDetail('ship', 'BOOKED')"
+                  :underline="false">
+                <span class="zTitle_2">{{this.daiban.overtime_ship}}</span>
+              </el-link>
+
+            </div>
+            <div  class="small_zi">入仓核对</div>
           </div>
 
         </div>
@@ -105,30 +154,28 @@
 
 
           <span>
-            <i class="el-icon-loading" v-if="tStockLoading"></i>
+            <i class="el-icon-loading" v-if="shop_info_loading"></i>
             <el-link type="info"
-                     v-if="!tStockLoading"
-                     @click.native="getTodayStock"
+                     v-if="!shop_info_loading"
+                     @click.native="getShopInfo"
                      :underline="false"
                      icon="el-icon-refresh-right"></el-link>
           </span>
         </div>
 
         <el-descriptions
-            style="margin-top: 10px; margin-left: 10px"
+            style="margin-top: 15px; margin-left: 10px"
             title="" :column="1" size="medium">
           <el-descriptions-item label="负责人">{{ this.shop_info.manager }}</el-descriptions-item>
-          <el-descriptions-item label="在售产品">12</el-descriptions-item>
+          <el-descriptions-item label="在售产品">{{ this.shop_info.total_sku }}</el-descriptions-item>
           <el-descriptions-item label="FBM库存">{{ this.shop_info.total_qty }}</el-descriptions-item>
-          <el-descriptions-item label="30天销量">212</el-descriptions-item>
-          <el-descriptions-item label="30天毛利">212</el-descriptions-item>
-          <el-descriptions-item label="店铺额度">21212 / 212</el-descriptions-item>
-
+          <el-descriptions-item label="库存金额">{{ this.shop_info.total_amount | currency }}</el-descriptions-item>
+          <el-descriptions-item label="店铺额度">￥ {{ this.shop_info.used_quota | q_currency }} / {{ this.shop_info.quota | q_currency }}</el-descriptions-item>
         </el-descriptions>
 
       </el-card>
 
-      <el-card class="main-card-big" shadow="never">
+      <el-card class="main-card-big" shadow="never"  v-if="permission.dashboard_saleChart">
         <div class="main-chart-big">
           <span class="chartTitle">销量统计</span>
           <el-select v-model="salesDate"
@@ -162,6 +209,8 @@ export default {
   components:{MelSalesCharts},
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       shops: [],
       shop: null,
       startSaleDate: '',
@@ -189,11 +238,17 @@ export default {
         'purchased_num': null,
         'rec_num': null,
         'pack_num': null,
+        'overtime_ship': null,
       },
       daiban_loading: false,
+      shop_info_loading: false,
       shop_info:{
         'manager': null,
+        'total_sku': null,
         'total_qty': null,
+        'total_amount': null,
+        'quota': null,
+        'used_quota': null,
       },
     }
   },
@@ -206,7 +261,12 @@ export default {
     //金额格式化
     currency: function (value) {
       if (!value) return 0.00;
-      return `¥ ${value.toFixed(2)}`;
+      return `¥ ${value.toFixed(0)}`;
+    },
+    //金额格式化
+    q_currency: function (value) {
+      if (!value) return 0.00;
+      return `${value.toFixed(0)}`;
     },
   },
   mounted() {
@@ -218,6 +278,16 @@ export default {
     this.inintShops()
   },
   methods:{
+    //路由到详情页面
+    goDetail(activeName, partName){
+      this.$router.push({
+        path: '/melManage',
+        query: {
+          partName: partName,
+          activeName: activeName,
+        }
+      });
+    },
     //改变销售统计时间
     changeSalesDate() {
       if (this.salesDate === '7d') {
@@ -249,16 +319,23 @@ export default {
           this.daiban.purchased_num = resp.purchased_num
           this.daiban.rec_num = resp.rec_num
           this.daiban.pack_num = resp.pack_num
+          this.daiban.overtime_ship = resp.overtime_ship
         }
       })
     },
 
     // 获取店铺信息
     getShopInfo(){
+      this.shop_info_loading = true
       this.postRequest('/api/ml_shops/shop_info/', {'id': this.shop}).then(resp => {
+        this.shop_info_loading = false
         if (resp) {
           this.shop_info.manager = resp.manager
+          this.shop_info.total_sku = resp.total_sku
           this.shop_info.total_qty = resp.total_qty
+          this.shop_info.total_amount = resp.total_amount
+          this.shop_info.quota = resp.quota
+          this.shop_info.used_quota = resp.used_quota
 
         }
       })
@@ -268,16 +345,29 @@ export default {
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+
+        if (this.shops.length) {
+          this.shop = this.shops[0].id
+          this.getShopInfo()
+        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
-
+        if (!this.user.is_superuser) {
+          url += '&user=' + this.user.id;
+        }
         this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+
+            if (this.shops.length) {
+              this.shop = this.shops[0].id
+              this.getShopInfo()
+            }
           }
         })
       }
+
     },
 
   }
@@ -302,6 +392,7 @@ export default {
 }
 
 .small-card {
+  border-radius: 15px;
   width: 590px;
   height: 300px;
   margin-left: 5px;
@@ -316,6 +407,7 @@ export default {
 }
 
 .main-card-big {
+  border-radius: 15px;
   width: 1192px;
   margin-left: 5px;
   margin-right: 5px;
@@ -350,10 +442,10 @@ export default {
   font-size: 18px;
   color: #008080;
 }
-.zTitle2 {
+.zTitle_2 {
   font-weight: bold;
-  font-size: xxx-large;
-  color: #4f6782;
+  font-size: 18px;
+  color: red;
 }
 .small_zi {
   color: #8c939d;
@@ -362,5 +454,6 @@ export default {
 .msg_title{
   text-align: center;
   font-size: 14px;
+  padding-top: 10px;
 }
 </style>

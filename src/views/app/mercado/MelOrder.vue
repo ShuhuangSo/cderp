@@ -565,22 +565,29 @@ export default {
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+
+        if (this.shops.length) {
+          this.shopID = this.shops[0].id
+          this.initOrders()
+        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
-        if (!this.user.is_superuser) {
+        if (!this.permission.order_allShopCheck) {
           url += '&user=' + this.user.id;
         }
         this.getRequest(url).then(resp => {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+
+            if (this.shops.length) {
+              this.shopID = this.shops[0].id
+              this.initOrders()
+            }
           }
         })
       }
-      if (this.shops.length) {
-        this.shopID = this.shops[0].id
-        this.initOrders()
-      }
+
     },
 
     initOrders(){

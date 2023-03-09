@@ -80,6 +80,7 @@ export default {
           window.localStorage.removeItem('tokenStr');
           window.sessionStorage.removeItem('user');
           window.sessionStorage.removeItem('ml_permission');
+          window.sessionStorage.removeItem('ml_shops');
           //清空vuex里的菜单信息
           this.$store.commit('initRoutes', []);
           //跳转到登录页

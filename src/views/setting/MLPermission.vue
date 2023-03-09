@@ -3,7 +3,7 @@
     <div class="pContainer">
       <el-card shadow="hover" style="padding-bottom: 20px">
         <div slot="header" class="clearfix">
-          <el-page-header @back="cancel" :content="'用户权限: '+ $route.query.name">
+          <el-page-header @back="cancel" :content="'美客多权限: '+ $route.query.name">
           </el-page-header>
         </div>
 
