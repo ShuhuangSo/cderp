@@ -447,6 +447,10 @@
       </el-dialog>
 
       <div style="margin-top: 20px">
+        <MelShipAttachment :shipID="shipID"></MelShipAttachment>
+      </div>
+
+      <div style="margin-top: 20px">
         <ShipLog :shipID="shipID"></ShipLog>
       </div>
 
@@ -458,10 +462,11 @@
 <script>
 import moment from "moment/moment";
 import ShipLog from "@/components/app/mercado/ShipLog";
+import MelShipAttachment from "@/components/app/mercado/MelShipAttachment";
 
 export default {
   name: "MelShipDetail",
-  components:{ShipLog},
+  components:{ShipLog, MelShipAttachment},
   data(){
     return{
       shipID: this.$route.query.id, // 运单id
@@ -687,7 +692,7 @@ export default {
             this.$router.push({
               path: '/melManage',
               query: {
-                activeName: 'second'
+                activeName: 'ship'
               }
             });
           }
@@ -761,7 +766,7 @@ export default {
       this.$router.push({
         path: '/melManage',
         query: {
-          activeName: 'second'
+          activeName: 'ship'
         }
       });
     },

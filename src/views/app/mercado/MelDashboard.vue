@@ -113,11 +113,23 @@
 
         </div>
 
-        <div style="display: flex;padding-top: 20px" v-if="daiban.overtime_ship">
+        <div style="display: flex;padding-top: 20px" v-if="daiban.overtime_ship || daiban.need_book">
           <div class="msg_title">
             操作提醒
           </div>
-          <div style="width: 100px;text-align:center">
+          <div style="width: 100px;text-align:center" v-if="daiban.need_book">
+            <div>
+              <el-link
+                  @click.native="goDetail('ship', 'SHIPPED')"
+                  :underline="false">
+                <span class="zTitle_2">{{this.daiban.need_book}}</span>
+              </el-link>
+
+            </div>
+            <div  class="small_zi">需预约</div>
+          </div>
+
+          <div style="width: 100px;text-align:center" v-if="daiban.overtime_ship">
             <div>
               <el-link
                   @click.native="goDetail('ship', 'BOOKED')"
@@ -239,6 +251,7 @@ export default {
         'rec_num': null,
         'pack_num': null,
         'overtime_ship': null,
+        'need_book': null,
       },
       daiban_loading: false,
       shop_info_loading: false,
@@ -271,7 +284,7 @@ export default {
   },
   mounted() {
     //设置默认销售统计时间
-    this.startSaleDate = new Date();
+    this.startSaleDate = new Date(new Date().getTime() - 3600 * 1000 * 24 * 30);
     this.endSaleDate = new Date();
 
     this.initDaiban()
@@ -320,6 +333,7 @@ export default {
           this.daiban.rec_num = resp.rec_num
           this.daiban.pack_num = resp.pack_num
           this.daiban.overtime_ship = resp.overtime_ship
+          this.daiban.need_book = resp.need_book
         }
       })
     },

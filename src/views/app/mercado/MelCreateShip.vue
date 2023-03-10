@@ -281,7 +281,7 @@ export default {
                 this.$router.push({
                   path: '/melManage',
                   query: {
-                    activeName: 'second'
+                    activeName: 'ship'
                   }
                 });
               }
@@ -368,7 +368,7 @@ export default {
       this.$router.push({
         path: '/melManage',
         query: {
-          activeName: 'second'
+          activeName: 'ship'
         }
       });
     },

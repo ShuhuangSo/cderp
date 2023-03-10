@@ -21,7 +21,7 @@ export default {
     }
   },
   mounted() {
-    this.initSalesReports();
+    if (this.startSaleDate && this.endSaleDate) this.initSalesReports();
   },
   watch: {
     startSaleDate:{
@@ -50,10 +50,10 @@ export default {
           //处理数据格式
           let dateSet = new Set(this.salesReports.map(i => i.calc_date));
           this.dateList = Array.from(dateSet) // 日期列表
-          if (this.dateList.length > 15 && this.dateList.length < 31 ) {
+          if (this.dateList.length > 16 && this.dateList.length < 32 ) {
             this.interval = 1
           }
-          if (this.dateList.length > 31 ) {
+          if (this.dateList.length >= 32 ) {
             this.interval = 3
           }
           let seriesSet = new Set(this.salesReports.map(i => i.shop)); //产品系列
