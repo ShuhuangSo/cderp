@@ -24,7 +24,7 @@
             label="附件名称">
           <template slot-scope="scope">
             <div>
-              <el-link :href="scope.row.link" target="_blank" type="primary">{{ scope.row.name }}</el-link>
+              <el-link :href="scope.row.link" target="_blank" type="primary"><i class="el-icon-paperclip"></i> {{ scope.row.name }}</el-link>
               </div>
           </template>
         </el-table-column>
@@ -34,7 +34,7 @@
             header-align="center"
             width="180">
           <template slot-scope="scope">
-            <el-button type="text" @click="deleteSA(scope.row.id)">删除</el-button>
+            <el-button type="text" style="color: #6e7079" @click="deleteSA(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
 

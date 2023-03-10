@@ -200,6 +200,25 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+            <div style="font-size: 16px;margin-top: 10px">
+              <el-link @click.native="openAttachment(scope.row.item_id)"
+                       title="附件"
+                       class="small_icon"
+                       :underline="false"><i class="el-icon-paperclip"></i></el-link>
+              <el-link @click.native="selectItemID(scope.row.item_id)"
+                       title="物流结账"
+                       class="small_icon_true"
+                       :underline="false"><i class="el-icon-money"></i></el-link>
+              <el-link @click.native="selectItemID(scope.row.item_id)"
+                       title="筛选同批次运单"
+                       class="small_icon"
+                       :underline="false"><i class="el-icon-connection"></i></el-link>
+              <el-link @click.native="selectItemID(scope.row.item_id)"
+                       title="复制批次号"
+                       class="small_icon"
+                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+
+            </div>
           </template>
         </el-table-column>
 
@@ -291,13 +310,13 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <el-tag
-                v-if="scope.row.tag_name"
-                style="border: none"
-                :color="scope.row.tag_color"
-                effect="dark" type="info">
-              <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
-            </el-tag>
+              <el-tag
+                  v-if="scope.row.tag_name"
+                  style="border: none"
+                  :color="scope.row.tag_color"
+                  effect="dark" type="info">
+                <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
+              </el-tag>
           </template>
         </el-table-column>
 
@@ -496,10 +515,12 @@
 
 <script>
 import moment from "moment/moment";
+import MelShipAttachment from "@/components/app/mercado/MelShipAttachment";
 
 export default {
   name: "MelShip",
   props: ["shipStatusName"],
+  components: [MelShipAttachment],
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -962,7 +983,6 @@ export default {
 }
 .m_name{
   font-weight: bold;
-  color: teal;
   font-size: 20px;
 }
 
@@ -984,5 +1004,13 @@ export default {
 }
 .plan5{
   color: darkorange;
+}
+.small_icon{
+  color: #99a9bf;
+  margin-right: 5px;
+}
+.small_icon_true{
+  color: dodgerblue;
+  margin-right: 5px;
 }
 </style>
