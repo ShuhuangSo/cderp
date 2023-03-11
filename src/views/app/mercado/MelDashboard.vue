@@ -227,7 +227,7 @@ export default {
       shop: null,
       startSaleDate: '',
       endSaleDate: '',
-      salesDate: '30d',
+      salesDate: '15d',
       timer: '',
       options: [{
         value: '7d',
@@ -284,7 +284,7 @@ export default {
   },
   mounted() {
     //设置默认销售统计时间
-    this.startSaleDate = new Date(new Date().getTime() - 3600 * 1000 * 24 * 30);
+    this.startSaleDate = new Date(new Date().getTime() - 3600 * 1000 * 24 * 15);
     this.endSaleDate = new Date();
 
     this.initDaiban()

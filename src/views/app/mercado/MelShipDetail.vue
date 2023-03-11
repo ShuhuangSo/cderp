@@ -688,7 +688,7 @@ export default {
       }).then(() => {
         this.ship['action'] = 'SHIPPED'
         this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
-          if (resp) {
+          if (resp.status === 'success') {
             this.$router.push({
               path: '/melManage',
               query: {

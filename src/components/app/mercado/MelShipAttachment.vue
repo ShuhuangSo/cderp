@@ -15,7 +15,7 @@
             label="附件类型"
             align="center"
             header-align="center"
-            width="180">
+            width="150">
           <template slot-scope="scope">
             <div>{{ scope.row.a_type | type }}</div>
           </template>
@@ -32,7 +32,7 @@
             label="操作"
             align="center"
             header-align="center"
-            width="180">
+            width="100">
           <template slot-scope="scope">
             <el-button type="text" style="color: #6e7079" @click="deleteSA(scope.row.id)">删除</el-button>
           </template>
@@ -60,6 +60,7 @@
         :visible.sync="uploadVisible"
         :destroy-on-close="true"
         :close-on-click-modal="false"
+        append-to-body
         width="500px"
     >
       <div>

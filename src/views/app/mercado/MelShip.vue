@@ -64,6 +64,7 @@
           :data="ships"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
+          highlight-current-row
           style="width: 100%">
 
         <!--        运单产品详情-->
@@ -201,19 +202,19 @@
               </el-tag>
             </div>
             <div style="font-size: 16px;margin-top: 10px">
-              <el-link @click.native="openAttachment(scope.row.item_id)"
+              <el-link @click.native="openAttachment(scope.row)"
                        title="附件"
-                       class="small_icon"
+                       :class="scope.row.is_attach?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-paperclip"></i></el-link>
-              <el-link @click.native="selectItemID(scope.row.item_id)"
-                       title="物流结账"
-                       class="small_icon_true"
+              <el-link @click.native="changeLogiFeeStatus(scope.row)"
+                       title="物流结算"
+                       :class="scope.row.logi_fee_clear?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-money"></i></el-link>
-              <el-link @click.native="selectItemID(scope.row.item_id)"
+              <el-link @click.native="selectBatch(scope.row.batch)"
                        title="筛选同批次运单"
                        class="small_icon"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
-              <el-link @click.native="selectItemID(scope.row.item_id)"
+              <el-link @click.native="copyText(scope.row.batch)"
                        title="复制批次号"
                        class="small_icon"
                        :underline="false"><i class="el-icon-copy-document"></i></el-link>
@@ -277,7 +278,14 @@
             width="200">
           <template slot-scope="scope">
             <div><span class="tt">物流名称: </span>{{scope.row.carrier}}</div>
-            <div><span class="tt">物流单号: </span>{{scope.row.s_number}}</div>
+            <div><span class="tt">物流单号: </span>
+              <el-link @click.native="fastEditSNumber(scope.row)"
+                       v-if="!scope.row.s_number"
+                       title="添加物流单号"
+                       class="small_icon"
+                       :underline="false"><i class="el-icon-edit-outline"></i></el-link>
+              {{scope.row.s_number}}
+            </div>
             <div><span class="tt">截单日期: </span>{{scope.row.end_date}}</div>
             <div><span class="tt">航班日期: </span>{{scope.row.ship_date}}</div>
             <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>
@@ -510,6 +518,22 @@
   </span>
     </el-dialog>
 
+    <!--    添加运单附件弹窗-->
+    <el-dialog
+        :title="current_shop"
+        :key="timer"
+        :visible.sync="attachVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px">
+      <div>
+        <MelShipAttachment :shipID="current_ship_id"></MelShipAttachment>
+      </div>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="attachVisible = false">关 闭</el-button>
+  </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -520,7 +544,7 @@ import MelShipAttachment from "@/components/app/mercado/MelShipAttachment";
 export default {
   name: "MelShip",
   props: ["shipStatusName"],
-  components: [MelShipAttachment],
+  components: {MelShipAttachment},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -545,6 +569,10 @@ export default {
       extra_fee: 0, // 运费
       expandStatus: true, // 所有行展开状态
       tagVisible: false, //标签弹窗
+      attachVisible: false, //运单附件弹窗
+      current_ship_id: null, //当前运单id
+      current_shop: null, //当前目标店铺
+      timer: null,
       tag: {
         tag_color: '#409EFF',
         tag_name: '',
@@ -594,6 +622,65 @@ export default {
     this.initShips()
   },
   methods:{
+    // 快速增加物流单号
+    fastEditSNumber(row){
+      let title = row.batch + '-' + row.shop
+      this.$prompt('请输入物流单号', title, {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+      }).then(({ value }) => {
+
+        this.patchRequest('api/ml_ship/'+ row.id +'/', {'s_number': value}).then(resp => {
+          if (resp) {
+            this.initShips()
+          }
+        })
+
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消修改'
+        });
+      });
+    },
+    //快速筛选批次
+    selectBatch(batch){
+      this.page = 1;
+      this.searchValue = batch
+      this.initShips();
+    },
+    //点击复制
+    copyText(value){
+      let text = value;
+      if (navigator.clipboard) {
+        // clipboard api 复制
+        navigator.clipboard.writeText(text);
+      } else {
+        let textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        // 隐藏此输入框
+        textarea.style.position = 'fixed';
+        textarea.style.clip = 'rect(0 0 0 0)';
+        textarea.style.top = '10px';
+        // 赋值
+        textarea.value = text;
+        // 选中
+        textarea.select();
+        // 复制
+        document.execCommand('copy', true);
+        // 移除输入框
+        document.body.removeChild(textarea);
+      }
+      this.$message.success('已复制！')
+    },
+
+    //打开上传附件弹窗
+    openAttachment(row){
+      this.timer = new Date().getTime();
+      this.current_ship_id = row.id
+      this.current_shop = row.batch + '-' + row.shop
+      this.attachVisible = true
+    },
     //保存标签
     saveTag(){
       this.patchRequest('api/ml_ship/'+ this.ship_id +'/', this.tag).then(resp => {
@@ -713,6 +800,26 @@ export default {
           this.$message({
             type: 'info',
             message: '已取消入仓'
+          });
+        });
+      })
+    },
+
+    // 标记物流运费结算
+    changeLogiFeeStatus(obj){
+      let title = obj.logi_fee_clear?'是否取消结算状态?':'是否确认物流费用已结算?'
+      this.$confirm(title, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        //确认入仓
+        this.postRequest('api/ml_ship/change_logi_fee_status/', {'id': obj.id, 'logi_fee_clear': !obj.logi_fee_clear}).then(resp => {
+          this.initShips();
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
           });
         });
       })
@@ -1012,5 +1119,9 @@ export default {
 .small_icon_true{
   color: dodgerblue;
   margin-right: 5px;
+}
+::v-deep .el-table__body tr.current-row>td {
+  /*color: #fff;*/
+  background: #f0f9eb!important;
 }
 </style>
