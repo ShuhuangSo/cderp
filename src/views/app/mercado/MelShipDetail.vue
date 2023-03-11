@@ -471,6 +471,7 @@ export default {
     return{
       shipID: this.$route.query.id, // 运单id
       action: this.$route.query.action,
+      click_from: this.$route.query.click_from, // 从哪点击过来
       ship: null,
       loading: false,
       removeItems: [], //遗弃清单
@@ -766,7 +767,8 @@ export default {
       this.$router.push({
         path: '/melManage',
         query: {
-          activeName: 'ship'
+          activeName: 'ship',
+          partName: this.click_from
         }
       });
     },

@@ -196,6 +196,8 @@
             <div style="margin-top: 10px">
               <el-tag
                   style="border: none"
+                  @click="selectValue(scope.row.shop)"
+                  :title="'负责人:' + scope.row.manager"
                   :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                   effect="dark" type="info">
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
@@ -210,7 +212,7 @@
                        title="物流结算"
                        :class="scope.row.logi_fee_clear?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-money"></i></el-link>
-              <el-link @click.native="selectBatch(scope.row.batch)"
+              <el-link @click.native="selectValue(scope.row.batch)"
                        title="筛选同批次运单"
                        class="small_icon"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
@@ -371,8 +373,9 @@
                   <el-dropdown-item v-if="scope.row.s_status!=='FINISHED'"
                                     :disabled="!permission.ship_edit"
                                     :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
-                  <el-dropdown-item :command="{type:'tag', id:scope.row.id}">编辑标签</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'tag', obj:scope.row}">编辑标签</el-dropdown-item>
                   <el-dropdown-item :disabled="!permission.ship_delete"
+                                    v-if="scope.row.s_status!=='FINISHED'"
                                     :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
@@ -391,7 +394,7 @@
               </el-dropdown>
             </div>
 
-            <div style="margin-top: 5px" v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'">
+            <div style="margin-top: 5px" v-if="scope.row.s_status!=='PREPARING'">
               <el-dropdown @command="handleShipOp">
                 <el-button size="mini"
                            :disabled="!permission.ship_fees"
@@ -400,13 +403,12 @@
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item
-                      v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && !scope.row.shipping_fee"
+                      v-if="!scope.row.shipping_fee"
                       :command="{type:'postage', row:scope.row}">录入头程运费</el-dropdown-item>
                   <el-dropdown-item
-                      v-if="(scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED') && scope.row.shipping_fee"
+                      v-if="scope.row.shipping_fee"
                       :command="{type:'edit_postage', row:scope.row}">修改头程运费</el-dropdown-item>
                   <el-dropdown-item
-                      v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
                       :command="{type:'extra_fee', row:scope.row}">录入杂费</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
@@ -514,7 +516,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
     <el-button @click="tagVisible = false">取 消</el-button>
-    <el-button :disabled="tag.tag_name.trim()===''" type="primary" @click="saveTag">确 定</el-button>
+    <el-button :disabled="tag.tag_name===''" type="primary" @click="saveTag">确 定</el-button>
   </span>
     </el-dialog>
 
@@ -643,8 +645,8 @@ export default {
         });
       });
     },
-    //快速筛选批次
-    selectBatch(batch){
+    //快速筛选
+    selectValue(batch){
       this.page = 1;
       this.searchValue = batch
       this.initShips();
@@ -782,6 +784,7 @@ export default {
         query: {
           id: id,
           action: 'DETAIL',
+          click_from: this.s_status
         }
       });
     },
@@ -905,7 +908,9 @@ export default {
       // 添加标签
       if (command['type'] === 'tag') {
         this.tagVisible = true
-        this.ship_id = command['id']
+        this.ship_id = command['obj'].id
+        this.tag.tag_color = command['obj'].tag_color?command['obj'].tag_color:'#409EFF'
+        this.tag.tag_name = command['obj'].tag_name
       }
 
       // 查看运单详情
@@ -915,6 +920,7 @@ export default {
           query: {
             id: command['id'],
             action: 'DETAIL',
+            click_from: this.s_status
           }
         });
       }
@@ -924,7 +930,8 @@ export default {
         this.$router.push({
           path: '/editShip',
           query: {
-            id: command['id']
+            id: command['id'],
+            click_from: this.s_status
           }
         });
       }

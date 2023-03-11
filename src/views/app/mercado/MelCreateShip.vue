@@ -154,16 +154,16 @@
           >
             <template slot-scope="scope">
 
-              <el-button
-                  v-if="scope.row.s_type === 'NEW'"
-                  title="取消标新"
-                  @click="changeType(scope.row)"
-                  type="success" size="mini" circle>新</el-button>
-              <el-button
-                  v-if="scope.row.s_type === 'REFILL'"
-                  title="标记为新产品"
-                  @click="changeType(scope.row)"
-                  type="" size="mini" circle>新</el-button>
+<!--              <el-button-->
+<!--                  v-if="scope.row.s_type === 'NEW'"-->
+<!--                  title="取消标新"-->
+<!--                  @click="changeType(scope.row)"-->
+<!--                  type="success" size="mini" circle>新</el-button>-->
+<!--              <el-button-->
+<!--                  v-if="scope.row.s_type === 'REFILL'"-->
+<!--                  title="标记为新产品"-->
+<!--                  @click="changeType(scope.row)"-->
+<!--                  type="" size="mini" circle>新</el-button>-->
               <el-button
                   @click="removeProduct(scope.row.sku)"
                   type="" size="mini" icon="el-icon-delete" circle></el-button>
@@ -276,8 +276,8 @@ export default {
           if (valid) {
             this.loading = true;
             this.postRequest('api/ml_ship/create_ship/', this.ship).then(resp => {
-              if (resp) {
-                this.loading = false;
+              this.loading = false;
+              if (resp.status === 'success') {
                 this.$router.push({
                   path: '/melManage',
                   query: {

@@ -12,7 +12,7 @@
         <div>
           <el-form ref="shipForm" :rules="rules" :model="ship" label-width="180px">
             <el-form-item label="类型" prop="target">
-              <el-radio-group v-model="ship.target" @input="changeTarget">
+              <el-radio-group v-model="ship.target" @input="changeTarget" disabled>
                 <el-radio label="FBM">FBM入仓</el-radio>
                 <el-radio label="TRANSIT">中转仓</el-radio>
               </el-radio-group>
@@ -28,6 +28,7 @@
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
                          style="width: 350px;"
+                         disabled
                          placeholder="请选择店铺">
                 <el-option
                     v-for="item in shops"
@@ -123,7 +124,7 @@
         <div style="display: flex; justify-content: space-between">
           <el-button type="primary" icon="el-icon-plus"
                      style="margin-left: 10px"
-                     :disabled="!ship.shop"
+                     :disabled="!ship.shop || ship.s_status!=='PREPARING'"
                      @click="addProduct">添加产品
           </el-button>
 
@@ -190,7 +191,8 @@
               header-align="center"
               width="160">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+              <el-input-number v-if="ship.s_status==='PREPARING'" v-model="scope.row.qty" :min="1"></el-input-number>
+              <span v-if="ship.s_status!=='PREPARING'">{{scope.row.qty}}</span>
             </template>
           </el-table-column>
 
@@ -208,16 +210,16 @@
               header-align="center"
           >
             <template slot-scope="scope">
-              <el-button
-                  v-if="scope.row.s_type === 'NEW'"
-                  title="取消标新"
-                  @click="changeType(scope.row)"
-                  type="success" size="mini" circle>新</el-button>
-              <el-button
-                  v-if="scope.row.s_type === 'REFILL'"
-                  title="标记为新产品"
-                  @click="changeType(scope.row)"
-                  type="" size="mini" circle>新</el-button>
+<!--              <el-button-->
+<!--                  v-if="scope.row.s_type === 'NEW'"-->
+<!--                  title="取消标新"-->
+<!--                  @click="changeType(scope.row)"-->
+<!--                  type="success" size="mini" circle>新</el-button>-->
+<!--              <el-button-->
+<!--                  v-if="scope.row.s_type === 'REFILL'"-->
+<!--                  title="标记为新产品"-->
+<!--                  @click="changeType(scope.row)"-->
+<!--                  type="" size="mini" circle>新</el-button>-->
               <el-button
                   @click="removeProduct(scope.row.sku)"
                   type="" size="mini" icon="el-icon-delete" circle></el-button>
@@ -355,6 +357,7 @@ export default {
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
       shipID: this.$route.query.id, // 运单id
+      click_from: this.$route.query.click_from, // 从哪点击过来
       loading: false,
       ship: {
         target: 'FBM',
@@ -455,12 +458,13 @@ export default {
           if (valid) {
             this.loading = true;
             this.postRequest('api/ml_ship/edit_ship/', this.ship).then(resp => {
-              if (resp) {
-                this.loading = false;
+              this.loading = false;
+              if (resp.status === 'success') {
                 this.$router.push({
                   path: '/melManage',
                   query: {
-                    activeName: 'ship'
+                    activeName: 'ship',
+                    partName: this.click_from
                   }
                 });
               }
@@ -553,7 +557,8 @@ export default {
       this.$router.push({
         path: '/melManage',
         query: {
-          activeName: 'ship'
+          activeName: 'ship',
+          partName: this.click_from
         }
       });
     },
@@ -564,7 +569,6 @@ export default {
         this.loading = false;
         if (resp) {
           this.ship = resp;
-          console.log(this.ship)
         }
       })
     },
