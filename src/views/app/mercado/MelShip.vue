@@ -327,6 +327,7 @@
                   effect="dark" type="info">
                 <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
               </el-tag>
+            {{scope.row.sent_time}}
           </template>
         </el-table-column>
 

@@ -4,7 +4,7 @@
 <template>
   <div class="mainList">
     <el-tabs v-model="activeName">
-      <el-tab-pane :lazy="true" label="产品库" name="first" v-if="permission.product">
+      <el-tab-pane :lazy="true" label="产品库" name="product" v-if="permission.product">
         <span slot="label"><i class="el-icon-goods"></i> 产品库</span>
         <MelProduct></MelProduct>
       </el-tab-pane>
@@ -24,11 +24,11 @@
         <span slot="label"><i class="el-icon-house"></i> 中转仓</span>
         <MelTransStock></MelTransStock>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="销售订单" name="five" v-if="permission.order">
+      <el-tab-pane :lazy="true" label="销售订单" name="orders" v-if="permission.order">
         <span slot="label"><i class="el-icon-tickets"></i> 销售订单</span>
         <MelOrder></MelOrder>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="财务管理" name="six" v-if="permission.finance">
+      <el-tab-pane :lazy="true" label="财务管理" name="finance" v-if="permission.finance">
         <span slot="label"><i class="el-icon-money"></i> 财务管理</span>
         <MelFinance></MelFinance>
       </el-tab-pane>

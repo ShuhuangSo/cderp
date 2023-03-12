@@ -143,6 +143,57 @@
 
         </div>
 
+        <div style="display: flex;padding-top: 20px">
+          <div class="msg_title">
+            快捷入口
+          </div>
+          <div style="width: 100px;text-align:center">
+            <div>
+              <el-link
+                  @click.native="goDetail('product', '')"
+                  :underline="false">
+                <span style="font-size: 20px"><i class="el-icon-goods"></i></span>
+              </el-link>
+            </div>
+            <div  class="small_zi">产品库</div>
+          </div>
+
+          <div style="width: 100px;text-align:center">
+            <div>
+              <el-link
+                  @click.native="goDetail('orders', '')"
+                  :underline="false">
+                <span style="font-size: 20px"><i class="el-icon-tickets"></i></span>
+              </el-link>
+            </div>
+            <div  class="small_zi">销售订单</div>
+          </div>
+
+          <div style="width: 100px;text-align:center">
+            <div>
+              <el-link
+                  @click.native="goDetail('finance', '')"
+                  :underline="false">
+                <span style="font-size: 20px"><i class="el-icon-money"></i></span>
+              </el-link>
+            </div>
+            <div  class="small_zi">财务管理</div>
+          </div>
+
+          <div style="width: 100px;text-align:center">
+            <div>
+              <el-link
+                  @click.native="goDetail('upc', '')"
+                  :underline="false">
+                <span style="font-size: 20px"><i class="el-icon-postcard"></i></span>
+              </el-link>
+            </div>
+            <div  class="small_zi">UPC号码</div>
+          </div>
+
+
+        </div>
+
 
       </el-card>
 <!--      店铺信息-->
@@ -186,7 +237,7 @@
         </el-descriptions>
 
       </el-card>
-
+<!--      销量统计-->
       <el-card class="main-card-big" shadow="never"  v-if="permission.dashboard_saleChart">
         <div class="main-chart-big">
           <span class="chartTitle">销量统计</span>
@@ -208,6 +259,19 @@
         </div>
       </el-card>
 
+<!--      收支管理-->
+      <el-card class="main-card-big" shadow="never" v-if="permission.dashboard_shopFinance">
+        <div class="main-win-big">
+          <span class="chartTitle">收支管理</span>
+
+          <MelShopFinance
+              :key="timer"
+              :startSaleDate="startSaleDate | dateFormat"
+              :endSaleDate="endSaleDate | dateFormat"></MelShopFinance>
+
+        </div>
+      </el-card>
+
     </div>
   </div>
 </template>
@@ -215,10 +279,11 @@
 <script>
 import moment from "moment/moment";
 import MelSalesCharts from "@/components/app/mercado/MelSalesCharts";
+import MelShopFinance from "@/components/app/mercado/MelShopFinance";
 
 export default {
   name: "MelDashboard",
-  components:{MelSalesCharts},
+  components:{MelSalesCharts, MelShopFinance},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -293,13 +358,20 @@ export default {
   methods:{
     //路由到详情页面
     goDetail(activeName, partName){
-      this.$router.push({
-        path: '/melManage',
-        query: {
-          partName: partName,
-          activeName: activeName,
-        }
-      });
+      if (activeName === 'upc') {
+        this.$router.push({
+          path: '/melUPCMange',
+        });
+      } else {
+        this.$router.push({
+          path: '/melManage',
+          query: {
+            partName: partName,
+            activeName: activeName,
+          }
+        });
+      }
+
     },
     //改变销售统计时间
     changeSalesDate() {
@@ -416,6 +488,10 @@ export default {
 
 .main-chart-big {
   width: 1192px;
+  height: 400px;
+  padding-bottom: 10px;
+}
+.main-win-big {
   height: 400px;
   padding-bottom: 10px;
 }
