@@ -16,7 +16,7 @@
           </span>
         </div>
 
-        <div style="display: flex;padding-top: 20px" v-if="permission.dashboard_ship">
+        <div style="display: flex;padding-top: 10px" v-if="permission.dashboard_ship">
           <div class="msg_title">
             发货运单
           </div>

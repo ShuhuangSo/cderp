@@ -210,6 +210,7 @@
                        :underline="false"><i class="el-icon-paperclip"></i></el-link>
               <el-link @click.native="changeLogiFeeStatus(scope.row)"
                        title="物流结算"
+                       v-if="permission.ship_logi_fee"
                        :class="scope.row.logi_fee_clear?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-money"></i></el-link>
               <el-link @click.native="selectValue(scope.row.batch)"
@@ -327,7 +328,6 @@
                   effect="dark" type="info">
                 <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
               </el-tag>
-            {{scope.row.sent_time}}
           </template>
         </el-table-column>
 
@@ -376,7 +376,7 @@
                                     :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'tag', obj:scope.row}">编辑标签</el-dropdown-item>
                   <el-dropdown-item :disabled="!permission.ship_delete"
-                                    v-if="scope.row.s_status!=='FINISHED'"
+                                    v-if="scope.row.s_status==='PREPARING'"
                                     :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
@@ -533,7 +533,7 @@
         <MelShipAttachment :shipID="current_ship_id"></MelShipAttachment>
       </div>
       <span slot="footer" class="dialog-footer">
-    <el-button @click="attachVisible = false">关 闭</el-button>
+    <el-button @click="closeAttach">关 闭</el-button>
   </span>
     </el-dialog>
 
@@ -625,6 +625,10 @@ export default {
     this.initShips()
   },
   methods:{
+    closeAttach(){
+      this.attachVisible = false;
+      this.initShips()
+    },
     // 快速增加物流单号
     fastEditSNumber(row){
       let title = row.batch + '-' + row.shop

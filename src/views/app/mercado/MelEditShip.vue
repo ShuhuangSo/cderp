@@ -221,6 +221,7 @@
 <!--                  @click="changeType(scope.row)"-->
 <!--                  type="" size="mini" circle>新</el-button>-->
               <el-button
+                  v-if="ship.s_status==='PREPARING'"
                   @click="removeProduct(scope.row.sku)"
                   type="" size="mini" icon="el-icon-delete" circle></el-button>
 

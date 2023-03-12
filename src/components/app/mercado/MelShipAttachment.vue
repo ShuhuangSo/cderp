@@ -3,7 +3,9 @@
     <el-card shadow="hover">
       <div slot="header" class="clearfix">
         <span style="font-weight: bold; margin-right: 10px"><i class="el-icon-paperclip"></i>运单附件</span>
-        <el-button size="mini" @click="uploadVisible = true">上传附件</el-button>
+        <el-button size="mini"
+                   v-if="permission.ship_attach_create"
+                   @click="uploadVisible = true">上传附件</el-button>
       </div>
       <el-table
           :header-cell-style="{background:'#eef1f6'}"
@@ -34,7 +36,9 @@
             header-align="center"
             width="100">
           <template slot-scope="scope">
-            <el-button type="text" style="color: #6e7079" @click="deleteSA(scope.row.id)">删除</el-button>
+            <el-button type="text" style="color: #6e7079"
+                       v-if="permission.ship_attach_delete"
+                       @click="deleteSA(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
 
@@ -114,6 +118,7 @@ export default {
   props: ['shipID'],
   data(){
     return{
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       attachments: [],
       loading: false,
       total: 0, // 总条数
