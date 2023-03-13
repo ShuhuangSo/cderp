@@ -1129,7 +1129,7 @@ export default {
   margin-right: 5px;
 }
 .small_icon_true{
-  color: dodgerblue;
+  color: #aa0515;
   margin-right: 5px;
 }
 ::v-deep .el-table__body tr.current-row>td {

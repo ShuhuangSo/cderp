@@ -151,6 +151,9 @@
               <el-link @click.native="copyText(scope.row.sku)"
                        style="margin-left: 5px"
                        :underline="false"><i class="el-icon-copy-document"></i></el-link>
+              <span
+                  v-if="scope.row.is_incomplete"
+                  style="margin-left: 5px;color: #FFAE00; font-size: 16px"><i class="el-icon-warning"></i></span>
             </div>
 
             <div>{{ scope.row.p_name }}</div>

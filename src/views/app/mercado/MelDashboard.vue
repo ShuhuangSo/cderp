@@ -1,6 +1,15 @@
 <template>
   <div class="baseContainer">
+
     <div class="pContainer">
+      <div class="main-card-big"  shadow="never" v-if="daiban.all_product_incomplete">
+        <el-alert
+            title="信息不完整"
+            type="error"
+            description="产品库部分产品信息不完整，请即时处理！"
+            show-icon>
+        </el-alert>
+      </div>
 
 <!--      待办事项-->
       <el-card class="small-card" shadow="never">
@@ -141,6 +150,18 @@
             <div  class="small_zi">入仓核对</div>
           </div>
 
+          <div style="width: 100px;text-align:center" v-if="daiban.income_confirm">
+            <div>
+              <el-link
+                  @click.native="goDetail('finance', '')"
+                  :underline="false">
+                <span class="zTitle_2">{{this.daiban.income_confirm}}</span>
+              </el-link>
+
+            </div>
+            <div  class="small_zi">提现待确认</div>
+          </div>
+
         </div>
 
         <div style="display: flex;padding-top: 20px">
@@ -251,6 +272,12 @@
                 :value="item.value">
             </el-option>
           </el-select>
+          <span style="margin-left: 10px">
+            <el-link type="info"
+                     @click.native="timer = new Date().getTime()"
+                     :underline="false"
+                     icon="el-icon-refresh-right"></el-link>
+          </span>
           <MelSalesCharts
               :key="timer"
               :startSaleDate="startSaleDate | dateFormat"
@@ -317,6 +344,8 @@ export default {
         'pack_num': null,
         'overtime_ship': null,
         'need_book': null,
+        'income_confirm': null,
+        'all_product_incomplete': null,
       },
       daiban_loading: false,
       shop_info_loading: false,
@@ -406,6 +435,8 @@ export default {
           this.daiban.pack_num = resp.pack_num
           this.daiban.overtime_ship = resp.overtime_ship
           this.daiban.need_book = resp.need_book
+          this.daiban.income_confirm = resp.income_confirm
+          this.daiban.all_product_incomplete = resp.all_product_incomplete
         }
       })
     },

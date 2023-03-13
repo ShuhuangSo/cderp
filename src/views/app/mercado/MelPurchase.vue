@@ -155,7 +155,13 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}
+            <div style="font-weight: bold">
+              <el-link
+                  style="font-weight: bold"
+                  @click.native="productDetail(scope.row.sku)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
@@ -291,7 +297,13 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}
+            <div style="font-weight: bold">
+              <el-link
+                  style="font-weight: bold"
+                  @click.native="productDetail(scope.row.sku)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
@@ -422,7 +434,13 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}
+            <div style="font-weight: bold">
+              <el-link
+                  style="font-weight: bold"
+                  @click.native="productDetail(scope.row.sku)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
@@ -554,7 +572,13 @@
             label="产品"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}
+            <div style="font-weight: bold">
+              <el-link
+                  style="font-weight: bold"
+                  @click.native="productDetail(scope.row.sku)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
@@ -937,17 +961,38 @@
         </span>
     </el-dialog>
 
+    <!--    产品详情弹窗-->
+    <el-dialog
+        title="产品详情"
+        :visible.sync="productDetailVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="1200px"
+    >
+      <MelProductDetail ref="productDetail"
+                        :key="timer"
+                        :productID="productID"
+                        @closeProductDetail="closeProductDetail"></MelProductDetail>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="productDetailVisible = false">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :disabled="!permission.product_editAll"
+                     @click="productDetailUpdate">确 定</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment/moment";
 import MelAddProduct from "@/views/app/mercado/MelAddProduct";
+import MelProductDetail from "@/views/app/mercado/MelProductDetail";
 
 export default {
   name: "MelPurchase",
   props: ["buyStatusName"],
-  components:{MelAddProduct},
+  components:{MelAddProduct, MelProductDetail},
   data() {
     return {
       purchaseList: [],
@@ -971,6 +1016,9 @@ export default {
       noteVisible: false, // 编辑备注弹窗
       note_value: '', // 备注
       checkVisible: false, // 产品数据核查弹窗
+      productDetailVisible: false, // 产品详情弹窗
+      timer: null,
+      productID: null, // 产品id
       packs: [],
       mlProduct: {
         pm_id: null,
@@ -1038,6 +1086,29 @@ export default {
     this.calcPurchases();
   },
   methods:{
+    // 打开产品详情弹窗
+    productDetail(sku){
+      this.postRequest('api/ml_products/get_product_id/', {'sku': sku}).then(resp => {
+        if (resp.id) {
+          this.timer = new Date().getTime();
+          this.productID = resp.id;
+          this.productDetailVisible = true;
+        } else {
+          this.$message.error('产品不存在!')
+        }
+      })
+    },
+    // 产品详情弹窗更新
+    productDetailUpdate() {
+      this.$refs.productDetail.updateProduct();
+    },
+
+    // 成功业务处理后关闭产品详情弹窗
+    closeProductDetail() {
+      this.$message.success('操作成功!')
+      this.initPurchaseList()
+      this.productDetailVisible = false;
+    },
     handleProductOp(command){
       // 数据核查
       if (command['type'] === 'check_product') {
