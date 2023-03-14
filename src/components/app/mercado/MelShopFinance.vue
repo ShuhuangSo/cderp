@@ -64,7 +64,7 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <div>查看明细</div>
+            <div><el-button type="text" @click="exportDetail(scope.row.shop_id)">导出明细</el-button></div>
           </template>
         </el-table-column>
 
@@ -135,6 +135,28 @@ export default {
     },
   },
   methods:{
+    // 导出明细
+    exportDetail(shop_id){
+      this.$confirm('是否导出明细表?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.start_date =String(moment(this.cus_date[0]).format("YYYY-MM-DD"))
+        this.end_date = String(moment(this.cus_date[1]).format("YYYY-MM-DD"))
+        let d = {'start_date': this.start_date, 'end_date': this.end_date, 'shop_id': shop_id}
+        this.postRequest('api/ml_shops/export_shop_finance/', d).then(resp => {
+          if (resp) {
+            window.open(resp.url, '_blank')
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
+      })
+    },
     //改变筛选动作
     changeFilter(){
       this.initShopFinance();
