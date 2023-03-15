@@ -122,7 +122,7 @@
 
         </div>
 
-        <div style="display: flex;padding-top: 20px" v-if="daiban.overtime_ship || daiban.need_book">
+        <div style="display: flex;padding-top: 20px" v-if="daiban.overtime_ship || daiban.need_book || daiban.income_confirm">
           <div class="msg_title">
             操作提醒
           </div>
