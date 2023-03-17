@@ -5,8 +5,9 @@
       <div class="main-card-big"  shadow="never" v-if="daiban.all_product_incomplete">
         <el-alert
             title="信息不完整"
-            type="error"
-            description="产品库部分产品信息不完整，请即时处理！"
+            type="warning"
+            effect="dark"
+            description="产品库部分产品信息不完整，请及时处理！"
             show-icon>
         </el-alert>
       </div>

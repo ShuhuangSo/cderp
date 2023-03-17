@@ -1268,9 +1268,12 @@ export default {
         if (all_qc) {
           //调用提交确认收货
           this.postRequest('api/ml_purchase/pack_buy/', this.multipleSelection).then(resp => {
-            this.multipleSelection = []
-            this.$refs.purchaseTable.clearSelection() //清除选中的数据
-            this.initPurchaseList();
+            if(resp.status === 'success') {
+              this.multipleSelection = []
+              this.$refs.purchaseTable.clearSelection() //清除选中的数据
+              this.initPurchaseList();
+            }
+
           }).catch(() => {
             this.$message({
               type: 'info',
@@ -1294,9 +1297,12 @@ export default {
       }).then(() => {
         //调用提交确认收货
         this.postRequest('api/ml_purchase/rec_buy/', this.multipleSelection).then(resp => {
-          this.multipleSelection = []
-          this.$refs.purchaseTable.clearSelection() //清除选中的数据
-          this.initPurchaseList();
+          if(resp.status === 'success') {
+            this.multipleSelection = []
+            this.$refs.purchaseTable.clearSelection() //清除选中的数据
+            this.initPurchaseList();
+          }
+
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -1317,7 +1323,7 @@ export default {
     //提交下单采购
     summitBuy(){
       this.postRequest('api/ml_purchase/place_buy/', {'products':this.multipleSelection, 'is_change': this.changPrice}).then(resp => {
-        if (resp) {
+        if (resp.status === 'success') {
           this.buyVisible = false
           this.changPrice = false
           this.multipleSelection = []
