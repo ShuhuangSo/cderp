@@ -1030,7 +1030,7 @@ export default {
         is_checked: false,
         packing_id: null
       },
-      filter_name: '', // 库存筛选
+      filter_name: '&buy_qty__gt=0', // 库存筛选
       filter_group: [
         {
           name: '全部采购需求',
@@ -1160,7 +1160,7 @@ export default {
     // 改变筛选状态
     changeStatus(value){
       this.page = 1;
-      this.filter_name = ''
+      this.filter_name = '&buy_qty__gt=0'
       this.p_status = value
       this.$refs.purchaseTable.clearSelection() //清除选中的数据
       this.initPurchaseList()

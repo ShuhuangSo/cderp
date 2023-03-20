@@ -192,6 +192,7 @@
                   :underline="false">
                 {{ scope.row.batch }}
               </el-link>
+
             </div>
             <div style="margin-top: 10px">
               <el-tag
@@ -204,6 +205,7 @@
               </el-tag>
             </div>
             <div style="font-size: 16px;margin-top: 10px">
+              <el-tag size="mini" v-if="scope.row.send_from === 'LOCAL'" title="本土中转入仓">转</el-tag>
               <el-link @click.native="openAttachment(scope.row)"
                        title="附件"
                        :class="scope.row.is_attach?'small_icon_true':'small_icon'"

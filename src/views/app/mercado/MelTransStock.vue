@@ -105,6 +105,7 @@
             label="所属店铺">
           <template slot-scope="scope">
             <el-tag
+                @click="selectValue(scope.row.listing_shop)"
                 style="margin-right: 5px;border: none"
                 :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                 effect="dark">
@@ -372,6 +373,13 @@ export default {
     this.inintShops();
   },
   methods:{
+    //快速筛选
+    selectValue(value){
+      this.page = 1;
+      this.$refs.productTable.clearSelection() //清除选中的数据
+      this.searchValue = value
+      this.inintShops();
+    },
     // 改变出仓状态
     changeOutStatus(){
       this.page = 1
