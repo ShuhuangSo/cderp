@@ -12,6 +12,10 @@
         <span slot="label"><i class="el-icon-shopping-cart-full"></i> 采购管理</span>
         <MelPurchase :buyStatusName="buyStatusName"></MelPurchase>
       </el-tab-pane>
+      <el-tab-pane :lazy="true" label="补货推荐(测试版)" name="refill">
+        <span slot="label"><i class="el-icon-help"></i> 补货推荐(测试版)</span>
+        <MelRefill></MelRefill>
+      </el-tab-pane>
       <el-tab-pane :lazy="true" label="发仓运单" name="ship"  v-if="permission.ship">
         <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
         <MelShip :shipStatusName="shipStatusName"></MelShip>
@@ -50,11 +54,12 @@ import MelOrder from "@/views/app/mercado/MelOrder";
 import MelFinance from "@/views/app/mercado/MelFinance";
 import MelOperateLog from "@/views/app/mercado/MelOperateLog";
 import MelPurchase from "@/views/app/mercado/MelPurchase";
+import MelRefill from "@/views/app/mercado/MelRefill";
 
 export default {
   name: "MelManage",
   components:{
-    MelProduct, MelShopStock, MelShip, MelTransStock, MelOrder, MelFinance, MelOperateLog, MelPurchase
+    MelProduct, MelShopStock, MelShip, MelTransStock, MelOrder, MelFinance, MelOperateLog, MelPurchase, MelRefill
   },
   data(){
     return{

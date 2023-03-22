@@ -228,6 +228,8 @@
         <el-table-column
             label="销量">
           <template slot-scope="scope">
+            <div>7天销量: <span class="zi">{{scope.row.day7_sold}} </span>
+            </div>
             <div>15天销量: <span class="zi">{{scope.row.day15_sold}} </span>
             </div>
             <div>30天销量: <span class="zi">{{scope.row.day30_sold}} </span>
