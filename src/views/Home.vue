@@ -5,7 +5,7 @@
 
         <div style="display: flex; justify-content: left">
           <router-link to="/home">
-            <el-tooltip class="item" effect="light" content="系统版本: v1.0.8" placement="bottom">
+            <el-tooltip class="item" effect="light" content="系统版本: v1.0.9" placement="bottom">
               <img src="../assets/logo-m.png" alt="CaseDance"  class="logo">
             </el-tooltip>
 
