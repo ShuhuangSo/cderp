@@ -13,11 +13,21 @@
                   style="width: 350px; margin-right: 5px">
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
+        <el-badge  :hidden="!multipleSelection.length"
+                   :value="multipleSelection.length" class="item">
+          <el-button icon="el-icon-truck"
+                     type="primary"
+                     @click="createShip"
+                     :disabled="!multipleSelection.length"
+                     style="margin-left: 5px">生成运单
+          </el-button>
+        </el-badge>
 
       </div>
 
       <div>
         <el-select v-model="shopID"
+                   @change="changeShop"
                    style="width: 300px;margin-right: 10px"
                    placeholder="请选择店铺">
           <el-option
@@ -64,6 +74,8 @@
           :data="refills"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
+          :row-key="getRowKeys"
+          @selection-change="handleSelectionChange"
           style="width: 100%">
         <el-table-column
             type="selection"
@@ -221,6 +233,7 @@
         </el-pagination>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -256,6 +269,7 @@ export default {
       ],
       timer: '',
       isShow: true,
+      multipleSelection: [], // 选中行
     }
   },
   filters: {
@@ -281,6 +295,47 @@ export default {
 
   },
   methods:{
+    // 生成发货运单
+    createShip(){
+      this.$confirm('是否确认生成运单?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        let shopName = ''
+        this.shops.forEach(item =>{
+          if (this.shopID === item.id) shopName = item.name
+        })
+        let ship = {
+          target: 'FBM',
+          shop: shopName,
+          ship_type: this.ship_type === 'FLY'?'空运':'海运',
+          carrier: '',
+          end_date: this.end_date,
+          ship_date: '',
+          note: '',
+          ship_detail: [],
+        }
+        this.multipleSelection.forEach(item => {
+          ship.ship_detail.push({
+            'qty': item.qty,
+            'sku': item.sku,
+            'p_name': item.p_name,
+            'item_id': item.item_id,
+            'image': item.image,
+            'shop': this.shopID,
+            'note': '',
+            's_type': 'REFILL'
+          });
+        })
+        this.$router.push({
+          path: '/createShip',
+          query: {
+            obj: JSON.stringify(ship)
+          }
+        });
+      })
+    },
     // 补货计算
     calcRefill(){
       let data = {'shop_id': this.shopID, 'ship_type': this.ship_type, 'end_date': this.end_date}
@@ -291,6 +346,18 @@ export default {
           this.initRefills()
         }
       })
+    },
+    //切换选择店铺
+    changeShop(){
+      this.$refs.refillTable.clearSelection() //清除选中的数据
+      this.refills = []
+    },
+    getRowKeys(row){
+      return row.id
+    },
+    // 处理多选
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
     },
     //触发子组件更新
     showTagSelect(){

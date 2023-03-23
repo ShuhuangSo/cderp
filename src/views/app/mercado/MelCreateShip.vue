@@ -218,6 +218,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
+      obj: JSON.parse(this.$route.query.obj),
       ship: {
         target: 'FBM',
         shop: '',
@@ -252,6 +253,7 @@ export default {
   mounted() {
     this.inintShops();
     this.initCarriers();
+    if (this.obj) this.ship = this.obj
   },
   computed: {
     // 总数量
