@@ -9,6 +9,7 @@
           <el-page-header @back="cancel" content="创建运单">
           </el-page-header>
         </div>
+
         <div>
           <el-form ref="shipForm" :rules="rules" :model="ship" label-width="180px">
             <el-form-item label="类型" prop="target">
@@ -218,7 +219,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
-      obj: JSON.parse(this.$route.query.obj),
+      // obj: JSON.parse(this.$route.query.obj),
       ship: {
         target: 'FBM',
         shop: '',

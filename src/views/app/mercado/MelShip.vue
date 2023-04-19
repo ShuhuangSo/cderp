@@ -3,6 +3,7 @@
 */
 <template>
   <div>
+
     <div class="operate">
 
       <div class="filter">
@@ -215,6 +216,12 @@
                        v-if="permission.ship_logi_fee"
                        :class="scope.row.logi_fee_clear?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-money"></i></el-link>
+              <el-tooltip effect="dark" :disabled='!scope.row.note' :content="scope.row.note" placement="top">
+                <el-link @click.native="openNote(scope.row)"
+                         title="备注"
+                         :class="scope.row.note?'small_icon_true':'small_icon'"
+                         :underline="false"><i class="el-icon-chat-line-square"></i></el-link>
+              </el-tooltip>
               <el-link @click.native="selectValue(scope.row.batch)"
                        title="筛选同批次运单"
                        class="small_icon"
@@ -539,6 +546,23 @@
   </span>
     </el-dialog>
 
+    <!--    修改备注弹窗-->
+    <el-dialog
+        title="运单备注"
+        :visible.sync="noteVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="500px"
+    >
+      <div>
+        <el-input :rows="6" type="textarea" v-model="shipNote"></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="noteVisible=false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitNote">保 存</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -575,6 +599,8 @@ export default {
       expandStatus: true, // 所有行展开状态
       tagVisible: false, //标签弹窗
       attachVisible: false, //运单附件弹窗
+      noteVisible: false, //运单备注弹窗
+      shipNote: null, //运单备注内容
       current_ship_id: null, //当前运单id
       current_shop: null, //当前目标店铺
       timer: null,
@@ -625,8 +651,24 @@ export default {
   },
   mounted() {
     this.initShips()
+    this.checkNotify()
   },
   methods:{
+    //检查相关通知
+    checkNotify(){
+      this.getRequest('api/ml_ship/check_ship_change/').then(resp => {
+        if (resp.is_exist) {
+          this.$notify({
+            title: '你有'+ resp.qty +'个运单发货数量变动',
+            message: resp.desc,
+            type: 'warning',
+          });
+        }
+      })
+
+
+    },
+    // 关闭附件弹窗
     closeAttach(){
       this.attachVisible = false;
       this.initShips()
@@ -754,8 +796,19 @@ export default {
         }
       })
     },
+    //提交修改备注
+    summitNote(){
+      this.patchRequest('api/ml_ship/'+ this.current_ship_id +'/', {'note': this.shipNote}).then(resp => {
+        if (resp) {
+          this.noteVisible = false;
+          this.initShips()
+          this.current_ship_id = null
+        }
+      })
+    },
     // 改变筛选状态
     changeStatus(value){
+      this.page = 1;
       this.s_status = value
       this.initShips()
     },
@@ -833,6 +886,13 @@ export default {
           });
         });
       })
+    },
+
+    //修改运单备注
+    openNote(obj){
+      this.shipNote = obj.note
+      this.current_ship_id = obj.id
+      this.noteVisible = true
     },
 
     // 运单更多操作

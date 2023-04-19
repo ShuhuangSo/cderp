@@ -12,7 +12,7 @@
         <span slot="label"><i class="el-icon-shopping-cart-full"></i> 采购管理</span>
         <MelPurchase :buyStatusName="buyStatusName"></MelPurchase>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="补货推荐(测试版)" name="refill">
+      <el-tab-pane :lazy="true" label="补货推荐(测试版)" name="refill" v-if="permission.refill">
         <span slot="label"><i class="el-icon-help"></i> 补货推荐(测试版)</span>
         <MelRefill></MelRefill>
       </el-tab-pane>
