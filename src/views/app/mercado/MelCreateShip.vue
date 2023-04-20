@@ -219,7 +219,7 @@ export default {
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
-      // obj: JSON.parse(this.$route.query.obj),
+      obj: this.$route.query.obj?JSON.parse(this.$route.query.obj):'', // 补货推荐传递数据
       ship: {
         target: 'FBM',
         shop: '',

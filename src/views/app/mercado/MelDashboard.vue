@@ -142,7 +142,7 @@
           <div style="width: 100px;text-align:center" v-if="daiban.overtime_ship">
             <div>
               <el-link
-                  @click.native="goDetail('ship', 'BOOKED')"
+                  @click.native="goDetail('ship', 'BOOKED', true)"
                   :underline="false">
                 <span class="zTitle_2">{{this.daiban.overtime_ship}}</span>
               </el-link>
@@ -387,7 +387,7 @@ export default {
   },
   methods:{
     //路由到详情页面
-    goDetail(activeName, partName){
+    goDetail(activeName, partName, value){
       if (activeName === 'upc') {
         this.$router.push({
           path: '/melUPCMange',
@@ -398,6 +398,7 @@ export default {
           query: {
             partName: partName,
             activeName: activeName,
+            value: value,
           }
         });
       }
@@ -439,6 +440,24 @@ export default {
           this.daiban.income_confirm = resp.income_confirm
           this.daiban.all_product_incomplete = resp.all_product_incomplete
         }
+
+        if (this.daiban.overtime_ship) {
+          this.$notify({
+            title: '入仓提醒',
+            message: '你有 '+ this.daiban.overtime_ship +' 票入仓运单需核对',
+            type: 'warning',
+          });
+        }
+
+        if (this.daiban.need_book) {
+          this.$notify({
+            title: '预约提醒',
+            message: '你有 '+ this.daiban.need_book +' 票运单需要预约',
+            type: 'warning',
+            offset: this.daiban.overtime_ship?80:0
+          });
+        }
+
       })
     },
 
@@ -457,6 +476,7 @@ export default {
 
         }
       })
+
     },
 
     inintShops(){

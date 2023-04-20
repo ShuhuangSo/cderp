@@ -51,6 +51,13 @@
             </el-option>
           </el-select>
 
+          <span style="font-size: 12px; color: #303133;margin-left: 10px;margin-right: 5px" v-if="permission.finance_allOnway">全部在途</span>
+          <el-switch
+              v-if="permission.finance_allOnway"
+              @change="initFinances"
+              v-model="all_onway">
+          </el-switch>
+
           <el-radio-group
               style="margin-left: 20px"
               @change="changeType" v-model="finance.f_type">
@@ -95,6 +102,7 @@
               width="180">
             <template slot-scope="scope">
               <div>{{ scope.row.f_type | status}}</div>
+              <div style="color: #99a9bf" v-if="all_onway">{{ scope.row.shop_name}}</div>
             </template>
           </el-table-column>
 
@@ -359,6 +367,7 @@ export default {
       onway_fund: 0.0,
       income_rmb: 0.0,
       rest_income: 0.0,
+      all_onway: false,
     }
   },
   filters: {
@@ -401,6 +410,7 @@ export default {
     },
     //选择类型
     changeType(){
+      this.all_onway = false
       this.initFinances()
     },
     //打开结汇弹窗
@@ -528,6 +538,11 @@ export default {
 
     initFinances(){
       let url = '/api/ml_finance/?shop=' + this.shopID + '&page=' + this.page + '&page_size=' + this.size
+
+      if (this.all_onway) {
+        url = '/api/ml_finance/?page=' + this.page + '&page_size=' + this.size
+        url += '&is_received=False'
+      }
       if (this.finance.f_type) {
         url += '&f_type=' + this.finance.f_type;
       }

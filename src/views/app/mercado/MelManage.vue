@@ -18,7 +18,7 @@
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="发仓运单" name="ship"  v-if="permission.ship">
         <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
-        <MelShip :shipStatusName="shipStatusName"></MelShip>
+        <MelShip :shipStatusName="shipStatusName" :shipWaitCheck="shipWaitCheck"></MelShip>
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="FBM库存" name="third" v-if="permission.fbmStock">
         <span slot="label"><i class="el-icon-school"></i> FBM库存</span>
@@ -66,6 +66,7 @@ export default {
       activeName: this.$route.query.activeName?this.$route.query.activeName:'ship',
       buyStatusName: this.$route.query.activeName==='purchase'?this.$route.query.partName:'',
       shipStatusName: this.$route.query.activeName==='ship'?this.$route.query.partName:'',
+      shipWaitCheck: this.$route.query.value==='true'?this.$route.query.value:'',
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission'))
     }

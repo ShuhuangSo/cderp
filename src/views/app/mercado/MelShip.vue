@@ -42,6 +42,13 @@
             <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
           </el-input>
 
+          <span style="font-size: 12px; color: #303133;margin-left: 10px;margin-right: 5px" v-if="s_status==='BOOKED'">入仓核查</span>
+          <el-switch
+              v-if="s_status==='BOOKED'"
+              @change="initShips"
+              v-model="wait_check">
+          </el-switch>
+
           <el-radio-group
               style="margin-left: 50px"
               @change="changeTarget" v-model="target">
@@ -572,7 +579,7 @@ import MelShipAttachment from "@/components/app/mercado/MelShipAttachment";
 
 export default {
   name: "MelShip",
-  props: ["shipStatusName"],
+  props: ["shipStatusName", 'shipWaitCheck'],
   components: {MelShipAttachment},
   data(){
     return{
@@ -604,6 +611,7 @@ export default {
       current_ship_id: null, //当前运单id
       current_shop: null, //当前目标店铺
       timer: null,
+      wait_check: this.shipWaitCheck?true:false, // 入仓核查
       tag: {
         tag_color: '#409EFF',
         tag_name: '',
@@ -659,13 +667,12 @@ export default {
       this.getRequest('api/ml_ship/check_ship_change/').then(resp => {
         if (resp.is_exist) {
           this.$notify({
-            title: '你有'+ resp.qty +'个运单发货数量变动',
+            title: '你有 '+ resp.qty +' 票运单发货数量变动',
             message: resp.desc,
             type: 'warning',
           });
         }
       })
-
 
     },
     // 关闭附件弹窗
@@ -810,6 +817,7 @@ export default {
     changeStatus(value){
       this.page = 1;
       this.s_status = value
+      this.wait_check = false
       this.initShips()
     },
 
@@ -1124,6 +1132,10 @@ export default {
       }
       if (!this.permission.ship_allShopCheck) {
         url += '&user_id=' + this.user.id;
+      }
+      if (this.wait_check) {
+        let today = moment(new Date()).format("YYYY-MM-DD")
+        url += '&book_date__lt=' + today
       }
       url += '&target=' + this.target
       url += '&s_status=' + this.s_status
