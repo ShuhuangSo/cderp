@@ -363,7 +363,7 @@
             <div v-if="scope.row.s_status==='BOOKED'">
               <el-button
                   v-if="permission.ship_inwarehouse"
-                  :disabled="!scope.row.shipping_fee && !scope.row.send_from"
+                  :disabled="!scope.row.shipping_fee && scope.row.send_from!=='LOCAL'"
                   key="test"
                   @click="confirmInWarehouse(scope.row.id)"
                   size="mini" type="primary" plain round><i class="el-icon-circle-check"></i> 入仓</el-button>
