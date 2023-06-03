@@ -1396,7 +1396,7 @@ export default {
       if (this.p_status === 'USED') {
         url += '&ordering=-used_time'
       } else {
-        url += '&ordering=shop,item_id'
+        url += '&ordering=p_name'
       }
 
       this.loading = true
