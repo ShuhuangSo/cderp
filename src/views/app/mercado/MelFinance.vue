@@ -416,6 +416,7 @@ export default {
     //打开结汇弹窗
     openCreateEXC(){
       this.finance.exc_date = this.getDate()
+      this.finance.exchange = this.rest_income
       this.createEXCVisible = true
     },
     //打开确认到账弹窗

@@ -50,12 +50,24 @@
           </el-switch>
 
           <el-radio-group
-              style="margin-left: 50px"
+              style="margin-left: 50px;margin-right: 30px"
               @change="changeTarget" v-model="target">
             <el-radio-button label="">全部</el-radio-button>
             <el-radio-button label="FBM">FBM入仓单</el-radio-button>
             <el-radio-button label="TRANSIT">中转仓单</el-radio-button>
           </el-radio-group>
+
+          <el-select v-model="sort"
+                     style="width: 150px;margin-left: 5px"
+                     @change="changeTarget" placeholder="请选择排序项">
+            <el-option
+                v-for="item in ordering_group"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
+
         </div>
 
         <el-button type="success" icon="el-icon-plus"
@@ -612,10 +624,26 @@ export default {
       current_shop: null, //当前目标店铺
       timer: null,
       wait_check: this.shipWaitCheck?true:false, // 入仓核查
+      sort: '-create_time', //排序变量
       tag: {
         tag_color: '#409EFF',
         tag_name: '',
       },
+      ordering_group: [
+        {
+          name: '默认排序',
+          value: '-create_time'
+        },
+        {
+          name: '店铺名称↓',
+          value: '-shop'
+        },
+        {
+          name: '预约日期↓',
+          value: '-book_date'
+        },
+
+      ],
       predefineColors: [
         '#ff4500',
         '#ff8c00',
@@ -1091,6 +1119,7 @@ export default {
     },
     // 改变目标状态
     changeTarget(){
+      this.page = 1;
       this.initShips()
     },
     // 重置搜索内容
@@ -1139,7 +1168,7 @@ export default {
       }
       url += '&target=' + this.target
       url += '&s_status=' + this.s_status
-      url += '&ordering=-create_time'
+      url += '&ordering=' + this.sort
 
       this.loading = true
       this.getRequest(url).then(resp => {

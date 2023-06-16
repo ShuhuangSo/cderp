@@ -226,6 +226,21 @@
         </el-table-column>
 
         <el-table-column
+            align="center"
+            header-align="center"
+            label="备货中 | 采购中 | 采购到货">
+          <template slot-scope="scope">
+            <el-button type="text" class="stock_qty">{{ scope.row.preparing_qty }}</el-button>
+            <el-divider direction="vertical"></el-divider>
+            <el-button type="text" class="onway_qty">{{ scope.row.p_onway_qty }}</el-button>
+
+            <el-divider direction="vertical"></el-divider>
+            <el-button type="text" class="zz_qty">{{ scope.row.p_rec_qty }}</el-button>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="120"
             label="销量">
           <template slot-scope="scope">
             <div>7天销量: <span class="zi">{{scope.row.day7_sold}} </span>
@@ -239,6 +254,7 @@
         </el-table-column>
 
         <el-table-column
+            width="150"
             label="利润">
           <template slot-scope="scope">
             <div>平均毛利润: <span class="zi">{{scope.row.avg_profit | currency}} </span>
@@ -252,7 +268,7 @@
         <el-table-column
             align="center"
             header-align="center"
-            width="80"
+            width="60"
             label="退款率">
           <template slot-scope="scope">
             <div><span class="zi">{{scope.row.refund_rate | rate}} </span></div>
@@ -274,7 +290,7 @@
             label="状态"
             align="center"
             header-align="center"
-            width="100">
+            width="80">
           <template slot-scope="scope">
             <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
             <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
