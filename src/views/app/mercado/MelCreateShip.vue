@@ -20,6 +20,10 @@
 
             </el-form-item>
 
+            <el-form-item label="全员可见" v-if="this.user.is_superuser && this.ship.target==='TRANSIT'">
+              <el-switch v-model="ship.all_see"></el-switch>
+            </el-form-item>
+
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
                          style="width: 300px;"
@@ -228,6 +232,7 @@ export default {
         end_date: '',
         ship_date: '',
         note: '',
+        all_see: false,
         ship_detail: [],
       },
       shops: [], //可选店铺

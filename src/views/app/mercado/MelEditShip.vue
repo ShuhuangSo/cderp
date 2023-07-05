@@ -19,8 +19,13 @@
 
             </el-form-item>
 
+            <el-form-item label="全员可见" v-if="this.user.is_superuser && this.ship.target==='TRANSIT'">
+              <el-switch v-model="all_see"></el-switch>
+            </el-form-item>
+
             <el-form-item label="批次号" required prop="batch">
               <el-input v-model="ship.batch"
+                        :disabled="!this.user.is_superuser && this.all_see"
                         style="width: 350px;"
                         maxlength="50"></el-input>
             </el-form-item>
@@ -60,6 +65,7 @@
 
             <el-form-item label="承运商" prop="carrier">
               <el-select v-model="ship.carrier"
+                         :disabled="!this.user.is_superuser && this.all_see"
                          style="width: 350px;"
                          placeholder="请选择发货物流">
                 <el-option
@@ -84,7 +90,7 @@
             </el-form-item>
 
             <el-form-item label="发货方式" prop="ship_type">
-              <el-radio-group v-model="ship.ship_type">
+              <el-radio-group v-model="ship.ship_type" :disabled="!this.user.is_superuser && this.all_see">
                 <el-radio label="空运">空运</el-radio>
                 <el-radio label="海运">海运</el-radio>
               </el-radio-group>
@@ -93,6 +99,7 @@
             <el-form-item label="截单日期" prop="end_date">
               <el-date-picker
                   v-model="ship.end_date"
+                  :disabled="!this.user.is_superuser && this.all_see"
                   value-format="yyyy-MM-dd"
                   type="date"
                   placeholder="选择日期">
@@ -102,6 +109,7 @@
             <el-form-item label="航班日期" prop="end_date">
               <el-date-picker
                   v-model="ship.ship_date"
+                  :disabled="!this.user.is_superuser && this.all_see"
                   value-format="yyyy-MM-dd"
                   type="date"
                   placeholder="选择日期">
@@ -182,6 +190,18 @@
               width="120">
             <template slot-scope="scope">
               <div>{{ scope.row.item_id }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              v-if="ship.target==='TRANSIT'"
+              label="目标店铺"
+              align="center"
+              header-align="center"
+              show-overflow-tooltip
+              width="100">
+            <template slot-scope="scope">
+              <div>{{ scope.row.target_FBM }}</div>
             </template>
           </el-table-column>
 
@@ -371,6 +391,7 @@ export default {
         note: '',
         ship_shipDetail: [],
       },
+      all_see: false,
       shops: [], //可选店铺
       carriers: [], //可选物流商
       fbm_warehouses: [], //可选fbm仓库
@@ -458,6 +479,7 @@ export default {
         this.$refs.shipForm.validate((valid) => {
           if (valid) {
             this.loading = true;
+            this.ship['all_see'] = this.all_see
             this.postRequest('api/ml_ship/edit_ship/', this.ship).then(resp => {
               this.loading = false;
               if (resp.status === 'success') {
@@ -570,6 +592,16 @@ export default {
         this.loading = false;
         if (resp) {
           this.ship = resp;
+          if (resp.user_id === 0) this.all_see = true
+
+          this.ship.ship_shipDetail.forEach(item=>{
+            if (item.user_id === this.user.id || this.user.is_superuser) {
+              item['can_see'] = true
+            } else {
+              item['can_see'] = false
+            }
+
+          })
         }
       })
     },

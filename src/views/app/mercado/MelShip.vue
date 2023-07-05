@@ -1160,7 +1160,7 @@ export default {
         url += '&search=' + this.searchValue;
       }
       if (!this.permission.ship_allShopCheck) {
-        url += '&user_id=' + this.user.id;
+        url += '&user_id__in=0,' + this.user.id;
       }
       if (this.wait_check) {
         let today = moment(new Date()).format("YYYY-MM-DD")
