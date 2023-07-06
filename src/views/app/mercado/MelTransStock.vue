@@ -259,7 +259,7 @@
               width="300"
               show-overflow-tooltip>
             <template slot-scope="scope">
-              <div>{{ scope.row.sku }}
+              <div><span style="font-weight: bold">{{ scope.row.sku }}</span>
                 <el-tag size="mini" v-if="scope.row.group">拼箱({{scope.row.group}})</el-tag>
                 <el-tag size="mini" type="info" effect="dark"
                         style="margin-left: 5px"
@@ -310,7 +310,7 @@
               header-align="center"
               label="数量">
             <template slot-scope="scope">
-              {{ scope.row.qty}}
+              <span style="font-weight: bold">{{ scope.row.qty}}</span>
             </template>
           </el-table-column>
 

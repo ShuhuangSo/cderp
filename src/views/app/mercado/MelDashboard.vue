@@ -252,7 +252,7 @@
             style="margin-top: 15px; margin-left: 10px"
             title="" :column="1" size="medium">
           <el-descriptions-item label="负责人">{{ this.shop_info.manager }}</el-descriptions-item>
-          <el-descriptions-item label="在售产品">{{ this.shop_info.total_sku }}</el-descriptions-item>
+          <el-descriptions-item label="在线产品">{{ this.shop_info.total_sku }}</el-descriptions-item>
           <el-descriptions-item label="FBM库存">{{ this.shop_info.total_qty }}</el-descriptions-item>
           <el-descriptions-item label="库存金额">{{ this.shop_info.total_amount | currency }}</el-descriptions-item>
           <el-descriptions-item label="店铺额度">￥ {{ this.shop_info.used_quota | q_currency }} / {{ this.shop_info.quota | q_currency }}</el-descriptions-item>

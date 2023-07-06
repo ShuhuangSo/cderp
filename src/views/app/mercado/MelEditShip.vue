@@ -146,6 +146,7 @@
         <el-table
             :header-cell-style="{background:'#eef1f6'}"
             :data="ship.ship_shipDetail"
+            :row-class-name="tableRowClassName"
             border
             size="mini"
             style="width: 98%; margin: 10px">
@@ -156,7 +157,7 @@
               width="80">
             <template slot-scope="scope">
               <el-image
-                  style="width: 40px; height: 40px"
+                  :class="scope.row.can_see?'color_photo':'gray_photo'"
                   :src="scope.row.image | smpic"
                   fit="fill">
               </el-image>
@@ -167,7 +168,7 @@
               show-overflow-tooltip
               width="300">
             <template slot-scope="scope">
-              <div>{{ scope.row.sku }}</div>
+              <div style="font-weight: bold">{{ scope.row.sku }}</div>
 
               <div>{{ scope.row.p_name }}</div>
 
@@ -195,7 +196,7 @@
 
           <el-table-column
               v-if="ship.target==='TRANSIT'"
-              label="目标店铺"
+              label="FBM店铺"
               align="center"
               header-align="center"
               show-overflow-tooltip
@@ -211,7 +212,9 @@
               header-align="center"
               width="160">
             <template slot-scope="scope">
-              <el-input-number v-if="ship.s_status==='PREPARING'" v-model="scope.row.qty" :min="1"></el-input-number>
+              <el-input-number v-if="ship.s_status==='PREPARING'"
+                               :disabled="!scope.row.can_see"
+                               v-model="scope.row.qty" :min="1"></el-input-number>
               <span v-if="ship.s_status!=='PREPARING'">{{scope.row.qty}}</span>
             </template>
           </el-table-column>
@@ -219,7 +222,7 @@
           <el-table-column
               label="简要备注">
             <template slot-scope="scope">
-              <el-input maxlength=20 v-model="scope.row.note"></el-input>
+              <el-input maxlength=20 :disabled="!scope.row.can_see" v-model="scope.row.note"></el-input>
             </template>
           </el-table-column>
 
@@ -242,6 +245,7 @@
 <!--                  type="" size="mini" circle>新</el-button>-->
               <el-button
                   v-if="ship.s_status==='PREPARING'"
+                  :disabled="!scope.row.can_see"
                   @click="removeProduct(scope.row.sku)"
                   type="" size="mini" icon="el-icon-delete" circle></el-button>
 
@@ -468,6 +472,14 @@ export default {
     },
   },
   methods:{
+    //隐藏行
+    tableRowClassName({row, rowIndex}) {
+      if (!row.can_see) {
+        return 'row-hide'
+      }else {
+        return ''
+      }
+    },
 
     //  保存运单
     submitForm() {
@@ -549,6 +561,7 @@ export default {
               p['item_id'] = item.item_id;
               p['image'] = item.image;
               p['shop'] = item.shop;
+              p['can_see'] = true;
               p['note'] = '';
               p['s_type'] = 'REFILL';
 
@@ -670,5 +683,15 @@ export default {
 }
 .remove{
   color: #cac6c6;
+}
+.color_photo {
+  width: 40px; height: 40px;
+}
+.gray_photo {
+  width: 40px; height: 40px; filter: grayscale(100%)
+}
+::v-deep .el-table__body .row-hide{
+  /*display: none;*/
+  color: lightgrey;
 }
 </style>

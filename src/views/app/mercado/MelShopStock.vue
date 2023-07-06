@@ -490,6 +490,18 @@ export default {
           value: ''
         },
         {
+          name: '在售产品',
+          value: '&p_status__in=NORMAL,HOT_SALE,CLEAN'
+        },
+        {
+          name: '停售产品',
+          value: '&p_status=OFFLINE'
+        },
+        {
+          name: '清仓产品',
+          value: '&p_status=CLEAN'
+        },
+        {
           name: '有货产品',
           value: '&qty__gt=0'
         },

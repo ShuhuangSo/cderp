@@ -174,6 +174,18 @@
           </el-table-column>
 
           <el-table-column
+              v-if="ship.target==='TRANSIT'"
+              label="FBM店铺"
+              align="center"
+              header-align="center"
+              show-overflow-tooltip
+              width="100">
+            <template slot-scope="scope">
+              <div>{{ scope.row.target_FBM }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
               label="成本价"
               align="center"
               header-align="center"

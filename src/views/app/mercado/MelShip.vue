@@ -403,7 +403,7 @@
                                     :disabled="!permission.ship_edit"
                                     :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'tag', obj:scope.row}">编辑标签</el-dropdown-item>
-                  <el-dropdown-item :disabled="!permission.ship_delete"
+                  <el-dropdown-item :disabled="!permission.ship_delete || !user.is_superuser && scope.row.user_id === 0"
                                     v-if="scope.row.s_status==='PREPARING'"
                                     :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
                 </el-dropdown-menu>
@@ -685,6 +685,7 @@ export default {
       return url + '_100x100.jpg/?' + Math.random()
     },
   },
+
   mounted() {
     this.initShips()
     this.checkNotify()
