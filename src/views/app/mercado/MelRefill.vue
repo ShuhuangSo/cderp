@@ -314,6 +314,7 @@ export default {
           end_date: this.end_date,
           ship_date: '',
           note: '',
+          all_see: false,
           ship_detail: [],
         }
         this.multipleSelection.forEach(item => {
