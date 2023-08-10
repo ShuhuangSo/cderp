@@ -65,7 +65,6 @@
 
             <el-form-item label="承运商" prop="carrier">
               <el-select v-model="ship.carrier"
-                         :disabled="!this.user.is_superuser && this.all_see"
                          style="width: 350px;"
                          placeholder="请选择发货物流">
                 <el-option
