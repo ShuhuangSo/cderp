@@ -261,8 +261,11 @@
             align="center"
             header-align="center">
           <template slot-scope="scope">
-            <div style="font-weight: bold; font-size: 20px">{{ scope.row.envio_number}}</div>
+            <div style="font-weight: bold; font-size: 20px" v-if="scope.row.envio_number">{{ scope.row.envio_number}}</div>
+            <div v-if="!scope.row.envio_number && scope.row.target==='FBM'"><p style="color: #aa0515"><i class="el-icon-warning-outline"></i> 入仓号待补...</p></div>
+            <div v-if="!scope.row.fbm_warehouse && scope.row.target==='FBM'"><p style="color: #aa0515"><i class="el-icon-warning-outline"></i> 仓库待补...</p></div>
             <el-popover
+                v-if="scope.row.fbm_warehouse"
                 placement="bottom"
                 :title="scope.row.fbm_name"
                 width="400"
