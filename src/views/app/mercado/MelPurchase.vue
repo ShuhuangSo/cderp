@@ -307,6 +307,17 @@
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
+            <div>
+              <span class="plan3" v-if="scope.row.need_qty === scope.row.buy_qty">
+                <i class="el-icon-circle-check"></i> 运单需求 {{ scope.row.need_qty }}</span>
+              <span class="plan1" v-if="scope.row.need_qty>0 && scope.row.need_qty !== scope.row.buy_qty">
+                <i class="el-icon-warning-outline"></i> 运单需求 {{ scope.row.need_qty }}</span>
+              <span class="plan2" v-if="scope.row.need_qty === 0">
+                <i class="el-icon-circle-close"></i> 运单需求 无</span>
+
+              <span class="plan4" v-if="scope.row.total_rec_qty">
+                库存 {{ scope.row.total_rec_qty }}</span>
+            </div>
           </template>
         </el-table-column>
 
