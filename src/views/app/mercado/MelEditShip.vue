@@ -261,7 +261,7 @@
             :data="removeItems"
             border
             size="mini"
-            style="width: 650px; margin: 10px">
+            style="width: 80%; margin: 10px">
           <el-table-column
               label="图片"
               align="center"
@@ -306,6 +306,13 @@
               width="80">
             <template slot-scope="scope">
               <div>{{ scope.row.send_qty }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="备注">
+            <template slot-scope="scope">
+              <div>{{ scope.row.note }}</div>
             </template>
           </el-table-column>
 

@@ -225,6 +225,7 @@
               </el-tag>
             </div>
             <div style="font-size: 16px;margin-top: 10px">
+              <el-tag size="mini" type="warning" v-if="scope.row.is_remove_items" title="发货数量有变动">变</el-tag>
               <el-tag size="mini" v-if="scope.row.send_from === 'LOCAL'" title="本土中转入仓">转</el-tag>
               <el-link @click.native="openAttachment(scope.row)"
                        title="附件"

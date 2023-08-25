@@ -284,7 +284,7 @@
             :data="removeItems"
             border
             size="mini"
-            style="width: 650px; margin: 10px">
+            style="width: 80%; margin: 10px">
           <el-table-column
               label="图片"
               align="center"
@@ -333,8 +333,20 @@
           </el-table-column>
 
           <el-table-column
+              label="备注">
+            <template slot-scope="scope">
+              <el-input maxlength=20
+                        v-if="!action"
+                        @change="changeRemoveItemsNote(scope.row.id, scope.row.note)"
+                        v-model="scope.row.note"></el-input>
+              <div v-if="action">{{ scope.row.note }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
               align="center"
               header-align="center"
+              width="80"
               label="操作">
             <template slot-scope="scope">
               <el-button type="text" style="color: darkolivegreen"
@@ -644,6 +656,15 @@ export default {
     changeNote(string) {
       this.ship.note = string;
       this.patchRequest('api/ml_ship/' + this.shipID + '/', {'note': this.ship.note}).then(resp => {
+        if (resp) {
+          this.$message.success('修改成功！')
+        }
+      })
+    },
+
+    //保存改变的变动清单备注
+    changeRemoveItemsNote(id, string) {
+      this.patchRequest('api/ml_ship_item_remove/' + id + '/', {'note': string}).then(resp => {
         if (resp) {
           this.$message.success('修改成功！')
         }
