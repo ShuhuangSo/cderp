@@ -58,7 +58,7 @@
           </el-radio-group>
 
           <el-select v-model="sort"
-                     style="width: 150px;margin-left: 5px"
+                     style="width: 150px;margin-left: 5px;margin-right: 30px"
                      @change="changeTarget" placeholder="请选择排序项">
             <el-option
                 v-for="item in ordering_group"
@@ -67,6 +67,8 @@
                 :value="item.value">
             </el-option>
           </el-select>
+
+          <el-button size="small" @click="goShipInfo">运单通知</el-button>
 
         </div>
 
@@ -1158,6 +1160,10 @@ export default {
           this.booked_qty = resp.booked_qty
         }
       })
+    },
+    //跳转运单信息中心
+    goShipInfo() {
+      this.$router.push('/shipInfo')
     },
     initShips() {
       let url = '/api/ml_ship/?page=' + this.page + '&page_size=' + this.size
