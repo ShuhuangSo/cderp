@@ -6,13 +6,13 @@
     <div class="pContainer">
       <el-card shadow="hover" style="padding-bottom: 20px">
         <div slot="header" class="clearfix">
-          <el-page-header @back="cancel" content="运单详情">
+          <el-page-header @back="cancel" content="变动清单列表">
           </el-page-header>
         </div>
 
 
         <div style="margin-left: 10px">
-          <h4>变动清单列表</h4>
+<!--          <h4>变动清单列表</h4>-->
           <el-select v-model="filter_name"
                      @change="changeFilter" placeholder="请选择筛选项">
             <el-option
@@ -47,6 +47,7 @@
             style="width: 98%; margin: 10px">
           <el-table-column
               :reserve-selection="true"
+              :selectable="checkSelectable"
               type="selection"
               width="42">
           </el-table-column>
@@ -134,10 +135,11 @@
           <el-table-column
               align="center"
               header-align="center"
-              width="80"
+              width="130"
               label="状态">
             <template slot-scope="scope">
-              <div>{{scope.row.handle | status}}</div>
+              <div><i class="el-icon-time" v-if="!scope.row.handle"></i> {{scope.row.handle | status}}</div>
+              <div  v-if="scope.row.handle_time">{{scope.row.handle_time | date}}</div>
             </template>
           </el-table-column>
 
@@ -167,9 +169,8 @@
       >
         <div>
           <div>
-            迁移目标运单：<br>
+            <span style="font-weight: bold">迁移目标运单：</span><br>
             <el-select v-model="ship_id"
-                       @change="selectShip"
                        style="width: 400px;margin-right: 10px"
                        placeholder="请选择迁移运单">
               <el-option
@@ -184,7 +185,7 @@
           </div>
 
           <div style="margin-top: 20px; margin-bottom: 20px">
-            迁移方式：<br>
+            <span style="font-weight: bold">迁移方式：</span><br>
             <el-select v-model="move_method"
                        style="width: 400px;margin-right: 10px"
                        placeholder="请选择">
@@ -263,7 +264,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="moveVisible=false">取 消</el-button>
-          <el-button size="small" :disabled="!ship_id" type="primary" @click="summitBuy">确认迁移</el-button>
+          <el-button size="small" :disabled="!ship_id" type="primary" @click="summitMove">确认迁移</el-button>
         </span>
       </el-dialog>
 
@@ -283,6 +284,7 @@ export default {
       loading: false,
       moveVisible: false, //迁移弹窗
       move_method: 'DEL', //产品存在迁移方法
+      belong_shop: '', //当前用户管理的店铺
       total: 0, // 总条数
       page: 1,  // 当前页
       size: 20,  // 页大小
@@ -315,7 +317,7 @@ export default {
           value: 'DEL'
         },
         {
-          name: '如果产品存在，增加迁移数量',
+          name: '如果产品存在，叠加迁移数量',
           value: 'ADD'
         },
 
@@ -325,7 +327,7 @@ export default {
   filters: {
     //时间日期格式化
     date: function (value) {
-      return moment(value).format("YYYY-MM-DD");
+      return moment(value).format("YYYY-MM-DD HH:mm");
     },
     //图片地址格式化
     smpic: function (value) {
@@ -341,9 +343,28 @@ export default {
     },
   },
   mounted() {
+    this.inintShops()
     this.initItemRemoves()
   },
   methods:{
+    // 取消并返回
+    cancel() {
+      this.$router.push({
+        path: '/melManage',
+        query: {
+          activeName: 'ship',
+          partName: 'PREPARING'
+        }
+      });
+    },
+    // 返回该行是否可以被勾选
+    checkSelectable(row,index){
+      let flag = true;
+      if(row.handle>0){
+        flag = false
+      }
+      return flag
+    },
     // 打开批量操作对话框
     handleBulk(command) {
       if (command === 'move') {
@@ -353,6 +374,29 @@ export default {
           item['move_qty'] = item.plan_qty - item.send_qty
         })
         this.moveVisible = true;
+      }
+
+      if (command === 'delete') {
+        this.$confirm('是否确认移除选择产品数量?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //调用提交确认收货
+          this.postRequest('api/ml_ship_item_remove/del_items/', this.multipleSelection).then(resp => {
+            if(resp.status === 'success') {
+              this.multipleSelection = []
+              this.$refs.productTable.clearSelection() //清除选中的数据
+              this.initItemRemoves();
+            }
+
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消收货'
+            });
+          });
+        })
       }
 
     },
@@ -388,7 +432,20 @@ export default {
     //改变筛选动作
     changeFilter(){
       this.page = 1;
+      this.multipleSelection = []
+      this.$refs.productTable.clearSelection() //清除选中的数据
       this.initItemRemoves();
+    },
+    //提交下单迁移
+    summitMove(){
+      this.postRequest('api/ml_ship_item_remove/move_items/', {'product_list':this.multipleSelection, 'ship_id': this.ship_id, 'move_method': this.move_method}).then(resp => {
+        if (resp.status === 'success') {
+          this.moveVisible = false
+          this.multipleSelection = []
+          this.$refs.productTable.clearSelection() //清除选中的数据
+          this.initItemRemoves();
+        }
+      })
     },
     //获取所有可迁移运单
     getShips(){
@@ -401,6 +458,15 @@ export default {
       })
 
     },
+    //获取所有可选店铺
+    inintShops(){
+      let shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+      let shop_set = []
+      shops.forEach(item=>{
+        shop_set.push(item['name'])
+      })
+      this.belong_shop = shop_set.join(',')
+    },
     initItemRemoves(){
       let url = '/api/ml_ship_item_remove/?page=' + this.page + '&page_size=' + this.size
       if (this.searchValue) {
@@ -409,6 +475,8 @@ export default {
       if (this.filter_name) {
         url += this.filter_name;
       }
+      url += '&belong_shop__in=' + this.belong_shop; //获取所有管理店铺产品
+
       url += '&ordering=-ship__id'
 
       this.loading = true
