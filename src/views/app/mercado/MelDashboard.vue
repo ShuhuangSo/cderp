@@ -163,6 +163,18 @@
             <div  class="small_zi">提现待确认</div>
           </div>
 
+          <div style="width: 100px;text-align:center" >
+            <div>
+              <el-link
+                  @click.native="goDetail('shipInfo', '')"
+                  :underline="false">
+                <span class="zTitle_2">{{this.daiban.remove_items_count}}</span>
+              </el-link>
+
+            </div>
+            <div  class="small_zi">运单变动</div>
+          </div>
+
         </div>
 
         <div style="display: flex;padding-top: 20px">
@@ -347,6 +359,7 @@ export default {
         'need_book': null,
         'income_confirm': null,
         'all_product_incomplete': null,
+        'remove_items_count': null,
       },
       daiban_loading: false,
       shop_info_loading: false,
@@ -392,7 +405,12 @@ export default {
         this.$router.push({
           path: '/melUPCMange',
         });
-      } else {
+      } else if (activeName === 'shipInfo'){
+        this.$router.push({
+          path: '/shipInfo',
+        });
+      }
+      else {
         this.$router.push({
           path: '/melManage',
           query: {
@@ -439,6 +457,7 @@ export default {
           this.daiban.need_book = resp.need_book
           this.daiban.income_confirm = resp.income_confirm
           this.daiban.all_product_incomplete = resp.all_product_incomplete
+          this.daiban.remove_items_count = resp.remove_items_count
         }
 
         if (this.daiban.overtime_ship) {

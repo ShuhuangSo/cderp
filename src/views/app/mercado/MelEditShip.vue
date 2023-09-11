@@ -337,12 +337,22 @@
         </div>
 
         <div STYLE="display: flex;justify-content: right;margin-right: 20px">
+          <el-alert
+              v-if="ship_changed"
+              :closable="false"
+              show-icon
+              center
+              title="运单刚刚被其他用户编辑过，请重新刷新数据"
+              type="warning">
+          </el-alert>
           <el-button type="success"
-                     :disabled="!ship.ship_shipDetail.length"
+                     :disabled="!ship.ship_shipDetail.length || ship_changed"
                      @click="submitForm('WAIT_CONFIRM')">保存运单
           </el-button>
 
         </div>
+
+
 
       </el-card>
 
@@ -351,7 +361,7 @@
       </div>
 
       <div style="margin-top: 20px">
-        <ShipLog :shipID="shipID"></ShipLog>
+        <ShipLog :key="ship_changed" :shipID="shipID"></ShipLog>
       </div>
     </div>
 
@@ -390,6 +400,9 @@ export default {
       shipID: this.$route.query.id, // 运单id
       click_from: this.$route.query.click_from, // 从哪点击过来
       loading: false,
+      time_flag: '', //运单是否被修改标签
+      time: 0, //定时器
+      ship_changed: false,
       ship: {
         target: 'FBM',
         shop: '',
@@ -435,6 +448,13 @@ export default {
     this.initCarriers();
     this.inintFBMWarehouses();
     this.initRemoveItem()
+
+    //定时器，时间单位为毫秒
+    this.time = setInterval(this.check_if_ship_edit, 5000);
+  },
+  beforeDestroy() {
+    clearInterval(this.time); //关闭定时器
+    this.time = null
   },
   computed: {
     // 总数量
@@ -478,6 +498,22 @@ export default {
     },
   },
   methods:{
+    //检查运单是否已被编辑
+    check_if_ship_edit(){
+      this.postRequest('api/ml_ship/check_if_ship_edit/', {'time_flag':this.time_flag, 'ship_id': this.shipID}).then(resp => {
+        if (resp) {
+          this.time_flag = resp.time_flag
+          this.ship_changed = resp.ship_changed
+
+          // 如果运单已被编辑，关闭定时器
+          if (this.ship_changed) {
+            clearInterval(this.time); //关闭定时器
+            this.time = null
+          }
+
+        }
+      })
+    },
     //隐藏行
     tableRowClassName({row, rowIndex}) {
       if (!row.can_see) {

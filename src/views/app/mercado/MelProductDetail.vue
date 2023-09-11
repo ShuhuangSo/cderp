@@ -158,6 +158,33 @@
                     </el-form-item>
                   </el-col>
 
+                  <el-col :span="5">
+                    <el-form-item label="是否带电">
+                      <el-switch
+                          v-model="mlProduct.is_elec"
+                          >
+                      </el-switch>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :span="5">
+                    <el-form-item label="是否带磁">
+                      <el-switch
+                          v-model="mlProduct.is_magnet"
+                          >
+                      </el-switch>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :span="5">
+                    <el-form-item label="是否液体">
+                      <el-switch
+                          v-model="mlProduct.is_water"
+                          >
+                      </el-switch>
+                    </el-form-item>
+                  </el-col>
+
                   <el-col :span="24">
                     <el-form-item label="品牌" prop="brand">
                       <el-input
@@ -411,6 +438,9 @@ export default {
         cn_material: null,
         en_material: null,
         use: null,
+        is_elec: false,
+        is_magnet: false,
+        is_water: false,
         p_status: null,
         image: null,
         site: null,

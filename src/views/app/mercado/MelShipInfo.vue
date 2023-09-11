@@ -280,6 +280,8 @@ export default {
   name: "MelShipInfo",
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       itemRemoves: null,
       loading: false,
       moveVisible: false, //迁移弹窗
@@ -450,6 +452,9 @@ export default {
     //获取所有可迁移运单
     getShips(){
       let url = 'api/ml_ship/?s_status=PREPARING&page_size=1000&ordering=-create_time'
+      if (!this.permission.ship_allShopCheck) {
+        url += '&user_id__in=0,' + this.user.id;
+      }
 
       this.getRequest(url).then(resp => {
         if (resp.results) {

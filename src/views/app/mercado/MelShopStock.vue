@@ -465,7 +465,7 @@ export default {
       searchValue: '',
       uploadVisible: false,
       sort: '', //排序变量
-      filter_name: null, // 库存筛选
+      filter_name: '&p_status__in=NORMAL,HOT_SALE,CLEAN', // 库存筛选
       tStockLoading: false,
       todayStockQty: 0, // 今日库存量
       sold_qty: 0, // 30天销量
@@ -751,7 +751,7 @@ export default {
     //改变店铺动作
     changeShop(){
       this.page = 1;
-      this.filter_name = ''
+      this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
       this.initShopStock();
       this.getTodayStock() // 计算库存
     },
@@ -792,7 +792,7 @@ export default {
 
         if (this.shops.length) {
           this.shopID = this.shops[0].id
-          this.filter_name = ''
+          this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
           this.initShopStock()
         }
       }else{
@@ -807,7 +807,7 @@ export default {
 
             if (this.shops.length) {
               this.shopID = this.shops[0].id
-              this.filter_name = ''
+              this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
               this.initShopStock()
             }
           }

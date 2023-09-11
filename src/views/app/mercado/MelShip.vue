@@ -68,7 +68,7 @@
             </el-option>
           </el-select>
 
-          <el-button size="small" @click="goShipInfo">运单通知</el-button>
+          <el-button size="small" @click="goShipInfo">变动清单管理</el-button>
 
         </div>
 
@@ -78,6 +78,18 @@
                    @click="createShip">创建运单
         </el-button>
       </div>
+    </div>
+
+    <div class="filterShow" v-if="filterBatch || filterShop || filterSort">
+      <span>已选择条件：</span>
+      <el-tag size="small" closable effect="dark" v-if="filterBatch" @close="colseFilter('batch')">批次：{{ this.filterBatch }}
+      </el-tag>
+      <el-tag size="small" closable effect="dark" v-if="filterShop" @close="colseFilter('shop')">目标店铺：{{ this.filterShop }}
+      </el-tag>
+      <el-tag size="small" closable effect="dark" v-if="filterSort" @close="colseFilter('sort')">排序：{{ this.filterSort }}
+      </el-tag>
+
+      <el-button type="text" size="small" @click="colseFilter('all')">全部清除</el-button>
     </div>
 
     <div style="margin-top: 5px">
@@ -219,7 +231,7 @@
             <div style="margin-top: 10px">
               <el-tag
                   style="border: none"
-                  @click="selectValue(scope.row.shop)"
+                  @click="selectValue('shop', scope.row.shop)"
                   :title="'负责人:' + scope.row.manager"
                   :color="scope.row.shop_color?scope.row.shop_color:'#539acd'"
                   effect="dark" type="info">
@@ -244,7 +256,7 @@
                          :class="scope.row.note?'small_icon_true':'small_icon'"
                          :underline="false"><i class="el-icon-chat-line-square"></i></el-link>
               </el-tooltip>
-              <el-link @click.native="selectValue(scope.row.batch)"
+              <el-link @click.native="selectValue('batch', scope.row.batch)"
                        title="筛选同批次运单"
                        class="small_icon"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
@@ -357,6 +369,7 @@
           <template slot-scope="scope">
               <el-tag
                   v-if="scope.row.tag_name"
+                  @click.native="editTagWindow(scope.row)"
                   style="border: none"
                   :color="scope.row.tag_color"
                   effect="dark" type="info">
@@ -608,6 +621,9 @@ export default {
       page: 1,  // 当前页
       size: 20,  // 页大小
       searchValue: '',
+      filterBatch: '', // 筛选批次
+      filterShop: '', // 筛选店铺
+      filterSort: '', // 排序名称
       target: '',
       s_status: this.shipStatusName? this.shipStatusName : 'PREPARING',// 筛选状态
       ships: [],
@@ -693,10 +709,23 @@ export default {
   },
 
   mounted() {
+    this.initShipSetting()
     this.initShips()
     this.checkNotify()
   },
   methods:{
+    // 初始化设置
+    initShipSetting(){
+      if(window.sessionStorage.getItem('ml_ship_filterBatch')) {
+        this.filterBatch = JSON.parse(window.sessionStorage.getItem('ml_ship_filterBatch'));
+      }
+      if(window.sessionStorage.getItem('ml_ship_filterShop')) {
+        this.filterShop = JSON.parse(window.sessionStorage.getItem('ml_ship_filterShop'));
+      }
+      if(window.sessionStorage.getItem('ml_ship_filterSort')) {
+        this.filterSort = JSON.parse(window.sessionStorage.getItem('ml_ship_filterSort'));
+      }
+    },
     //检查相关通知
     checkNotify(){
       this.getRequest('api/ml_ship/check_ship_change/').then(resp => {
@@ -737,9 +766,32 @@ export default {
       });
     },
     //快速筛选
-    selectValue(batch){
+    selectValue(type, value){
+      if (type ==='batch') {
+        this.filterBatch = value
+      } else {
+        this.filterShop = value
+      }
       this.page = 1;
-      this.searchValue = batch
+      this.initShips();
+    },
+    // 关闭筛选项/排序项
+    colseFilter(type) {
+      if (type === 'batch') this.filterBatch = ''
+      if (type === 'shop') this.filterShop = ''
+      if (type === 'sort') {
+        this.filterSort = ''
+        this.sort = '-create_time'
+      }
+
+      if (type === 'all') {
+        this.filterBatch = ''
+        this.filterShop = ''
+        this.filterSort = ''
+        this.sort = '-create_time'
+      }
+
+      this.page = 1;
       this.initShips();
     },
     //点击复制
@@ -783,6 +835,13 @@ export default {
           this.ship_id = null
         }
       })
+    },
+    //编辑标签弹窗
+    editTagWindow(obj){
+      this.tagVisible = true
+      this.ship_id = obj.id
+      this.tag.tag_color = obj.tag_color?obj.tag_color:'#409EFF'
+      this.tag.tag_name = obj.tag_name
     },
 
     // 循环设置行展开、收起
@@ -1017,10 +1076,7 @@ export default {
 
       // 添加标签
       if (command['type'] === 'tag') {
-        this.tagVisible = true
-        this.ship_id = command['obj'].id
-        this.tag.tag_color = command['obj'].tag_color?command['obj'].tag_color:'#409EFF'
-        this.tag.tag_name = command['obj'].tag_name
+        this.editTagWindow(command['obj'])
       }
 
       // 查看运单详情
@@ -1126,6 +1182,13 @@ export default {
     },
     // 改变目标状态
     changeTarget(){
+      if (this.sort !=='-create_time') {
+        let select_sort = this.ordering_group.find(item => item.value === this.sort)
+        this.filterSort = select_sort.name
+      } else {
+        this.filterSort = ''
+      }
+
       this.page = 1;
       this.initShips()
     },
@@ -1170,6 +1233,12 @@ export default {
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }
+      if (this.filterBatch) {
+        url += '&batch=' + this.filterBatch;
+      }
+      if (this.filterShop) {
+        url += '&shop=' + this.filterShop;
+      }
       if (!this.permission.ship_allShopCheck) {
         url += '&user_id__in=0,' + this.user.id;
       }
@@ -1189,6 +1258,11 @@ export default {
           this.total = resp.count;
         }
       })
+
+      //保存过滤参数
+      window.sessionStorage.setItem('ml_ship_filterBatch', JSON.stringify(this.filterBatch));
+      window.sessionStorage.setItem('ml_ship_filterShop', JSON.stringify(this.filterShop));
+      window.sessionStorage.setItem('ml_ship_filterSort', JSON.stringify(this.filterSort));
 
       this.calcShips();
     }
@@ -1240,6 +1314,17 @@ export default {
 }
 .small_icon{
   color: #99a9bf;
+  margin-right: 5px;
+}
+.filterShow {
+  background-color: #ecf5ff;
+  border: 1px solid #409EFF;
+  margin-top: 5px;
+  padding: 3px 3px 3px 50px;
+  font-size: 14px;
+  color: #303133;
+}
+.filterShow .el-tag {
   margin-right: 5px;
 }
 .small_icon_true{
