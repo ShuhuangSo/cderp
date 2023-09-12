@@ -163,7 +163,7 @@
             <div  class="small_zi">提现待确认</div>
           </div>
 
-          <div style="width: 100px;text-align:center" >
+          <div style="width: 100px;text-align:center" v-if="daiban.remove_items_count">
             <div>
               <el-link
                   @click.native="goDetail('shipInfo', '')"
