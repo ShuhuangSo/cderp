@@ -1101,6 +1101,7 @@ export default {
       this.p_status = this.buyStatusName?this.buyStatusName:'WAITBUY'
     } else {
       this.p_status = 'PACKED'
+      this.filter_name = ''
     }
     this.inintShops()
     this.calcPurchases();
