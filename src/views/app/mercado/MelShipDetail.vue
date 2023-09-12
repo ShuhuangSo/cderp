@@ -370,11 +370,13 @@
             STYLE="display: flex;justify-content: right;margin-right: 20px">
           <el-button type="primary"
                      style="width: 200px"
+                     :loading="loading"
                      @click="saveShip">保 存
           </el-button>
 
           <el-button type="success"
                      style="width: 200px"
+                     :loading="loading"
                      :disabled="submitStatus"
                      @click="sendShip">发 货
           </el-button>
@@ -706,7 +708,9 @@ export default {
     //保存运单
     saveShip(){
       this.ship['action'] = 'PREPARING'
+      this.loading = true;
       this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
+        this.loading = false;
         if (resp) {
           this.initShip()
           this.initRemoveItem()
@@ -721,7 +725,9 @@ export default {
         type: 'warning'
       }).then(() => {
         this.ship['action'] = 'SHIPPED'
+        this.loading = true;
         this.postRequest('api/ml_ship/send_ship/', this.ship).then(resp => {
+          this.loading = false;
           if (resp.status === 'success') {
             this.$router.push({
               path: '/melManage',

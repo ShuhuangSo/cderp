@@ -68,7 +68,10 @@
             </el-option>
           </el-select>
 
-          <el-button size="small" @click="goShipInfo">变动清单管理</el-button>
+          <el-badge :value="remove_items_count" :hidden="!remove_items_count" type="primary" class="item">
+            <el-button size="small" @click="goShipInfo">变动清单管理</el-button>
+          </el-badge>
+
 
         </div>
 
@@ -394,6 +397,7 @@
             <div v-if="scope.row.s_status==='BOOKED'">
               <el-button
                   v-if="permission.ship_inwarehouse"
+                  :loading="in_warehouse_loading"
                   :disabled="!scope.row.shipping_fee && scope.row.send_from!=='LOCAL'"
                   key="test"
                   @click="confirmInWarehouse(scope.row.id)"
@@ -617,6 +621,7 @@ export default {
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       loading: false,
+      in_warehouse_loading: false, // 确认入仓loading
       total: 0, // 总条数
       page: 1,  // 当前页
       size: 20,  // 页大小
@@ -646,6 +651,7 @@ export default {
       current_shop: null, //当前目标店铺
       timer: null,
       wait_check: this.shipWaitCheck?true:false, // 入仓核查
+      remove_items_count: 0, //变动清单待处理数量
       sort: '-create_time', //排序变量
       tag: {
         tag_color: '#409EFF',
@@ -724,15 +730,20 @@ export default {
       }
       if(window.sessionStorage.getItem('ml_ship_filterSort')) {
         this.filterSort = JSON.parse(window.sessionStorage.getItem('ml_ship_filterSort'));
+        if (this.filterSort) {
+          let select_sort = this.ordering_group.find(item => item.name === this.filterSort)
+          this.sort = select_sort.value
+        }
       }
     },
     //检查相关通知
     checkNotify(){
       this.getRequest('api/ml_ship/check_ship_change/').then(resp => {
-        if (resp.is_exist) {
+        if (resp.remove_items_count) {
+          this.remove_items_count = resp.remove_items_count
           this.$notify({
-            title: '你有 '+ resp.qty +' 票运单发货数量变动',
-            message: resp.desc,
+            title: '发货数量变动',
+            message: '你有 '+ resp.remove_items_count +' 条变动产品待处理',
             type: 'warning',
           });
         }
@@ -959,7 +970,9 @@ export default {
         type: 'warning'
       }).then(() => {
         //确认入仓
+        this.in_warehouse_loading = true
         this.postRequest('api/ml_ship/in_warehouse/', {'id': id}).then(resp => {
+          this.in_warehouse_loading = false
           this.initShips();
         }).catch(() => {
           this.$message({

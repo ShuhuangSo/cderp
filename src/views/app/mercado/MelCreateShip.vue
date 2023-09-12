@@ -185,6 +185,7 @@
 
         <div STYLE="display: flex;justify-content: right;margin-right: 20px">
           <el-button type="success"
+                     :loading="loading"
                      :disabled="!ship.ship_detail.length"
                      @click="submitForm('WAIT_CONFIRM')">保存运单
           </el-button>
@@ -224,6 +225,7 @@ export default {
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
       obj: this.$route.query.obj?JSON.parse(this.$route.query.obj):'', // 补货推荐传递数据
+      loading: false,
       ship: {
         target: 'FBM',
         shop: '',

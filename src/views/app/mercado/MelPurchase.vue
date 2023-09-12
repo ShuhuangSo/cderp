@@ -317,6 +317,9 @@
 
               <span class="plan4" v-if="scope.row.total_rec_qty">
                 库存 {{ scope.row.total_rec_qty }}</span>
+
+              <span class="plan5" v-if="scope.row.item_remove_status !== 100">
+                <i class="el-icon-warning-outline"></i>变动状态：{{ scope.row.item_remove_status | removeStatus }}</span>
             </div>
           </template>
         </el-table-column>
@@ -481,6 +484,7 @@
         </el-table-column>
 
         <el-table-column
+            v-if="permission.purchase_pack"
             label="打包数量"
             align="center"
             header-align="center"
@@ -1085,6 +1089,12 @@ export default {
       let url = value.slice(0, value.length-4)
       return url + '_100x100.jpg/?' + Math.random()
     },
+    //变动状态格式化
+    removeStatus: function (value) {
+      if (value === 0) return '待处理';
+      if (value === 3) return '保留';
+      return '';
+    },
   },
   mounted() {
     if (this.permission.purchase_checkWaitBuy) {
@@ -1092,7 +1102,6 @@ export default {
     } else {
       this.p_status = 'PACKED'
     }
-    this.initPurchaseList()
     this.inintShops()
     this.calcPurchases();
   },
@@ -1358,6 +1367,7 @@ export default {
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
+
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
 
@@ -1365,10 +1375,17 @@ export default {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
+
           }
         })
       }
-      this.shops.unshift({'name': '全部店铺', 'id': '', 'nickname': ''})
+      if (this.permission.purchase_allShopCheck) {
+        this.shops.unshift({'name': '全部店铺', 'id': '', 'nickname': ''})
+      } else {
+        this.shop = this.shops[0].name
+      }
+      this.initPurchaseList()
+
     },
     // 计算各状态运单数量
     calcPurchases(){
@@ -1457,6 +1474,10 @@ export default {
 }
 .plan4{
   color: #409EFF;
+  margin-left: 10px;
+}
+.plan5{
+  color: teal;
   margin-left: 10px;
 }
 .packing{

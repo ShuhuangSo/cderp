@@ -346,6 +346,7 @@
               type="warning">
           </el-alert>
           <el-button type="success"
+                     :loading="loading"
                      :disabled="!ship.ship_shipDetail.length || ship_changed"
                      @click="submitForm('WAIT_CONFIRM')">保存运单
           </el-button>
@@ -509,6 +510,12 @@ export default {
           if (this.ship_changed) {
             clearInterval(this.time); //关闭定时器
             this.time = null
+
+            this.$notify({
+              title: '运单已被修改',
+              message: '运单刚刚被其他用户编辑过，请重新刷新数据',
+              type: 'error'
+            });
           }
 
         }

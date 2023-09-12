@@ -167,14 +167,14 @@
                     </el-form-item>
                   </el-col>
 
-                  <el-col :span="5">
-                    <el-form-item label="是否带磁">
-                      <el-switch
-                          v-model="mlProduct.is_magnet"
-                          >
-                      </el-switch>
-                    </el-form-item>
-                  </el-col>
+<!--                  <el-col :span="5">-->
+<!--                    <el-form-item label="是否带磁">-->
+<!--                      <el-switch-->
+<!--                          v-model="mlProduct.is_magnet"-->
+<!--                          >-->
+<!--                      </el-switch>-->
+<!--                    </el-form-item>-->
+<!--                  </el-col>-->
 
                   <el-col :span="5">
                     <el-form-item label="是否液体">
