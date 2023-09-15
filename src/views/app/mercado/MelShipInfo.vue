@@ -30,10 +30,12 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="move">批量迁移</el-dropdown-item>
+                <el-dropdown-item command="keep">批量保留</el-dropdown-item>
                 <el-dropdown-item command="delete">批量移除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-badge>
+
         </div>
         <el-table
             ref="productTable"
@@ -307,6 +309,10 @@ export default {
           value: '&handle=1'
         },
         {
+          name: '已保留',
+          value: '&handle=3'
+        },
+        {
           name: '已移除',
           value: '&handle=2'
         },
@@ -341,12 +347,14 @@ export default {
     status: function (value) {
       if (value === 1) return '已迁移';
       if (value === 2) return '已移除';
+      if (value === 3) return '已保留';
       if (!value) return '待处理';
     },
   },
   mounted() {
     this.inintShops()
     this.initItemRemoves()
+    this.inintBatchList()
   },
   methods:{
     // 取消并返回
@@ -362,7 +370,7 @@ export default {
     // 返回该行是否可以被勾选
     checkSelectable(row,index){
       let flag = true;
-      if(row.handle>0){
+      if(row.handle === 1){
         flag = false
       }
       return flag
@@ -395,7 +403,30 @@ export default {
           }).catch(() => {
             this.$message({
               type: 'info',
-              message: '已取消收货'
+              message: '已取消'
+            });
+          });
+        })
+      }
+
+      if (command === 'keep') {
+        this.$confirm('是否确认保留选择产品数量?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //调用提交确认收货
+          this.postRequest('api/ml_ship_item_remove/keep_items/', this.multipleSelection).then(resp => {
+            if(resp.status === 'success') {
+              this.multipleSelection = []
+              this.$refs.productTable.clearSelection() //清除选中的数据
+              this.initItemRemoves();
+            }
+
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
             });
           });
         })
@@ -463,6 +494,7 @@ export default {
       })
 
     },
+
     //获取所有可选店铺
     inintShops(){
       let shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
