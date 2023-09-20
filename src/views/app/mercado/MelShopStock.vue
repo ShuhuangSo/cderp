@@ -181,61 +181,143 @@
                        style="margin-left: 5px"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
             </div>
+            <div>
+              <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
+              <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
+              <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
+              <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
+            </div>
           </template>
         </el-table-column>
 
         <el-table-column
-            align="center"
-            header-align="center"
-            label="FBM库存 | 在途 | 中转仓">
+            label="FBM库存">
           <template slot-scope="scope">
-            <el-popover
-                @show="showTagSelect"
-                placement="top"
-                width="500"
-                trigger="click">
-              <MelStockDetail
-                  :obj="{'sku': scope.row.sku, 'op_type': 'FINISH'}"
-                  :key="timer" v-if="isShow"></MelStockDetail>
-              <el-button type="text" slot="reference" class="stock_qty">{{ scope.row.qty }}</el-button>
-            </el-popover>
-            <el-divider direction="vertical"></el-divider>
-            <el-popover
-                @show="showTagSelect"
-                placement="top"
-                width="500"
-                trigger="click">
-              <MelStockDetail
-                            :obj="{'sku': scope.row.sku, 'op_type': 'ONWAY'}"
-                            :key="timer" v-if="isShow"></MelStockDetail>
-              <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.onway_qty }}</el-button>
-            </el-popover>
 
-            <el-divider direction="vertical"></el-divider>
-            <el-popover
-                @show="showTagSelect"
-                placement="top"
-                width="500"
-                trigger="click">
-              <MelStockDetail
-                  :obj="{'sku': scope.row.sku, 'op_type': 'TRANS'}"
-                  :key="timer" v-if="isShow"></MelStockDetail>
-              <el-button type="text" slot="reference" class="zz_qty">{{ scope.row.trans_qty }}</el-button>
-            </el-popover>
+          <div style="display: flex;padding-top: 10px">
+            <div style="width: 50px;text-align:center">
+              <div>
+                <el-popover
+                    @show="showTagSelect"
+                    placement="top"
+                    width="500"
+                    trigger="click">
+                  <MelStockDetail
+                      :obj="{'sku': scope.row.sku, 'op_type': 'FINISH'}"
+                      :key="timer" v-if="isShow"></MelStockDetail>
+                  <el-button type="text" slot="reference" class="stock_qty">{{ scope.row.qty }}</el-button>
+                </el-popover>
+              </div>
+              <div>
+                <div  class="small_zi">FBM</div>
+              </div>
+            </div>
+
+            <div style="width: 50px;text-align:center">
+              <div>
+                <el-popover
+                    @show="showTagSelect"
+                    placement="top"
+                    width="500"
+                    trigger="click">
+                  <MelStockDetail
+                      :obj="{'sku': scope.row.sku, 'op_type': 'FBM_ONWAY'}"
+                      :key="timer" v-if="isShow"></MelStockDetail>
+                  <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.fbm_onway_qty }}</el-button>
+                </el-popover>
+              </div>
+              <div>
+                <div  class="small_zi">FBM在途</div>
+              </div>
+            </div>
+          </div>
+
+
           </template>
         </el-table-column>
 
         <el-table-column
-            align="center"
-            header-align="center"
+            label="中转仓">
+          <template slot-scope="scope">
+
+            <div style="display: flex;padding-top: 10px">
+
+              <div style="width: 50px;text-align:center">
+                <div>
+                  <el-popover
+                      @show="showTagSelect"
+                      placement="top"
+                      width="500"
+                      trigger="click">
+                    <MelStockDetail
+                        :obj="{'sku': scope.row.sku, 'op_type': 'TRANS'}"
+                        :key="timer" v-if="isShow"></MelStockDetail>
+                    <el-button type="text" slot="reference" class="zz_qty">{{ scope.row.trans_qty }}</el-button>
+                  </el-popover>
+                </div>
+                <div>
+                  <div  class="small_zi">中转</div>
+                </div>
+              </div>
+
+              <div style="width: 50px;text-align:center">
+                <div>
+                  <el-popover
+                      @show="showTagSelect"
+                      placement="top"
+                      width="500"
+                      trigger="click">
+                    <MelStockDetail
+                        :obj="{'sku': scope.row.sku, 'op_type': 'TRANS_ONWAY'}"
+                        :key="timer" v-if="isShow"></MelStockDetail>
+                    <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.trans_onway_qty }}</el-button>
+                  </el-popover>
+                </div>
+                <div>
+                  <div  class="small_zi">中转在途</div>
+                </div>
+              </div>
+            </div>
+
+
+          </template>
+        </el-table-column>
+
+        <el-table-column
             label="备货中 | 采购中 | 采购到货">
           <template slot-scope="scope">
-            <el-button type="text" class="stock_qty">{{ scope.row.preparing_qty }}</el-button>
-            <el-divider direction="vertical"></el-divider>
-            <el-button type="text" class="onway_qty">{{ scope.row.p_onway_qty }}</el-button>
 
-            <el-divider direction="vertical"></el-divider>
-            <el-button type="text" class="zz_qty">{{ scope.row.p_rec_qty }}</el-button>
+            <div style="display: flex;padding-top: 10px">
+
+              <div style="width: 50px;text-align:center">
+                <div>
+                  <el-button type="text" class="stock_qty">{{ scope.row.preparing_qty }}</el-button>
+                </div>
+                <div>
+                  <div  class="small_zi">备货中</div>
+                </div>
+              </div>
+
+              <div style="width: 50px;text-align:center">
+                <div>
+                  <el-button type="text" class="onway_qty">{{ scope.row.p_onway_qty }}</el-button>
+                </div>
+                <div>
+                  <div  class="small_zi">采购中</div>
+                </div>
+              </div>
+
+              <div style="width: 50px;text-align:center">
+                <div>
+                  <el-button type="text" class="zz_qty">{{ scope.row.p_rec_qty }}</el-button>
+                </div>
+                <div>
+                  <div  class="small_zi">采购到货</div>
+                </div>
+              </div>
+            </div>
+
+
           </template>
         </el-table-column>
 
@@ -286,18 +368,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-            label="状态"
-            align="center"
-            header-align="center"
-            width="80">
-          <template slot-scope="scope">
-            <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
-            <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
-            <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
-            <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
-          </template>
-        </el-table-column>
 
         <el-table-column
             label="操作"
@@ -884,5 +954,9 @@ export default {
 .title{
   color: #6e7079;
   font-size: 14px;
+}
+.small_zi {
+  color: #8c939d;
+  font-size: 10px
 }
 </style>

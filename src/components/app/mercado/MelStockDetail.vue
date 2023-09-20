@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-table
-        v-if="obj.op_type==='ONWAY'"
+        v-if="obj.op_type==='FBM_ONWAY' || obj.op_type==='TRANS_ONWAY'"
         ref="stockTable"
         :data="onway_stocks"
         :header-cell-style="{background:'#fafafa'}"
