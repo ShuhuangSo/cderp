@@ -72,6 +72,14 @@
             <el-button size="small" @click="goShipInfo">变动清单管理</el-button>
           </el-badge>
 
+          <el-button
+              style="margin-left: 30px"
+              v-if="this.user.is_superuser"
+              :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
+              :loading="trackLoading"
+              @click="bulkUpdateTracking"
+              size="mini" type="primary" plain round icon="el-icon-refresh">刷新跟踪</el-button>
+
 
         </div>
 
@@ -336,11 +344,18 @@
                        title="添加物流单号"
                        class="small_icon"
                        :underline="false"><i class="el-icon-edit-outline"></i></el-link>
-              {{scope.row.s_number}}
+              <el-link
+                  style="margin-bottom: 2px; font-weight: normal; font-size: 12px"
+                  @click.native="checkShipTrack(scope.row.s_number)"
+                  :underline="false">
+                {{scope.row.s_number}}
+              </el-link>
+
             </div>
+            <div><span class="tt_msg">{{scope.row.latest_track | ellipsis}}</span></div>
             <div><span class="tt">截单日期: </span>{{scope.row.end_date}}</div>
             <div><span class="tt">航班日期: </span>{{scope.row.ship_date}}</div>
-            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>
+<!--            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>-->
           </template>
         </el-table-column>
 
@@ -605,6 +620,36 @@
         </span>
     </el-dialog>
 
+    <!--    物流跟踪弹窗-->
+    <el-dialog
+        :title="'物流跟踪 '+this.trackNum"
+        :visible.sync="trackVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="500px"
+    >
+      <div>
+        <el-button style="margin-left: 40px; margin-bottom: 20px"
+                   @click="updateTracking"
+                   :loading="trackLoading"
+                   icon="el-icon-refresh"
+                   size="mini" round>刷新跟踪</el-button>
+        <span class="track_update" v-if="this.trackUpdateTime">更新时间 {{this.trackUpdateTime}}</span>
+        <el-timeline>
+          <el-timeline-item
+              v-for="(activity, index) in trackMessageList"
+              :key="index"
+              :color="activity.color"
+              :timestamp="activity.time">
+            <span style="color: #0bbd87" v-if="activity.color">{{activity.context}}</span>
+            <span v-if="!activity.color">{{activity.context}}</span>
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="closeTrackWindows">关 闭</el-button>
+        </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -647,6 +692,11 @@ export default {
       attachVisible: false, //运单附件弹窗
       noteVisible: false, //运单备注弹窗
       shipNote: null, //运单备注内容
+      trackVisible: false, //物流跟踪弹窗
+      trackLoading: false, //物流跟踪loading
+      trackMessageList: null, //跟踪信息
+      trackNum: null, //跟踪号
+      trackUpdateTime: null, //跟踪更新时间
       current_ship_id: null, //当前运单id
       current_shop: null, //当前目标店铺
       timer: null,
@@ -712,6 +762,15 @@ export default {
       let url = value.slice(0, value.length-4)
       return url + '_100x100.jpg/?' + Math.random()
     },
+    //文字数超出时，超出部分使用...
+    ellipsis(value) {
+      if (!value) return ''
+      if (value.length > 14) {
+        return value.slice(0, 14) + '...'
+      }
+      return value
+    }
+
   },
 
   mounted() {
@@ -720,6 +779,61 @@ export default {
     this.checkNotify()
   },
   methods:{
+    // 批量更新物流跟踪
+    bulkUpdateTracking(){
+      this.trackLoading = true
+      this.getRequest('/api/ml_ship/bulk_update_tracking/').then(resp => {
+        this.trackLoading = false
+        if (resp) {
+          this.initShips()
+        }
+      })
+    },
+    //关闭物流跟踪窗口
+    closeTrackWindows(){
+      this.trackVisible = false
+      this.initShips()
+    },
+    //刷新跟踪
+    updateTracking(){
+      this.trackLoading = true
+      this.postRequest('api/ml_ship/ship_tracking/', {'track_num': this.trackNum}).then(resp => {
+        this.trackLoading = false
+        if (resp) {
+          this.initTracking(this.trackNum)
+        }
+      })
+    },
+    // 物流跟踪弹窗
+    checkShipTrack(num){
+      this.trackUpdateTime = null
+      this.trackMessageList = null
+      if (num) {
+        this.trackNum = num
+        this.initTracking(num)
+      }
+      this.trackVisible = true
+    },
+    //获取跟踪信息
+    initTracking(num){
+      let url = '/api/ml_ship_tracking/?page_size=1000'
+      url += '&carrier_number=' + num;
+      url += '&ordering=-time'
+      this.getRequest(url).then(resp => {
+        if (resp.results) {
+          this.trackMessageList = resp.results;
+          let n = 0
+          this.trackMessageList.forEach(item=>{
+            item.time = moment(item.time).format("YYYY-MM-DD HH:mm:SS")
+            if (n===0) {
+              item['color'] = '#0bbd87'
+              this.trackUpdateTime = moment(item.create_time).format("YYYY-MM-DD HH:mm:SS")
+            }
+            n += 1
+          })
+        }
+      })
+    },
     // 初始化设置
     initShipSetting(){
       if(window.sessionStorage.getItem('ml_ship_filterBatch')) {
@@ -1301,6 +1415,9 @@ export default {
 .tt{
   font-weight: bold;
 }
+.tt_msg{
+  color: #409EFF;
+}
 .m_name{
   font-weight: bold;
   font-size: 20px;
@@ -1328,6 +1445,10 @@ export default {
 .small_icon{
   color: #99a9bf;
   margin-right: 5px;
+}
+.track_update{
+  margin-left: 10px;
+  color: #99a9bf;
 }
 .filterShow {
   background-color: #ecf5ff;
