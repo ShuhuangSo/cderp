@@ -352,9 +352,10 @@
               </el-link>
 
             </div>
-            <div><span class="tt_msg">{{scope.row.latest_track | ellipsis}}</span></div>
+
             <div><span class="tt">截单日期: </span>{{scope.row.end_date}}</div>
             <div><span class="tt">航班日期: </span>{{scope.row.ship_date}}</div>
+            <div><span class="tt_msg">{{scope.row.latest_track | ellipsis}}</span></div>
 <!--            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>-->
           </template>
         </el-table-column>

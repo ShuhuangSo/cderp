@@ -129,7 +129,14 @@
             label="订单号"
             width="150">
           <template slot-scope="scope">
-            <div>{{ scope.row.order_number }}</div>
+            <div>
+              <el-link
+                  style="margin-bottom: 2px; font-weight: normal; font-size: 12px"
+                  @click.native="checkOrderDetail(scope.row)"
+                  :underline="false">
+                {{ scope.row.order_number }}
+              </el-link>
+              </div>
             <el-tag v-if="scope.row.is_ad" type="warning" size="mini" effect="dark">广告</el-tag>
             <el-tag v-if="scope.row.order_status!=='FINISHED'"
                     style="margin-left: 5px"
@@ -313,6 +320,65 @@
         </span>
     </el-dialog>
 
+    <!--    订单详情弹窗-->
+    <el-dialog
+        title="销售订单详情"
+        :visible.sync="orderVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <div style="padding-left: 30px;padding-right: 30px">
+
+        <h3 style="color: #409EFF">买家信息</h3>
+        <el-descriptions :column="1" size="medium" :label-style="LS">
+          <el-descriptions-item label="收件人">{{ this.orderDetail.buyer_name }}</el-descriptions-item>
+          <el-descriptions-item label="街道">{{ this.orderDetail.buyer_address }}</el-descriptions-item>
+          <el-descriptions-item label="城市">{{ this.orderDetail.buyer_city }}</el-descriptions-item>
+          <el-descriptions-item label="州/省">{{ this.orderDetail.buyer_state }}</el-descriptions-item>
+          <el-descriptions-item label="邮编">{{ this.orderDetail.buyer_postcode }}</el-descriptions-item>
+          <el-descriptions-item label="国家">{{ this.orderDetail.buyer_country }}</el-descriptions-item>
+        </el-descriptions>
+
+          <h3 style="color: #409EFF">财务统计</h3>
+          <el-collapse :value="['1', '2', '3']">
+            <el-collapse-item title="销售费用" name="1">
+              <div style="width: 500px">
+                <el-descriptions :column="1" size="medium" :label-style="LS">
+                  <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
+                  <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                </el-descriptions>
+              </div>
+            </el-collapse-item>
+            <el-collapse-item title="产品成本" name="2">
+              <div style="width: 500px">
+                <el-descriptions :column="1"  size="medium" :label-style="LS">
+                  <el-descriptions-item label="采购成本">{{ this.orderDetail.unit_cost | currency}}</el-descriptions-item>
+                  <el-descriptions-item label="头程均摊">{{ this.orderDetail.first_ship_cost | currency }}</el-descriptions-item>
+                </el-descriptions>
+              </div>
+            </el-collapse-item>
+            <el-collapse-item title="利润" name="3">
+              <div style="width: 500px">
+                <el-descriptions :column="1"  size="medium" :label-style="LS">
+                  <el-descriptions-item label="毛利润">{{ this.orderDetail.profit | currency }}</el-descriptions-item>
+                  <el-descriptions-item label="毛利率">{{ this.orderDetail.profit_rate | rate }}</el-descriptions-item>
+                </el-descriptions>
+              </div>
+            </el-collapse-item>
+
+          </el-collapse>
+
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="orderVisible = false">关 闭</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -337,6 +403,28 @@ export default {
       searchValue: '',
       uploadVisible: false,
       chartVisible: false,
+      orderVisible: false, //订单详情弹窗
+      orderDetail: {
+        'currency': null,
+        'ex_rate': null,
+        'price': null,
+        'fees': null,
+        'postage': null,
+        'receive_fund': null,
+        'unit_cost': null,
+        'first_ship_cost': null,
+        'profit': null,
+        'profit_rate': null,
+        'buyer_name': null,
+        'buyer_address': null,
+        'buyer_city': null,
+        'buyer_state': null,
+        'buyer_postcode': null,
+        'buyer_country': null,
+      }, //订单详情
+      LS: {
+      width: '150px',
+    },
       timer: '',
       // 批量上传认证
       headers: {
@@ -444,9 +532,15 @@ export default {
     //rmb金额格式化
     currency: function (value) {
       if (!value) return 0.00;
-      return `¥${value.toFixed(2)}`;
+      return `¥ ${value.toFixed(2)}`;
     },
     //rmb金额格式化
+    f_currency: function (value) {
+      if (!value) return `$ 0.00`;
+      if (value < 0) return `-$ ${Math.abs(value).toFixed(2)}`;
+      return `$ ${value.toFixed(2)}`;
+    },
+    //百分比格式化
     rate: function (value) {
       if (!value) return 0;
       value = value * 100
@@ -476,6 +570,11 @@ export default {
     this.inintShops();
   },
   methods:{
+    // 打开订单详情弹窗
+    checkOrderDetail(obj){
+      this.orderDetail = obj
+      this.orderVisible = true
+    },
     //打开图表
     showChart(){
       this.timer = new Date().getTime();
@@ -640,4 +739,5 @@ export default {
 .chart{
   height: 500px;
 }
+
 </style>
