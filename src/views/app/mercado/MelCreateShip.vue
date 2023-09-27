@@ -24,6 +24,20 @@
               <el-switch v-model="ship.all_see"></el-switch>
             </el-form-item>
 
+            <el-form-item label="平台" required prop="platform">
+              <el-select v-model="ship.platform"
+                         @change="changeTarget"
+                         style="width: 300px;"
+                         placeholder="请选择平台">
+                <el-option
+                    v-for="item in platforms"
+                    :key="ship.code"
+                    :label="item.name"
+                    :value="item.code">
+                </el-option>
+              </el-select>
+            </el-form-item>
+
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
                          style="width: 300px;"
@@ -227,6 +241,7 @@ export default {
       obj: this.$route.query.obj?JSON.parse(this.$route.query.obj):'', // 补货推荐传递数据
       loading: false,
       ship: {
+        platform: 'MERCADO',
         target: 'FBM',
         shop: '',
         ship_type: '空运',
@@ -239,6 +254,16 @@ export default {
       },
       shops: [], //可选店铺
       carriers: [], //可选物流商
+      platforms: [
+        {
+          code: 'MERCADO',
+          name: '美客多'
+        },
+        {
+          code: 'NOON',
+          name: 'Noon'
+        }
+      ], //平台
       addProductVisible: false,
       rules: {
         shop: [
@@ -388,6 +413,7 @@ export default {
       if (!this.user.is_superuser && this.ship.target==='FBM') {
         url += '&user=' + this.user.id;
       }
+      url += '&platform=' + this.ship.platform;
       this.getRequest(url).then(resp => {
         if (resp.results) {
           this.shops = resp.results;

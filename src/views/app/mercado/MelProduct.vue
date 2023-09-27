@@ -170,6 +170,14 @@
         </el-table-column>
 
         <el-table-column
+            prop="platform"
+            label="平台"
+            align="center"
+            header-align="center"
+            width="100">
+        </el-table-column>
+
+        <el-table-column
             prop="site"
             label="站点"
             align="center"

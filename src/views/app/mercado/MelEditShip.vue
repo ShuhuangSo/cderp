@@ -30,6 +30,20 @@
                         maxlength="50"></el-input>
             </el-form-item>
 
+            <el-form-item label="平台" required prop="platform">
+              <el-select v-model="ship.platform"
+                         style="width: 350px;"
+                         disabled
+                         placeholder="请选择平台">
+                <el-option
+                    v-for="item in platforms"
+                    :key="ship.code"
+                    :label="item.name"
+                    :value="item.code">
+                </el-option>
+              </el-select>
+            </el-form-item>
+
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
                          style="width: 350px;"
@@ -406,6 +420,7 @@ export default {
       ship_changed: false,
       ship: {
         target: 'FBM',
+        platform: '',
         shop: '',
         ship_type: '空运',
         carrier: '',
@@ -419,6 +434,16 @@ export default {
       shops: [], //可选店铺
       carriers: [], //可选物流商
       fbm_warehouses: [], //可选fbm仓库
+      platforms: [
+        {
+          code: 'MERCADO',
+          name: '美客多'
+        },
+        {
+          code: 'NOON',
+          name: 'Noon'
+        }
+      ], //平台
       removeItems: [], //遗弃清单
       show_plan: false, // 计划数量修改框可见状态
       addProductVisible: false,
@@ -447,7 +472,6 @@ export default {
     this.initShip();
     this.inintShops();
     this.initCarriers();
-    this.inintFBMWarehouses();
     this.initRemoveItem()
 
     //定时器，时间单位为毫秒
@@ -664,6 +688,8 @@ export default {
             }
 
           })
+
+          this.inintFBMWarehouses();
         }
       })
     },
@@ -691,7 +717,7 @@ export default {
     },
     inintFBMWarehouses(){
       //获取所有可选fbm仓库
-      this.getRequest('api/ml_fbm_warehouse/?page_size=1000&ordering=create_time').then(resp => {
+      this.getRequest('api/ml_fbm_warehouse/?platform=' + this.ship.platform + '&page_size=1000&ordering=create_time').then(resp => {
         if (resp.results) {
           this.fbm_warehouses = resp.results;
         }

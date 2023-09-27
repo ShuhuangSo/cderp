@@ -44,6 +44,29 @@
                   </el-col>
 
                   <el-col :span="12">
+                    <el-form-item label="平台" prop="shop">
+                      <el-select v-model="mlProduct.platform" placeholder="请选择">
+                        <el-option
+                            v-for="item in platforms"
+                            :key="item.code"
+                            :label="item.name"
+                            :value="item.code">
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+
+
+
+                  <el-col :span="12">
+                    <el-form-item label="产品名称" required prop="p_name">
+                      <el-input v-model="mlProduct.p_name"
+                                maxlength="50"
+                                show-word-limit></el-input>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :span="12">
                     <el-form-item label="站点" prop="shop">
                       <el-select v-model="mlProduct.site" placeholder="请选择">
                         <el-option
@@ -57,17 +80,7 @@
                   </el-col>
 
                   <el-col :span="12">
-                    <el-form-item label="产品名称" required prop="p_name">
-                      <el-input v-model="mlProduct.p_name"
-                                maxlength="50"
-                                show-word-limit></el-input>
-                    </el-form-item>
-                  </el-col>
-
-
-
-                  <el-col :span="12">
-                    <el-form-item label="UPC" required prop="upc">
+                    <el-form-item label="UPC"  prop="upc">
                       <el-input v-model="mlProduct.upc"
                                 maxlength="30">
                       </el-input>
@@ -422,11 +435,20 @@ export default {
       shops: [],
       sites: [],
       packs: [],
+      platforms: [{
+        code: 'MERCADO',
+        name: '美客多'
+      },
+        {
+          code: 'NOON',
+          name: 'Noon'
+        }], //平台
       activeName: 'one',
       mlProduct:{
         id: null,
         sku: '',
         p_name: '',
+        platform: '',
         label_code: '',
         upc: '',
         item_id: '',
@@ -480,9 +502,6 @@ export default {
         p_name: [
           {required: true, message: '请输入产品名称', trigger: 'blur'},
           {min: 3, max: 80, message: '产品名称长度有误', trigger: 'blur'}
-        ],
-        upc: [
-          {required: true, message: '请输入UPC', trigger: 'blur'},
         ],
         unit_cost: [
           {required: false, message: '成本价不能为空', trigger: 'blur'},
