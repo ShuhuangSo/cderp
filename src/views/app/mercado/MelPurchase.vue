@@ -83,24 +83,28 @@
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='WAITBUY'">
             <el-button :disabled="!multipleSelection.length"
                        v-if="permission.purchase_buy"
+                       :loading="op_loading"
                        @click="buyVisible=true" type="primary" plain>下单采购</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='PURCHASED'">
             <el-button :disabled="!multipleSelection.length"
                        v-if="permission.purchase_receive"
+                       :loading="op_loading"
                        @click="summitRec" type="primary" plain>确认收货</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
             <el-button :disabled="!multipleSelection.length"
                        v-if="permission.purchase_qc"
+                       :loading="op_loading"
                        @click="summitQC" type="success" plain>产品质检</el-button>
           </el-badge>
 
           <el-badge  :hidden="!multipleSelection.length" :value="multipleSelection.length" class="item_main" v-if="p_status==='RECEIVED'">
             <el-button :disabled="!multipleSelection.length"
                        v-if="permission.purchase_pack"
+                       :loading="op_loading"
                        @click="summitPack" type="primary" plain>确认打包</el-button>
           </el-badge>
 
@@ -1013,6 +1017,7 @@ export default {
       purchaseList: [],
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       loading: false,
+      op_loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
       size: 50,  // 页大小
@@ -1264,7 +1269,9 @@ export default {
         type: 'warning'
       }).then(() => {
         //调用提交产品质检
+        this.op_loading = true
         this.postRequest('api/ml_purchase/product_qc/', this.multipleSelection).then(resp => {
+          this.op_loading = false
           this.multipleSelection = []
           this.$refs.purchaseTable.clearSelection() //清除选中的数据
           this.initPurchaseList();
@@ -1289,7 +1296,9 @@ export default {
         })
         if (all_qc) {
           //调用提交确认收货
+          this.op_loading = true
           this.postRequest('api/ml_purchase/pack_buy/', this.multipleSelection).then(resp => {
+            this.op_loading = false
             if(resp.status === 'success') {
               this.multipleSelection = []
               this.$refs.purchaseTable.clearSelection() //清除选中的数据
@@ -1318,7 +1327,9 @@ export default {
         type: 'warning'
       }).then(() => {
         //调用提交确认收货
+        this.op_loading = true
         this.postRequest('api/ml_purchase/rec_buy/', this.multipleSelection).then(resp => {
+          this.op_loading = false
           if(resp.status === 'success') {
             this.multipleSelection = []
             this.$refs.purchaseTable.clearSelection() //清除选中的数据
@@ -1344,7 +1355,9 @@ export default {
     },
     //提交下单采购
     summitBuy(){
+      this.op_loading = true
       this.postRequest('api/ml_purchase/place_buy/', {'products':this.multipleSelection, 'is_change': this.changPrice}).then(resp => {
+        this.op_loading = false
         if (resp.status === 'success') {
           this.buyVisible = false
           this.changPrice = false
