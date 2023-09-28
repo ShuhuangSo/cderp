@@ -271,9 +271,10 @@
             :on-success="onSuccess"
             :auto-upload="false"
             :before-upload="beforeUpload"
+            accept=".xlsx,.xls"
             :limit="1"
             drag
-            action="api/ml_orders/bulk_upload/">
+            action="api/ml_orders/bulk_upload2/">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传excel文件,
@@ -618,7 +619,14 @@ export default {
     onSuccess(response, file, fileList) {
       this.loading = false;
       this.$refs.upload.clearFiles();
-      this.initOrders();
+      if(response.status === 'success') {
+        this.$message.success(response.msg)
+        this.initOrders();
+      }
+      if(response.status === 'error') {
+        this.$message.error(response.msg)
+      }
+
       this.uploadVisible = false;
     },
     // 上传

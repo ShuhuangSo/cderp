@@ -240,6 +240,7 @@
 
             </div>
             <div style="margin-top: 10px">
+
               <el-tag
                   style="border: none"
                   @click="selectValue('shop', scope.row.shop)"
@@ -249,6 +250,7 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+
             <div style="font-size: 16px;margin-top: 10px">
               <el-tag size="mini" type="warning" v-if="scope.row.is_remove_items" title="发货数量有变动">变</el-tag>
               <el-tag size="mini" v-if="scope.row.send_from === 'LOCAL'" title="本土中转入仓">转</el-tag>
@@ -277,6 +279,7 @@
                        :underline="false"><i class="el-icon-copy-document"></i></el-link>
 
             </div>
+
           </template>
         </el-table-column>
 

@@ -68,6 +68,17 @@
             </el-option>
           </el-select>
 
+          <el-select v-model="platform"
+                     style="width: 150px;margin-left: 5px; "
+                     @change="changeFilter" placeholder="请选择平台">
+            <el-option
+                v-for="item in platforms"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
+
           <el-select v-model="filter_name"
                      v-if="p_status==='WAITBUY'"
                      style="width: 150px;margin-left: 5px; "
@@ -222,6 +233,9 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+            <div style="margin-top: 5px">
+              <el-tag size="mini" effect="plain">{{ scope.row.platform | pf}}</el-tag>
+            </div>
           </template>
         </el-table-column>
 
@@ -373,6 +387,9 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+            <div style="margin-top: 5px">
+              <el-tag size="mini" effect="plain">{{ scope.row.platform | pf}}</el-tag>
+            </div>
           </template>
         </el-table-column>
 
@@ -512,6 +529,9 @@
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
             </div>
+            <div style="margin-top: 5px">
+              <el-tag size="mini" effect="plain">{{ scope.row.platform | pf}}</el-tag>
+            </div>
           </template>
         </el-table-column>
 
@@ -640,6 +660,9 @@
                   effect="dark" type="info">
                 <span style="font-weight: bold">{{ scope.row.shop}}</span>
               </el-tag>
+            </div>
+            <div style="margin-top: 5px">
+              <el-tag size="mini" effect="plain">{{ scope.row.platform | pf}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -1065,6 +1088,21 @@ export default {
           value: '&buy_qty=0'
         },
       ],
+      platform: '', //平台
+      platforms: [
+        {
+          name: '全部平台',
+          value: ''
+        },
+        {
+          name: '美客多',
+          value: '&platform=MERCADO'
+        },
+        {
+          name: 'Noon',
+          value: '&platform=NOON'
+        },
+      ],
     }
   },
   computed: {
@@ -1098,6 +1136,12 @@ export default {
     removeStatus: function (value) {
       if (value === 0) return '待处理';
       if (value === 3) return '保留';
+      return '';
+    },
+    //平台格式化
+    pf: function (value) {
+      if (value === 'MERCADO') return '美客多';
+      if (value === 'NOON') return 'Noon';
       return '';
     },
   },
@@ -1433,6 +1477,9 @@ export default {
       }
       if (this.filter_name) {
         url += this.filter_name;
+      }
+      if (this.platform) {
+        url += this.platform;
       }
 
       if (this.p_status === 'USED') {
