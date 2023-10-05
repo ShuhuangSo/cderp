@@ -50,12 +50,23 @@
           </el-switch>
 
           <el-radio-group
-              style="margin-left: 50px;margin-right: 30px"
+              style="margin-left: 50px"
               @change="changeTarget" v-model="target">
             <el-radio-button label="">全部</el-radio-button>
             <el-radio-button label="FBM">FBM入仓单</el-radio-button>
             <el-radio-button label="TRANSIT">中转仓单</el-radio-button>
           </el-radio-group>
+
+          <el-select v-model="platform"
+                     style="width: 150px;margin-left: 5px; "
+                     @change="changeTarget" placeholder="请选择平台">
+            <el-option
+                v-for="item in platforms"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
 
           <el-select v-model="sort"
                      style="width: 150px;margin-left: 5px;margin-right: 30px"
@@ -91,8 +102,10 @@
       </div>
     </div>
 
-    <div class="filterShow" v-if="filterBatch || filterShop || filterSort">
+    <div class="filterShow" v-if="filterBatch || filterShop || filterSort || platform">
       <span>已选择条件：</span>
+      <el-tag size="small" closable effect="dark" v-if="platform" @close="colseFilter('platform')">平台：{{ this.platform | pf }}
+      </el-tag>
       <el-tag size="small" closable effect="dark" v-if="filterBatch" @close="colseFilter('batch')">批次：{{ this.filterBatch }}
       </el-tag>
       <el-tag size="small" closable effect="dark" v-if="filterShop" @close="colseFilter('shop')">目标店铺：{{ this.filterShop }}
@@ -726,6 +739,21 @@ export default {
         },
 
       ],
+      platform: '', //平台
+      platforms: [
+        {
+          name: '全部平台',
+          value: ''
+        },
+        {
+          name: '美客多',
+          value: '&platform=MERCADO'
+        },
+        {
+          name: 'Noon',
+          value: '&platform=NOON'
+        },
+      ],
       predefineColors: [
         '#ff4500',
         '#ff8c00',
@@ -773,7 +801,13 @@ export default {
         return value.slice(0, 14) + '...'
       }
       return value
-    }
+    },
+    //平台格式化
+    pf: function (value) {
+      if (value === '&platform=MERCADO') return '美客多';
+      if (value === '&platform=NOON') return 'Noon';
+      return '';
+    },
 
   },
 
@@ -840,6 +874,9 @@ export default {
     },
     // 初始化设置
     initShipSetting(){
+      if(window.sessionStorage.getItem('ml_ship_platform')) {
+        this.platform = JSON.parse(window.sessionStorage.getItem('ml_ship_platform'));
+      }
       if(window.sessionStorage.getItem('ml_ship_filterBatch')) {
         this.filterBatch = JSON.parse(window.sessionStorage.getItem('ml_ship_filterBatch'));
       }
@@ -908,12 +945,14 @@ export default {
     colseFilter(type) {
       if (type === 'batch') this.filterBatch = ''
       if (type === 'shop') this.filterShop = ''
+      if (type === 'platform') this.platform = ''
       if (type === 'sort') {
         this.filterSort = ''
         this.sort = '-create_time'
       }
 
       if (type === 'all') {
+        this.platform = ''
         this.filterBatch = ''
         this.filterShop = ''
         this.filterSort = ''
@@ -1370,6 +1409,9 @@ export default {
       if (this.filterShop) {
         url += '&shop=' + this.filterShop;
       }
+      if (this.platform) {
+        url += this.platform;
+      }
       if (!this.permission.ship_allShopCheck) {
         url += '&user_id__in=0,' + this.user.id;
       }
@@ -1392,6 +1434,7 @@ export default {
 
       //保存过滤参数
       window.sessionStorage.setItem('ml_ship_filterBatch', JSON.stringify(this.filterBatch));
+      window.sessionStorage.setItem('ml_ship_platform', JSON.stringify(this.platform));
       window.sessionStorage.setItem('ml_ship_filterShop', JSON.stringify(this.filterShop));
       window.sessionStorage.setItem('ml_ship_filterSort', JSON.stringify(this.filterSort));
 
