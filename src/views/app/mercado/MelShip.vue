@@ -474,6 +474,7 @@
                   <el-dropdown-item :command="{type:'export_purchase', id:scope.row.id}">导出采购单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_qc', id:scope.row.id}">导出质检单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'export_wc', id:scope.row.id}">导出微草申报单</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -1189,6 +1190,28 @@ export default {
         }).then(() => {
           let url = 'api/ml_ship/export_logistic_decl/'
           this.postRequest(url, {'id': command['id'], 'name': 'SHENGDE'}).then(resp => {
+            if (resp) {
+              window.open(resp.url, '_blank')
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+
+      // 导出微草申报单
+      if (command['type'] === 'export_wc') {
+        this.$confirm('是否导出微草申报单?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let url = 'api/ml_ship/export_logistic_decl/'
+          this.postRequest(url, {'id': command['id'], 'name': 'WEICAO'}).then(resp => {
             if (resp) {
               window.open(resp.url, '_blank')
             }
