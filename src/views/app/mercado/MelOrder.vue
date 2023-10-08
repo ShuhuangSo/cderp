@@ -233,7 +233,10 @@
             header-align="center"
             width="150">
           <template slot-scope="scope">
-            <div :title="scope.row.order_time_bj | bjdate">{{ scope.row.order_time | date}}</div>
+            <div :title="scope.row.order_time_bj | bjdate">
+              <span v-if="scope.row.platform === 'MERCADO'">{{ scope.row.order_time | date}}</span>
+              <span v-if="scope.row.platform === 'NOON'">{{ scope.row.order_time | date2}}</span>
+            </div>
           </template>
         </el-table-column>
 
@@ -349,6 +352,9 @@
                   <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="VAT税">{{ this.orderDetail.VAT | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="成交价">{{ this.orderDetail.invoice_price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="优惠金额">{{ this.orderDetail.promo_coupon | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
                   <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
@@ -406,6 +412,7 @@ export default {
       chartVisible: false,
       orderVisible: false, //订单详情弹窗
       orderDetail: {
+        'platform': null,
         'currency': null,
         'ex_rate': null,
         'price': null,
@@ -422,6 +429,9 @@ export default {
         'buyer_state': null,
         'buyer_postcode': null,
         'buyer_country': null,
+        'VAT': null,
+        'invoice_price': null,
+        'promo_coupon': null,
       }, //订单详情
       LS: {
       width: '150px',
@@ -502,6 +512,10 @@ export default {
           name: '完成订单',
           value: '&order_status=FINISHED'
         },
+        {
+          name: '未核算',
+          value: '&order_status=UNCHECK'
+        },
       ],
       chart_options: [{
         value: 'ORDER',
@@ -520,6 +534,9 @@ export default {
     //时间日期格式化
     date: function (value) {
       return moment(value).format("YYYY-MM-DD HH:mm");
+    },
+    date2: function (value) {
+      return moment(value).format("YYYY-MM-DD");
     },
     //时间日期格式化
     dateFormat: function (value) {
@@ -552,6 +569,7 @@ export default {
       if (value==='RETURN') return '退货';
       if (value==='CASE') return 'CASE';
       if (value==='CANCEL') return '取消';
+      if (value==='UNCHECK') return '未核算';
     },
     //图片地址格式化
     smpic: function (value) {

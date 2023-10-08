@@ -157,14 +157,6 @@
             </div>
 
             <div>{{ scope.row.p_name }}</div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="ItemID"
-            show-overflow-tooltip
-            width="120">
-          <template slot-scope="scope">
             <div>{{ scope.row.item_id }}</div>
           </template>
         </el-table-column>

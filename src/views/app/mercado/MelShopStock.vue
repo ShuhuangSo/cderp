@@ -163,6 +163,7 @@
 
         <el-table-column
             label="产品"
+            min-width="120"
             show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="font-weight: bold">{{ scope.row.sku }}
