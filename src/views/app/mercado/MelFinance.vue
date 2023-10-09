@@ -7,7 +7,11 @@
     <div class="left_side" v-if="permission.finance_shopFinance">
       <el-card shadow="never">
         <div style="display: flex;justify-content: center">
-          <span class="chartTitle">店铺资金</span>
+          <div class="chartTitle">店铺资金</div>
+        </div>
+
+        <div style="display: flex;justify-content: center">
+          <div class="fu_title">结算币种 {{this.default_currency}}</div>
         </div>
 
         <div style="text-align:center; width: 100%;margin-top: 50px">
@@ -282,7 +286,7 @@
         width="400px"
     >
       <div>
-        提现金额：
+        提现金额 ({{this.default_currency}})：
         <el-input-number
             style="width: 100%"
             v-model="finance.income"
@@ -364,6 +368,7 @@ export default {
       createWDVisible: false, //新增店铺提现
       createEXCVisible: false, //新增结汇
       confirmWDVisible: false, //确认提现
+      default_currency: '', // 默认提现币种
       onway_fund: 0.0,
       income_rmb: 0.0,
       rest_income: 0.0,
@@ -502,6 +507,7 @@ export default {
       let url = 'api/ml_finance/calc_fund/'
       this.postRequest(url, {'shop': this.shopID}).then(resp => {
         if (resp) {
+          this.default_currency = resp.default_currency
           this.onway_fund = resp.onway_fund
           this.income_rmb = resp.income_rmb
           this.rest_income = resp.rest_income
@@ -587,5 +593,9 @@ export default {
 }
 .chartTitle {
   font-weight: bold;
+}
+.fu_title{
+  color: #99a9bf;
+  font-size: 10px;
 }
 </style>
