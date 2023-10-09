@@ -386,6 +386,8 @@
                                   :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
                 <el-dropdown-item :disabled="!permission.fbmStock_changeStatus"
                                   :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
+                <el-dropdown-item
+                                  :command="{type:'stockLog', obj:scope.row}">库存日志</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -512,22 +514,47 @@
         </span>
     </el-dialog>
 
+    <!--    库存日志弹窗-->
+    <el-dialog
+        title="库存日志"
+        :visible.sync="stockLogVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800"
+    >
+      <div>
+        <MLStockLog
+            :key="timer"
+            :obj="{'id':p_id,'type': 'SHOP_STOCK'}" ></MLStockLog>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="stockLogVisible = false">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :disabled="!changeStatus"
+                     :loading="tStockLoading"
+                     @click="submitChangeStatus">确认修改</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment/moment";
 import MelStockDetail from "@/components/app/mercado/MelStockDetail";
+import MLStockLog from "@/components/app/mercado/MLStockLog";
 
 export default {
   name: "MelShopStock",
-  components:{MelStockDetail},
+  components:{MelStockDetail, MLStockLog},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       shops: null,
       shopID: null,
+      p_id: null, // 库存产品id
       shopStocks: null,
       loading: false,
       total: 0, // 总条数
@@ -549,6 +576,7 @@ export default {
       stockVisible: false, //在途库存情况
       changeStockVisible: false, //库存盘点弹窗显示
       changeStatusVisible: false, //库存状态弹窗显示
+      stockLogVisible: false, //库存日志弹窗显示
       changeStockQty: null, // 盘点数量
       changeStockID: null, // 盘点的sku id
       changeStatus: null, // 修改状态
@@ -736,6 +764,13 @@ export default {
         this.changeStatus= command['obj'].p_status
         this.changeStockID = command['obj'].id
         this.changeStatusVisible = true
+      }
+
+      // 库存日志
+      if (command['type'] === 'stockLog') {
+        this.p_id = command['obj'].id
+        this.timer = new Date().getTime();
+        this.stockLogVisible = true
       }
     },
 

@@ -1190,7 +1190,7 @@ export default {
         }).then(() => {
           let url = 'api/ml_ship/export_logistic_decl/'
           this.postRequest(url, {'id': command['id'], 'name': 'SHENGDE'}).then(resp => {
-            if (resp) {
+            if (resp.status === 'success') {
               window.open(resp.url, '_blank')
             }
           }).catch(() => {
@@ -1212,7 +1212,7 @@ export default {
         }).then(() => {
           let url = 'api/ml_ship/export_logistic_decl/'
           this.postRequest(url, {'id': command['id'], 'name': 'WEICAO'}).then(resp => {
-            if (resp) {
+            if (resp.status === 'success') {
               window.open(resp.url, '_blank')
             }
           }).catch(() => {
