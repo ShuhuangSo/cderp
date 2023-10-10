@@ -529,11 +529,7 @@
       </div>
 
       <span slot="footer" class="dialog-footer">
-          <el-button size="small" @click="stockLogVisible = false">取 消</el-button>
-          <el-button size="small" type="primary"
-                     :disabled="!changeStatus"
-                     :loading="tStockLoading"
-                     @click="submitChangeStatus">确认修改</el-button>
+          <el-button size="small" @click="stockLogVisible = false">关 闭</el-button>
         </span>
     </el-dialog>
 

@@ -75,6 +75,11 @@
       </div>
     </div>
 
+    <div class="filterShow">
+      <span>已选择条件：{{this.uploadNotify.upload_status}}, {{this.uploadNotify.desc}}, {{this.uploadNotify.create_time | date}}</span>
+      <el-button type="primary" @click="getUploadNotify">刷新</el-button>
+    </div>
+
     <div style="margin-top: 5px">
       <el-table
           ref="orderTable"
@@ -265,7 +270,7 @@
     >
       <div>
         <el-upload
-            v-loading="loading"
+            v-loading="upload_loading"
             style="margin-left: 50px;"
             ref="upload"
             name="excel"
@@ -288,7 +293,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="uploadVisible = false">取 消</el-button>
-          <el-button size="small" type="primary" :disabled="loading" @click="submitUpload">开始导入</el-button>
+          <el-button size="small" type="primary" :disabled="upload_loading" @click="submitUpload">开始导入</el-button>
         </span>
     </el-dialog>
 
@@ -404,10 +409,16 @@ export default {
       shops: null,
       shopID: null,
       loading: false,
+      upload_loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
       size: 20,  // 页大小
       searchValue: '',
+      uploadNotify: {
+        'upload_status': null,
+        'desc': null,
+        'create_time': null,
+      },
       uploadVisible: false,
       chartVisible: false,
       orderVisible: false, //订单详情弹窗
@@ -631,15 +642,15 @@ export default {
     },
     // 型号上传前的回调
     beforeUpload() {
-      this.loading = true;
+      this.upload_loading = true;
     },
     // 上传成功之后的回调
     onSuccess(response, file, fileList) {
-      this.loading = false;
+      this.upload_loading = false;
       this.$refs.upload.clearFiles();
       if(response.status === 'success') {
         this.$message.success(response.msg)
-        this.initOrders();
+        this.getUploadNotify();
       }
       if(response.status === 'error') {
         this.$message.error(response.msg)
@@ -684,6 +695,23 @@ export default {
     currentChange(page) {
       this.page = page;
       this.initOrders();
+    },
+    //获取订单上传状态
+    getUploadNotify(){
+      let url = 'api/ml_file_upload_notify/get_upload_result/'
+      this.postRequest(url, {'id': this.shopID}).then(resp => {
+        if (resp) {
+          this.uploadNotify.upload_status = resp.upload_status
+          this.uploadNotify.desc = resp.desc
+          this.uploadNotify.create_time = resp.create_time
+
+          if (resp.upload_status === 'SUCCESS') {
+            this.$message.success('订单成功导入！')
+            this.initOrders()
+          }
+
+        }
+      })
     },
 
     inintShops(){
@@ -765,5 +793,12 @@ export default {
 .chart{
   height: 500px;
 }
-
+.filterShow {
+  background-color: #ecf5ff;
+  border: 1px solid #409EFF;
+  margin-top: 5px;
+  padding: 3px 3px 3px 50px;
+  font-size: 14px;
+  color: #303133;
+}
 </style>
