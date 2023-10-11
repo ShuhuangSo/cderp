@@ -30,7 +30,7 @@
           <div class="msg_title">
             发货运单
           </div>
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
             <div >
               <el-link
                   @click.native="goDetail('ship', 'PREPARING')"
@@ -41,7 +41,7 @@
             <div  class="small_zi">备货中</div>
           </div>
 
-          <div style="text-align:center; width: 100px">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('ship', 'SHIPPED')"
@@ -52,7 +52,7 @@
             <div class="small_zi">运输中</div>
           </div>
 
-          <div style="text-align:center; width: 100px">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('ship', 'BOOKED')"
@@ -71,7 +71,7 @@
           <div class="msg_title">
             采购管理
           </div>
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('purchase', 'WAITBUY')"
@@ -83,7 +83,7 @@
             <div  class="small_zi">待采购</div>
           </div>
 
-          <div style="text-align:center; width: 100px">
+          <div class="kuaijie">
 
             <div>
               <el-link
@@ -108,7 +108,7 @@
             <div class="small_zi">已到货</div>
           </div>
 
-          <div style="text-align:center; width: 100px">
+          <div class="kuaijie">
 
             <div>
               <el-link
@@ -127,7 +127,7 @@
           <div class="msg_title">
             操作提醒
           </div>
-          <div style="width: 100px;text-align:center" v-if="daiban.need_book">
+          <div class="kuaijie" v-if="daiban.need_book">
             <div>
               <el-link
                   @click.native="goDetail('ship', 'SHIPPED')"
@@ -139,7 +139,7 @@
             <div  class="small_zi">需预约</div>
           </div>
 
-          <div style="width: 100px;text-align:center" v-if="daiban.overtime_ship">
+          <div class="kuaijie" v-if="daiban.overtime_ship">
             <div>
               <el-link
                   @click.native="goDetail('ship', 'BOOKED', true)"
@@ -151,7 +151,7 @@
             <div  class="small_zi">入仓核对</div>
           </div>
 
-          <div style="width: 100px;text-align:center" v-if="daiban.income_confirm">
+          <div class="kuaijie" v-if="daiban.income_confirm">
             <div>
               <el-link
                   @click.native="goDetail('finance', '')"
@@ -163,7 +163,7 @@
             <div  class="small_zi">提现待确认</div>
           </div>
 
-          <div style="width: 100px;text-align:center" v-if="daiban.remove_items_count">
+          <div class="kuaijie" v-if="daiban.remove_items_count">
             <div>
               <el-link
                   @click.native="goDetail('shipInfo', '')"
@@ -181,7 +181,7 @@
           <div class="msg_title">
             快捷入口
           </div>
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('product', '')"
@@ -192,7 +192,18 @@
             <div  class="small_zi">产品库</div>
           </div>
 
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
+            <div>
+              <el-link
+                  @click.native="goDetail('shop_stock', '')"
+                  :underline="false">
+                <span style="font-size: 20px"><i class="el-icon-school"></i></span>
+              </el-link>
+            </div>
+            <div  class="small_zi">FBM库存</div>
+          </div>
+
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('orders', '')"
@@ -203,7 +214,7 @@
             <div  class="small_zi">销售订单</div>
           </div>
 
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('finance', '')"
@@ -214,7 +225,7 @@
             <div  class="small_zi">财务管理</div>
           </div>
 
-          <div style="width: 100px;text-align:center">
+          <div class="kuaijie">
             <div>
               <el-link
                   @click.native="goDetail('upc', '')"
@@ -224,7 +235,6 @@
             </div>
             <div  class="small_zi">UPC号码</div>
           </div>
-
 
         </div>
 
@@ -265,6 +275,15 @@
             title="" :column="1" size="medium">
           <el-descriptions-item label="负责人">{{ this.shop_info.manager }}</el-descriptions-item>
           <el-descriptions-item label="在线产品">{{ this.shop_info.total_sku }}</el-descriptions-item>
+          <el-descriptions-item label="当前缺货">
+            <el-link
+                v-if="this.shop_info.out_stock"
+                @click.native="goDetail('shop_stock', 'shop', '&qty__lte=0&p_status__in=NORMAL,HOT_SALE,CLEAN')"
+                :underline="false">
+              <span class="out_stock">{{ this.shop_info.out_stock }}</span>
+            </el-link>
+            <span v-if="!this.shop_info.out_stock">无缺货</span>
+          </el-descriptions-item>
           <el-descriptions-item label="FBM库存">{{ this.shop_info.total_qty }}</el-descriptions-item>
           <el-descriptions-item label="库存金额">{{ this.shop_info.total_amount | currency }}</el-descriptions-item>
           <el-descriptions-item label="店铺额度">￥ {{ this.shop_info.used_quota | q_currency }} / {{ this.shop_info.quota | q_currency }}</el-descriptions-item>
@@ -364,10 +383,12 @@ export default {
       daiban_loading: false,
       shop_info_loading: false,
       shop_info:{
+        'shop_id': 2,
         'manager': null,
         'total_sku': null,
         'total_qty': null,
         'total_amount': null,
+        'out_stock': null,
         'quota': null,
         'used_quota': null,
       },
@@ -414,7 +435,7 @@ export default {
         this.$router.push({
           path: '/melManage',
           query: {
-            partName: partName,
+            partName: partName === 'shop'? this.shop : partName,
             activeName: activeName,
             value: value,
           }
@@ -489,6 +510,7 @@ export default {
           this.shop_info.manager = resp.manager
           this.shop_info.total_sku = resp.total_sku
           this.shop_info.total_qty = resp.total_qty
+          this.shop_info.out_stock = resp.out_stock
           this.shop_info.total_amount = resp.total_amount
           this.shop_info.quota = resp.quota
           this.shop_info.used_quota = resp.used_quota
@@ -616,5 +638,13 @@ export default {
   text-align: center;
   font-size: 14px;
   padding-top: 10px;
+}
+.out_stock{
+  color: red;
+  font-weight: bold;
+}
+.kuaijie {
+  width: 95px;
+  text-align:center
 }
 </style>

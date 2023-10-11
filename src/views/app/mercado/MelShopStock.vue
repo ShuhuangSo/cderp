@@ -520,7 +520,7 @@
         :visible.sync="stockLogVisible"
         :destroy-on-close="true"
         :close-on-click-modal="false"
-        width="800"
+        width="80%"
     >
       <div>
         <MLStockLog
@@ -543,6 +543,7 @@ import MLStockLog from "@/components/app/mercado/MLStockLog";
 
 export default {
   name: "MelShopStock",
+  props: ["p_shop_id", 'p_filter_name'],
   components:{MelStockDetail, MLStockLog},
   data(){
     return{
@@ -602,7 +603,7 @@ export default {
         },
         {
           name: '缺货产品',
-          value: '&qty__lte=0'
+          value: '&qty__lte=0&p_status__in=NORMAL,HOT_SALE,CLEAN'
         },
         {
           name: '在途产品',
@@ -893,8 +894,8 @@ export default {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
 
         if (this.shops.length) {
-          this.shopID = this.shops[0].id
-          this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
+          this.shopID = this.p_shop_id ? Number(this.p_shop_id) : this.shops[0].id
+          this.filter_name = this.p_filter_name?this.p_filter_name : '&p_status__in=NORMAL,HOT_SALE,CLEAN'
           this.initShopStock()
         }
       }else{
@@ -908,8 +909,8 @@ export default {
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
 
             if (this.shops.length) {
-              this.shopID = this.shops[0].id
-              this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
+              this.shopID = this.p_shop_id ? Number(this.p_shop_id) : this.shops[0].id
+              this.filter_name = this.p_filter_name?this.p_filter_name : '&p_status__in=NORMAL,HOT_SALE,CLEAN'
               this.initShopStock()
             }
           }

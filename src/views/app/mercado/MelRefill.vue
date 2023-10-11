@@ -303,12 +303,17 @@ export default {
         type: 'warning'
       }).then(() => {
         let shopName = ''
+        let platform = ''
         this.shops.forEach(item =>{
-          if (this.shopID === item.id) shopName = item.name
+          if (this.shopID === item.id) {
+            shopName = item.name
+            platform = item.platform
+          }
         })
         let ship = {
           target: 'FBM',
           shop: shopName,
+          platform: platform,
           ship_type: this.ship_type === 'FLY'?'空运':'海运',
           carrier: '',
           end_date: this.end_date,

@@ -30,12 +30,19 @@
         size="mini"
         v-loading="loading"
         style="width: 98%; margin: 10px">
-
+      <el-table-column
+          prop="create_time"
+          align="center"
+          header-align="center"
+          label="时间"
+          :formatter="datetimeFormat"
+          width="150">
+      </el-table-column>
       <el-table-column
           align="center"
           header-align="center"
           width="80"
-          label="库存">
+          label="剩余库存">
         <template slot-scope="scope">
           <span style="font-weight: bold">{{scope.row.current_stock}}</span>
         </template>
@@ -74,16 +81,9 @@
           align="center"
           header-align="center"
           label="操作人"
-          width="100">
+          width="80">
       </el-table-column>
-      <el-table-column
-          prop="create_time"
-          align="center"
-          header-align="center"
-          label="操作时间"
-          :formatter="datetimeFormat"
-          width="180">
-      </el-table-column>
+
 
     </el-table>
     <el-pagination
@@ -188,7 +188,7 @@ export default {
       if (date == undefined) {
         return ''
       }
-      return moment(date).format("YYYY-MM-DD HH:mm:ss")
+      return moment(date).format("YYYY-MM-DD HH:mm")
     },
 
     initLog(){

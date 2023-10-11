@@ -75,9 +75,17 @@
       </div>
     </div>
 
-    <div class="filterShow">
-      <span>已选择条件：{{this.uploadNotify.upload_status}}, {{this.uploadNotify.desc}}, {{this.uploadNotify.create_time | date}}</span>
-      <el-button type="primary" @click="getUploadNotify">刷新</el-button>
+    <div :class="uploadNotify.upload_status === 'ERROR'?'filterShow_red':'filterShow_blue'" v-if="uploadNotify.upload_status === 'LOADING' || uploadNotify.upload_status === 'ERROR'">
+      <div v-if="uploadNotify.upload_status !== 'ERROR'">
+        <span class="upload_zi">{{this.uploadNotify.create_time | date}}</span>
+        <span class="upload_zi">{{this.uploadNotify.desc}}</span>
+        <el-button style="margin-left: 10px" type="text" @click="getUploadNotify">刷新状态</el-button>
+      </div>
+      <div v-if="uploadNotify.upload_status === 'ERROR'">
+        <span class="upload_zi_red">{{this.uploadNotify.create_time | date}}</span>
+        <span class="upload_zi_red">上传失败，{{this.uploadNotify.desc}}</span>
+        <el-button style="margin-left: 10px" type="text" @click="uploadVisible=true">重新上传</el-button>
+      </div>
     </div>
 
     <div style="margin-top: 5px">
@@ -286,7 +294,9 @@
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传excel文件,
-            <el-link href="/media/template/mercado_order_template.xlsx" target="_blank">模板下载</el-link>
+            <el-link href="/media/template/mercado_order_template.xlsx" target="_blank">美客多模板</el-link>
+            <el-link style="margin-left: 10px" href="/media/template/invoice_report_template.xlsx" target="_blank">Noon模板1</el-link>
+            <el-link style="margin-left: 10px" href="/media/template/old_consolidated_report_template.xlsx" target="_blank">Noon模板2</el-link>
           </div>
         </el-upload>
 
@@ -650,7 +660,7 @@ export default {
       this.$refs.upload.clearFiles();
       if(response.status === 'success') {
         this.$message.success(response.msg)
-        this.getUploadNotify();
+        this.updateUploadNotify();
       }
       if(response.status === 'error') {
         this.$message.error(response.msg)
@@ -709,7 +719,22 @@ export default {
             this.$message.success('订单成功导入！')
             this.initOrders()
           }
+          if (resp.upload_status === 'LOADING') {
+            this.$message.info('仍在处理中，请稍候')
+          }
 
+        }
+      })
+    },
+
+    //更新订单上传状态
+    updateUploadNotify(){
+      let url = 'api/ml_file_upload_notify/get_upload_result/'
+      this.postRequest(url, {'id': this.shopID}).then(resp => {
+        if (resp) {
+          this.uploadNotify.upload_status = resp.upload_status
+          this.uploadNotify.desc = resp.desc
+          this.uploadNotify.create_time = resp.create_time
         }
       })
     },
@@ -761,6 +786,7 @@ export default {
       this.loading = true
       this.getRequest(url).then(resp => {
         this.loading = false
+        this.updateUploadNotify() // 获取上传订单结果
         if (resp.results) {
           this.orders = resp.results;
           this.total = resp.count;
@@ -793,12 +819,30 @@ export default {
 .chart{
   height: 500px;
 }
-.filterShow {
+.filterShow_blue {
   background-color: #ecf5ff;
   border: 1px solid #409EFF;
   margin-top: 5px;
   padding: 3px 3px 3px 50px;
   font-size: 14px;
   color: #303133;
+}
+.filterShow_red {
+  background-color: #fff2f2;
+  border: 1px solid #ff3131;
+  margin-top: 5px;
+  padding: 3px 3px 3px 50px;
+  font-size: 14px;
+  color: #303133;
+}
+.upload_zi {
+  margin-right: 15px;
+  font-size: 12px;
+  color: #8492a6;
+}
+.upload_zi_red {
+  margin-right: 15px;
+  font-size: 12px;
+  color: #aa0515;
 }
 </style>

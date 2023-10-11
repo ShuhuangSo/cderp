@@ -182,7 +182,7 @@
               <el-table-column
                   label="ItemID"
                   show-overflow-tooltip
-                  width="120">
+                  width="180">
                 <template slot-scope="scope">
                   <div>{{ scope.row.item_id }}</div>
                 </template>
@@ -192,7 +192,7 @@
                   label="数量"
                   align="center"
                   header-align="center"
-                  width="180">
+                  width="100">
                 <template slot-scope="scope">
                   <div class="zi">{{ scope.row.qty }}</div>
                 </template>

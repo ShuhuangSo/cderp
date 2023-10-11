@@ -20,9 +20,9 @@
         <span slot="label"><i class="el-icon-truck"></i> 发仓运单</span>
         <MelShip :shipStatusName="shipStatusName" :shipWaitCheck="shipWaitCheck"></MelShip>
       </el-tab-pane>
-      <el-tab-pane :lazy="true" label="FBM库存" name="third" v-if="permission.fbmStock">
+      <el-tab-pane :lazy="true" label="FBM库存" name="shop_stock" v-if="permission.fbmStock">
         <span slot="label"><i class="el-icon-school"></i> FBM库存</span>
-        <MelShopStock></MelShopStock>
+        <MelShopStock :p_shop_id="p_shop_id" :p_filter_name="p_filter_name"></MelShopStock>
       </el-tab-pane>
       <el-tab-pane :lazy="true" label="中转仓" name="four" v-if="permission.tranStock">
         <span slot="label"><i class="el-icon-house"></i> 中转仓</span>
@@ -66,7 +66,9 @@ export default {
       activeName: this.$route.query.activeName?this.$route.query.activeName:'ship',
       buyStatusName: this.$route.query.activeName==='purchase'?this.$route.query.partName:'',
       shipStatusName: this.$route.query.activeName==='ship'?this.$route.query.partName:'',
+      p_shop_id: this.$route.query.partName?this.$route.query.partName:'',
       shipWaitCheck: this.$route.query.value==='true'?this.$route.query.value:'',
+      p_filter_name: this.$route.query.value?this.$route.query.value:'',
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission'))
     }
