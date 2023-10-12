@@ -49,6 +49,10 @@ axios.interceptors.response.use(success => {
         Message.error({message: '身份验证过期，请重新登录！'});
         window.localStorage.removeItem('tokenStr');
         router.replace('/');
+    }  else if (error.response.status == 503) {
+        Message.error({message: '系统升级中...'});
+        window.localStorage.removeItem('tokenStr');
+        router.replace('/');
     } else {
         if (error.response.data.msg) {
             Message.error({message: error.response.data.msg});
