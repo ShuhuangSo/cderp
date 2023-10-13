@@ -8,6 +8,7 @@ axios.interceptors.request.use(config => {
     //如果存在token，请求携带这个token
     if (window.localStorage.getItem('tokenStr')) {
         config.headers['Authorization'] = window.localStorage.getItem('tokenStr');
+        config.headers['app-ver'] = 131; // 软件版本
     }
     return config;
 }, error => {
@@ -53,7 +54,11 @@ axios.interceptors.response.use(success => {
         Message.error({message: '系统升级中...'});
         window.localStorage.removeItem('tokenStr');
         router.replace('/');
-    } else {
+    }  else if (error.response.status == 555) {
+        Message.error({message: 'app版本过低，请刷新页面更新软件版本'});
+        window.localStorage.removeItem('tokenStr');
+        router.replace('/');
+    }  else {
         if (error.response.data.msg) {
             Message.error({message: error.response.data.msg});
         } else {

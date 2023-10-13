@@ -66,7 +66,7 @@ export default {
       activeName: this.$route.query.activeName?this.$route.query.activeName:'ship',
       buyStatusName: this.$route.query.activeName==='purchase'?this.$route.query.partName:'',
       shipStatusName: this.$route.query.activeName==='ship'?this.$route.query.partName:'',
-      p_shop_id: this.$route.query.partName?this.$route.query.partName:'',
+      p_shop_id: this.$route.query.shopID?this.$route.query.shopID:'',
       shipWaitCheck: this.$route.query.value==='true'?this.$route.query.value:'',
       p_filter_name: this.$route.query.value?this.$route.query.value:'',
       user: JSON.parse(window.sessionStorage.getItem('user')),

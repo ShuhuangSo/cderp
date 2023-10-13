@@ -278,7 +278,7 @@
           <el-descriptions-item label="当前缺货">
             <el-link
                 v-if="this.shop_info.out_stock"
-                @click.native="goDetail('shop_stock', 'shop', '&qty__lte=0&p_status__in=NORMAL,HOT_SALE,CLEAN')"
+                @click.native="goDetail2('shop_stock', '&qty__lte=0&p_status__in=NORMAL,HOT_SALE,CLEAN')"
                 :underline="false">
               <span class="out_stock">{{ this.shop_info.out_stock }}</span>
             </el-link>
@@ -435,12 +435,23 @@ export default {
         this.$router.push({
           path: '/melManage',
           query: {
-            partName: partName === 'shop'? this.shop : partName,
+            partName: partName,
             activeName: activeName,
             value: value,
           }
         });
       }
+
+    },
+    goDetail2(activeName, value){
+      this.$router.push({
+        path: '/melManage',
+        query: {
+          activeName: activeName,
+          shopID: this.shop,
+          value: value,
+        }
+      });
 
     },
     //改变销售统计时间
