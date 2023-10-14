@@ -596,7 +596,7 @@ export default {
   padding-bottom: 10px;
 }
 .main-win-big {
-  height: 400px;
+  min-height: 400px;
   padding-bottom: 10px;
 }
 

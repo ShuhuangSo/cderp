@@ -153,7 +153,7 @@
             <el-tag v-if="scope.row.is_ad" type="warning" size="mini" effect="dark">广告</el-tag>
             <el-tag v-if="scope.row.order_status!=='FINISHED'"
                     style="margin-left: 5px"
-                    type="danger" size="mini" effect="dark">
+                    :type="scope.row.order_status==='UNCHECK'?'warning':'danger'" size="mini" effect="dark">
               {{ scope.row.order_status | status }}</el-tag>
           </template>
         </el-table-column>
