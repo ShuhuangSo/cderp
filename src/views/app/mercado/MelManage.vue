@@ -68,7 +68,7 @@ export default {
       shipStatusName: this.$route.query.activeName==='ship'?this.$route.query.partName:'',
       p_shop_id: this.$route.query.shopID?this.$route.query.shopID:'',
       shipWaitCheck: this.$route.query.value==='true'?this.$route.query.value:'',
-      p_filter_name: this.$route.query.value?this.$route.query.value:'',
+      p_filter_name: this.$route.query.filterName?this.$route.query.filterName:'',
       user: JSON.parse(window.sessionStorage.getItem('user')),
       permission: JSON.parse(window.sessionStorage.getItem('ml_permission'))
     }

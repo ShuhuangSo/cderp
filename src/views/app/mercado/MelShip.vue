@@ -479,6 +479,18 @@
               </el-dropdown>
             </div>
 
+            <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING'">
+              <el-dropdown @command="handleShipOp">
+                <el-button :disabled="!scope.row.s_number" size="mini" type="danger" plain round>
+                  <i class="el-icon-arrow-down"></i> 打印
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item :disabled="!scope.row.s_number" :command="{type:'print_receipt', num:scope.row.s_number}">打印物流交运单</el-dropdown-item>
+                  <el-dropdown-item :disabled="!scope.row.s_number" :command="{type:'print_box', num:scope.row.s_number}">打印物流箱唛</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+
             <div style="margin-top: 5px" v-if="scope.row.s_status!=='PREPARING'">
               <el-dropdown @command="handleShipOp">
                 <el-button size="mini"
@@ -1265,6 +1277,38 @@ export default {
           });
         })
 
+      }
+
+      // 打印盛德交运单
+      if (command['type'] === 'print_receipt') {
+        const loading = this.$loading({
+          lock: true,
+          text: '正在生成标签',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['num'], 'label_type': 'RECEIPT'}).then(resp => {
+          loading.close();
+          if (resp.status === 'success') {
+            window.open(resp.link, '_blank')
+          }
+        })
+      }
+
+      // 打印盛德箱唛
+      if (command['type'] === 'print_box') {
+        const loading = this.$loading({
+          lock: true,
+          text: '正在生成标签',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['num'], 'label_type': 'BOX'}).then(resp => {
+          loading.close();
+          if (resp.status === 'success') {
+            window.open(resp.link, '_blank')
+          }
+        })
       }
 
       // 添加标签

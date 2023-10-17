@@ -192,6 +192,10 @@ export default {
           name: '财务管理',
           value: '&op_module=FINANCE'
         },
+        {
+          name: '系统管理',
+          value: '&op_module=SYSTEM'
+        },
       ],
       type_group: [
         {

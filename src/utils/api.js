@@ -8,7 +8,7 @@ axios.interceptors.request.use(config => {
     //如果存在token，请求携带这个token
     if (window.localStorage.getItem('tokenStr')) {
         config.headers['Authorization'] = window.localStorage.getItem('tokenStr');
-        config.headers['app-ver'] = 132; // 软件版本
+        config.headers['app-ver'] = 133; // 软件版本
     }
     return config;
 }, error => {

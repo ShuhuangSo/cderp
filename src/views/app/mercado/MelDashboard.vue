@@ -449,7 +449,7 @@ export default {
         query: {
           activeName: activeName,
           shopID: this.shop,
-          value: value,
+          filterName: value,
         }
       });
 
