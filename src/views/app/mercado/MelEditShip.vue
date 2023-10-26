@@ -61,7 +61,6 @@
             </el-form-item>
 
             <el-form-item
-                v-if="ship.target==='FBM'"
                 label="目标FBM仓库" prop="fbm_warehouse">
               <el-select v-model="ship.fbm_warehouse"
                          style="width: 350px;"

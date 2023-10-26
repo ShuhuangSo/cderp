@@ -83,13 +83,26 @@
             <el-button size="small" @click="goShipInfo">变动清单管理</el-button>
           </el-badge>
 
-          <el-button
-              style="margin-left: 30px"
-              v-if="this.user.is_superuser"
-              :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
-              :loading="trackLoading"
-              @click="bulkUpdateTracking"
-              size="mini" type="primary" plain round icon="el-icon-refresh">刷新跟踪</el-button>
+          <el-dropdown @command="carrierOp"
+                       v-if="this.user.is_superuser"
+                       style="margin-left: 30px">
+            <el-button type="primary" plain round>
+              <i class="el-icon-arrow-down"></i> 物流操作
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item :disabled="s_status!=='PREPARING'" :command="{type:'refresh_order'}">刷新状态</el-dropdown-item>
+              <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
+                                :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+<!--          <el-button-->
+<!--              style="margin-left: 30px"-->
+<!--              v-if="this.user.is_superuser"-->
+<!--              :disabled="s_status==='PREPARING' || s_status==='FINISHED'"-->
+<!--              :loading="trackLoading"-->
+<!--              @click="bulkUpdateTracking"-->
+<!--              size="mini" type="primary" plain round icon="el-icon-refresh">刷新跟踪</el-button>-->
 
 
         </div>
@@ -372,6 +385,10 @@
             <div><span class="tt">截单日期: </span>{{scope.row.end_date}}</div>
             <div><span class="tt">航班日期: </span>{{scope.row.ship_date}}</div>
             <div><span class="tt_msg">{{scope.row.latest_track | ellipsis}}</span></div>
+            <div v-if="scope.row.s_status ==='PREPARING'">
+              <el-tag effect="plain" size="mini" v-if="scope.row.carrier_order_status==='WAIT'">待受理</el-tag>
+              <el-tag type="success" size="mini" effect="plain" v-if="scope.row.carrier_order_status==='ACCEPTED'">已受理</el-tag>
+            </div>
 <!--            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>-->
           </template>
         </el-table-column>
@@ -479,14 +496,15 @@
               </el-dropdown>
             </div>
 
-            <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING'">
+            <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING' && permission.ship_carrier_place">
               <el-dropdown @command="handleShipOp">
-                <el-button :disabled="!scope.row.s_number" size="mini" type="danger" plain round>
-                  <i class="el-icon-arrow-down"></i> 打印
+                <el-button size="mini" type="danger" plain round>
+                  <i class="el-icon-arrow-down"></i> 物流
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item :disabled="!scope.row.s_number" :command="{type:'print_receipt', num:scope.row.s_number}">打印物流交运单</el-dropdown-item>
-                  <el-dropdown-item :disabled="!scope.row.s_number" :command="{type:'print_box', num:scope.row.s_number}">打印物流箱唛</el-dropdown-item>
+                  <el-dropdown-item :disabled="scope.row.carrier !== '盛德物流'" :command="{type:'place_order', obj:scope.row}">物流交运</el-dropdown-item>
+                  <el-dropdown-item :disabled="scope.row.carrier_order_status !== 'ACCEPTED'" :command="{type:'print_receipt', num:scope.row.s_number}">打印物流交运单</el-dropdown-item>
+                  <el-dropdown-item :disabled="scope.row.carrier_order_status !== 'ACCEPTED'" :command="{type:'print_box', num:scope.row.s_number}">打印物流箱唛</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -680,17 +698,41 @@
           <el-button size="small" @click="closeTrackWindows">关 闭</el-button>
         </span>
     </el-dialog>
+
+    <!--    物流商交运弹窗-->
+    <el-dialog
+        title="物流在线交运"
+        :visible.sync="carrierOrderVisible"
+        :key="timer"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <div>
+        <ShengDeCreateOrder ref="place_order"
+                            @placeOrderLoadingTrue="carrierOrderLoading=true"
+                            @placeOrderLoadingFalse="carrierOrderLoading=false"
+                            @closePlaceOrderWindow="closePlaceOrderWindow"
+                            :ship_obj="ship_obj"></ShengDeCreateOrder>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="carrierOrderVisible=false">关 闭</el-button>
+        <el-button size="small" type="primary" :loading="carrierOrderLoading" @click="submitPlaceOrder">确认交运</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import moment from "moment/moment";
 import MelShipAttachment from "@/components/app/mercado/MelShipAttachment";
+import ShengDeCreateOrder from "@/components/app/mercado/ShengDeCreateOrder";
 
 export default {
   name: "MelShip",
-  props: ["shipStatusName", 'shipWaitCheck'],
-  components: {MelShipAttachment},
+  props: ["shipStatusName", 'shipWaitCheck', ],
+  components: {MelShipAttachment, ShengDeCreateOrder},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -713,6 +755,9 @@ export default {
       bookVisible: false, // fbm预约
       book_date: '', //预约日期
       ship_id: null,
+      ship_obj: null, // 选中的运单
+      carrierOrderVisible: false, // 物流交运弹窗
+      carrierOrderLoading: false, // 物流交运loading
       postageVisible: false, // 运费弹窗
       shipping_fee: 0, // 运费
       extraVisible: false, //杂费弹窗
@@ -830,11 +875,26 @@ export default {
     this.checkNotify()
   },
   methods:{
+    // 运单物流交运
+    submitPlaceOrder() {
+      this.$refs.place_order.submitOrder();
+    },
+    //关闭物流交运窗口
+    closePlaceOrderWindow(){
+      this.carrierOrderVisible = false
+      this.initShips()
+    },
+
     // 批量更新物流跟踪
     bulkUpdateTracking(){
-      this.trackLoading = true
+      const loading = this.$loading({
+        lock: true,
+        text: '正在刷新中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       this.getRequest('/api/ml_ship/bulk_update_tracking/').then(resp => {
-        this.trackLoading = false
+        loading.close();
         if (resp) {
           this.initShips()
         }
@@ -1180,6 +1240,30 @@ export default {
       this.noteVisible = true
     },
 
+    //物流操作
+    carrierOp(command){
+      // 刷新状态
+      if (command['type'] === 'refresh_order') {
+        const loading = this.$loading({
+          lock: true,
+          text: '正在刷新中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        this.getRequest('/api/ml_ship/check_sd_order_status/').then(resp => {
+          loading.close();
+          if (resp) {
+            this.initShips()
+          }
+        })
+      }
+
+      // 刷新跟踪
+      if (command['type'] === 'refresh_tracking') {
+        this.bulkUpdateTracking()
+      }
+    },
+
     // 运单更多操作
     handleShipOp(command) {
 
@@ -1309,6 +1393,28 @@ export default {
             window.open(resp.link, '_blank')
           }
         })
+      }
+
+      // 盛德物流交运
+      if (command['type'] === 'place_order') {
+        if (command['obj'].carrier_order_status) {
+          this.$confirm('运单已经交运，是否再次交运?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.timer = new Date().getTime();
+            this.ship_obj = command['obj']
+            this.carrierOrderVisible = true
+          })
+        } else {
+
+          this.timer = new Date().getTime();
+          this.ship_obj = command['obj']
+          this.carrierOrderVisible = true
+
+        }
+
       }
 
       // 添加标签

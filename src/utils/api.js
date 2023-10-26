@@ -9,7 +9,7 @@ axios.interceptors.request.use(config => {
     if (window.localStorage.getItem('tokenStr')) {
         config.headers['Authorization'] = window.localStorage.getItem('tokenStr');
     }
-    config.headers['app-ver'] = 133; // 软件版本
+    config.headers['app-ver'] = 134; // 软件版本
     return config;
 }, error => {
     console.log(error);
