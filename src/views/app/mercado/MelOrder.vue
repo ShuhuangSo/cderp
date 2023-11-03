@@ -151,9 +151,16 @@
               </el-link>
               </div>
             <el-tag v-if="scope.row.is_ad" type="warning" size="mini" effect="dark">广告</el-tag>
-            <el-tag v-if="scope.row.order_status!=='FINISHED'"
+
+            <el-tag v-if="scope.row.order_status==='UNCHECK'"
                     style="margin-left: 5px"
-                    :type="scope.row.order_status==='UNCHECK'?'warning':'danger'" size="mini" effect="dark">
+                    type="warning"
+                    size="mini" effect="dark">
+              {{ scope.row.order_status | status }}</el-tag>
+            <el-tag v-if="scope.row.order_status==='RETURN' || scope.row.order_status==='CASE' || scope.row.order_status==='CANCEL'"
+                    style="margin-left: 5px"
+                    type="danger"
+                    size="mini" effect="dark">
               {{ scope.row.order_status | status }}</el-tag>
           </template>
         </el-table-column>
@@ -349,6 +356,9 @@
     >
       <div style="padding-left: 30px;padding-right: 30px">
 
+        <h3 style="color: #409EFF">订单状态</h3>
+        <el-tag>
+          {{ this.orderDetail.order_status | status }}</el-tag>
         <h3 style="color: #409EFF">买家信息</h3>
         <el-descriptions :column="1" size="medium" :label-style="LS">
           <el-descriptions-item label="收件人">{{ this.orderDetail.buyer_name }}</el-descriptions-item>
@@ -587,9 +597,11 @@ export default {
     },
     //订单状态格式化
     status: function (value) {
+      if (value==='FINISHED') return '已完成';
       if (value==='RETURN') return '退货';
       if (value==='CASE') return 'CASE';
       if (value==='CANCEL') return '取消';
+      if (value==='PROCESS') return '仓库处理中';
       if (value==='UNCHECK') return '未核算';
     },
     //图片地址格式化
