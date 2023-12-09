@@ -19,6 +19,14 @@ SKU命名工具
               </el-input>
             </el-form-item>
 
+            <el-form-item label="产品名称后缀">
+              <el-input
+                  style="width: 300px;"
+                  placeholder="可选"
+                  v-model="after_name">
+              </el-input>
+            </el-form-item>
+
             <el-form-item label="SKU编号前缀">
               <el-input
                   style="width: 300px;"
@@ -27,10 +35,18 @@ SKU命名工具
               </el-input>
             </el-form-item>
 
+            <el-form-item label="SKU编号后缀">
+              <el-input
+                  style="width: 300px;"
+                  placeholder="可选"
+                  v-model="after_code">
+              </el-input>
+            </el-form-item>
+
             <el-form-item label="SKU起始编号">
               <el-input
                   style="width: 300px;"
-                  placeholder="请输入"
+                  placeholder="请输入数字编号"
                   v-model="start_num">
               </el-input>
             </el-form-item>
@@ -40,7 +56,7 @@ SKU命名工具
                   style="width: 300px;"
                   type="textarea"
                   :rows="10"
-                  placeholder="请输入型号,多个型号换行录入"
+                  placeholder="请输入型号,多个型号换行录入,不要带空格"
                   v-model="model_group">
               </el-input>
             </el-form-item>
@@ -50,7 +66,7 @@ SKU命名工具
                   style="width: 300px;"
                   type="textarea"
                   :rows="10"
-                  placeholder="请输入颜色(图案),多个请换行录入"
+                  placeholder="请输入颜色(图案),多个请换行录入,不要带空格"
                   v-model="color_group">
               </el-input>
             </el-form-item>
@@ -122,7 +138,9 @@ export default {
   data(){
     return{
       pre_name: '定制-外4角透明', // 产品名称前缀
+      after_name: '', // 产品名称后缀
       pre_code: 'B', // 编号前缀
+      after_code: '', // 编号后缀
       start_num: '10002', // SKU起始编号
       main_order: '1', // 主排序
       model_group: '三星A12\n' +
@@ -173,13 +191,47 @@ export default {
       this.copyText(copy_value)
       this.$message.success('已复制！')
     },
+    //检查数组中是否存在重复元素
+    checkList(arr){
+      // 创建一个空对象 obj 作为记录已经遍历过的元素
+      let obj = {};
+
+      for (let i = 0; i < arr.length; i++) {
+        if (!obj[arr[i]]) {
+          // 如果当前元素不在 obj 中，则将其添加到 obj 中并设置值为 true
+          obj[arr[i]] = true;
+        } else {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    //创建列表
     createList(){
+      let s = !isNaN(parseInt(this.start_num)) && isFinite(this.start_num)
+      if(!s) {
+        this.$message.error('起始编号有误')
+        return;
+      }
+
       this.p_list = []
-      this.pre_name = this.pre_name.trim()
-      this.pre_code = this.pre_code.trim()
+      this.pre_name = this.pre_name.replace(/\s/g, "") //去除空格
+      this.after_name = this.after_name.replace(/\s/g, "") //去除空格
+      this.pre_code = this.pre_code.replace(/\s/g, "") //去除空格
+      this.after_code = this.after_code.replace(/\s/g, "") //去除空格
 
       let model_list = this.model_group.split('\n')
       let color_list = this.color_group.split('\n')
+
+      if(this.checkList(model_list)){
+        this.$message.error('产品型号有重复')
+        return;
+      }
+      if(this.checkList(color_list)){
+        this.$message.error('颜色(图案)有重复')
+        return;
+      }
 
       // 生成数据表
       let n = 0
@@ -189,8 +241,8 @@ export default {
             let num = parseInt(this.start_num) + n
             let sku = `${this.pre_code}${num}`
             this.p_list.push({
-              'sku': sku,
-              'name': this.is_add_sku?`${this.pre_name}-${m}-${c}-${sku}`:`${this.pre_name}-${m}-${c}`
+              'sku': sku + this.after_code,
+              'name': this.is_add_sku?`${this.pre_name}-${m}-${c}-${sku}${this.after_name}`:`${this.pre_name}-${m}-${c}${this.after_name}`
             })
             n += 1
           })
@@ -201,8 +253,8 @@ export default {
             let num = parseInt(this.start_num) + n
             let sku = `${this.pre_code}${num}`
             this.p_list.push({
-              'sku': sku,
-              'name': this.is_add_sku?`${this.pre_name}-${m}-${c}-${sku}`:`${this.pre_name}-${m}-${c}`
+              'sku': sku + this.after_code,
+              'name': this.is_add_sku?`${this.pre_name}-${m}-${c}-${sku}${this.after_name}`:`${this.pre_name}-${m}-${c}${this.after_name}`
             })
             n += 1
           })
