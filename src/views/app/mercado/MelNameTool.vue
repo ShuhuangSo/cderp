@@ -10,7 +10,7 @@ SKU命名工具
         </div>
 
         <div>
-          <el-form ref="shipForm" :rules="rules" :model="ship" label-width="180px">
+          <el-form ref="shipForm" label-width="180px">
             <el-form-item label="产品名称前缀">
               <el-input
                   style="width: 300px;"
@@ -137,24 +137,24 @@ export default {
   name: "MelNameTool",
   data(){
     return{
-      pre_name: '定制-外4角透明', // 产品名称前缀
+      pre_name: '', // 产品名称前缀
       after_name: '', // 产品名称后缀
-      pre_code: 'B', // 编号前缀
+      pre_code: '', // 编号前缀
       after_code: '', // 编号后缀
-      start_num: '10002', // SKU起始编号
+      start_num: '', // SKU起始编号
       main_order: '1', // 主排序
-      model_group: '三星A12\n' +
-          '三星A13\n' +
-          '三星A14\n' +
-          '三星A15\n' +
-          '三星A16', // 产品型号列表
-      color_group: '红色\n' +
-          '蓝色\n' +
-          '绿色\n' +
-          '黑色\n' +
-          '白色', // 颜色(图案)列表
+      model_group: '', // 产品型号列表
+      color_group: '', // 颜色(图案)列表
       is_add_sku: false, // 产品名称追加SKU编码
       p_list: []
+    }
+  },
+  mounted() {
+    if (window.localStorage.getItem('name_tool')) {
+      let name_tool = JSON.parse(window.localStorage.getItem('name_tool'));
+      this.pre_name = name_tool.pre_name
+      this.pre_code = name_tool.pre_code
+      this.start_num = name_tool.start_num
     }
   },
   methods:{
@@ -261,6 +261,12 @@ export default {
         })
       }
 
+      //存储信息
+      let name_tool = {}
+      name_tool['pre_name'] = this.pre_name
+      name_tool['pre_code'] = this.pre_code
+      name_tool['start_num'] = parseInt(this.start_num) + n
+      window.localStorage.setItem('name_tool', JSON.stringify(name_tool));
 
     }
   }
