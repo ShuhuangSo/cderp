@@ -427,6 +427,11 @@
                   effect="dark" type="info">
                 <span style="font-weight: bold">{{ scope.row.tag_name }}</span>
               </el-tag>
+            <el-link @click.native="editTagWindow(scope.row)"
+                     v-if="!scope.row.tag_name"
+                     title="添加标签"
+                     class="small_icon"
+                     :underline="false"><i class="el-icon-edit-outline"></i></el-link>
           </template>
         </el-table-column>
 
@@ -628,6 +633,22 @@
         <el-tag :color="tag.tag_color"
                 v-if="tag.tag_name"
                 size="medium" effect="dark" style="border: none">{{ tag.tag_name }}</el-tag>
+      </div>
+
+      <el-divider>常用标签</el-divider>
+      <div>
+        <el-tag color="#ff8c00"
+                @click="set_tag('已提交', '#ff8c00')"
+                size="medium" effect="dark" style="border: none">已提交</el-tag>
+        <el-tag color="#00ced1"
+                @click="set_tag('已确认预约', '#00ced1')"
+                size="medium" effect="dark" style="border: none; margin-left: 5px">已确认预约</el-tag>
+        <el-tag color="#90ee90"
+                @click="set_tag('已签收', '#90ee90')"
+                size="medium" effect="dark" style="border: none; margin-left: 5px">已签收</el-tag>
+        <el-tag color="#c71585"
+                @click="set_tag('已截单', '#c71585')"
+                size="medium" effect="dark" style="border: none; margin-left: 5px">已截单</el-tag>
       </div>
       <span slot="footer" class="dialog-footer">
     <el-button @click="tagVisible = false">取 消</el-button>
@@ -875,6 +896,11 @@ export default {
     this.checkNotify()
   },
   methods:{
+    //设置标签
+    set_tag(name, color){
+      this.tag.tag_name = name
+      this.tag.tag_color = color
+    },
     // 运单物流交运
     submitPlaceOrder() {
       this.$refs.place_order.submitOrder();

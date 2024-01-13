@@ -67,7 +67,7 @@
 
               <el-table-column
                   label="操作"
-                  width="200"
+                  width="300"
                   align="center"
                   header-align="center"
               >
@@ -91,6 +91,13 @@
                       type="text"
                       size="small">
                     美客多权限
+                  </el-button>
+                  <el-divider direction="vertical"></el-divider>
+                  <el-button
+                      @click="goGuiShu(scope.row)"
+                      type="text"
+                      size="small">
+                    归属权转移
                   </el-button>
                 </template>
               </el-table-column>
@@ -293,6 +300,52 @@
   </span>
       </el-dialog>
 
+      <!--      归属权转移弹窗-->
+      <el-dialog
+          title="归属权转移"
+          top="60px"
+          :destroy-on-close="true"
+          :visible.sync="guishuVisible"
+          width="400">
+        <el-form label-width="100px">
+          <el-alert
+              title="本次操作将转移所有产品库，未完成运单，中转仓库产品的归属权，请谨慎操作！"
+              type="warning"
+              :closable="false"
+              show-icon>
+          </el-alert>
+
+          <el-form-item style="margin-top: 15px" label="转出用户" >
+            {{this.user.first_name}}
+          </el-form-item>
+
+          <el-form-item label="目标用户">
+            <el-select v-model="guishu.target_id" placeholder="请选择">
+              <el-option
+                  v-for="item in users"
+                  :key="item.id"
+                  :label="item.first_name"
+                  :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+
+          <el-form-item label="确认转移">
+            <el-switch
+                v-model="guishu.check_status">
+            </el-switch>
+          </el-form-item>
+
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+    <el-button @click="guishuVisible=false">取 消</el-button>
+    <el-button type="primary" :disabled="!guishu.check_status || !guishu.target_id"
+               :loading="guishu_loading"
+               @click="submit_guishu">确 定</el-button>
+
+  </span>
+      </el-dialog>
     </div>
 
   </div>
@@ -332,9 +385,15 @@ export default {
     return {
       users: [],
       loading: false,
+      guishu_loading: false,
       searchValue: '',
       is_active: true,
       dialogVisible: false,
+      guishuVisible: false, //归属弹窗
+      guishu: {
+        target_id: null,
+        check_status: false
+      },
       user_type: 'STAFF',
       user: {
         id: null,
@@ -376,6 +435,17 @@ export default {
     this.initUsers();
   },
   methods: {
+    //提交归属转移
+    submit_guishu(){
+      this.guishu_loading = true
+      this.postRequest('api/settings/all_ml_permission/guishu/', {'from_id':this.user.id, 'target_id': this.guishu.target_id}).then(resp => {
+        this.guishu_loading = false
+        if (resp) {
+          this.guishuVisible = false
+
+        }
+      })
+    },
     // 点击tab事件
     handleClick(tab, event) {
       this.user_type = tab.name;
@@ -476,6 +546,12 @@ export default {
           name: obj.first_name
         }
       })
+    },
+
+    //归属权转移
+    goGuiShu(obj) {
+      this.user = Object.assign({}, obj)
+      this.guishuVisible = true
     },
 
     // 格式化日期时间
