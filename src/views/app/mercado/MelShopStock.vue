@@ -126,6 +126,12 @@
               :value="item.value">
           </el-option>
         </el-select>
+
+        <el-button
+                   style="margin-left: 10px"
+                   :disabled="!shopID"
+                   @click="getAvailableTransStock">查看中转有货产品
+        </el-button>
       </div>
 
       <div>
@@ -884,6 +890,19 @@ export default {
             this.$refs.stockNum7.start()
             this.$refs.stockNum8.start()
           })
+        }
+      })
+    },
+
+    //获取中转仓有货产品
+    getAvailableTransStock() {
+      this.loading = true
+      let url = 'api/ml_shopstock/sycn_trans_stock/'
+      this.postRequest(url, {'id': this.shopID}).then(resp => {
+        if (resp.result) {
+          this.searchValue = ''
+          this.filter_name = '&trans_qty__gt=0'
+          this.initShopStock()
         }
       })
     },

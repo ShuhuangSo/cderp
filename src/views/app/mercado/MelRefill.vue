@@ -224,7 +224,7 @@
       <div class="pagination">
         <el-pagination
             background
-            :page-sizes="[20, 30, 40, 50, 100]"
+            :page-sizes="[50, 100]"
             @current-change="currentChange"
             @size-change="sizeChange"
             layout="sizes, prev, pager, next, jumper, ->, total"
@@ -251,7 +251,7 @@ export default {
       c_loading: false,
       total: 0, // 总条数
       page: 1,  // 当前页
-      size: 20,  // 页大小
+      size: 50,  // 页大小
       searchValue: '',
       shopID: '',
       shops: null,

@@ -93,6 +93,7 @@
               <el-dropdown-item :disabled="s_status!=='PREPARING'" :command="{type:'refresh_order'}">刷新状态</el-dropdown-item>
               <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
                                 :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
+              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">盛德对账</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
 
@@ -742,6 +743,28 @@
         </span>
     </el-dialog>
 
+    <!--    盛德对账弹窗-->
+    <el-dialog
+        title="物流对账（盛德）"
+        :visible.sync="sdBillVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <div>
+        <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="Excel复制粘贴 SO号	FBM号	件数	计费重量	单价	运费"
+            v-model="sdBillInput">
+        </el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="sdBillVisible=false">关 闭</el-button>
+        <el-button size="small" type="primary" @click="submitBillInput">确认交运</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -788,6 +811,8 @@ export default {
       attachVisible: false, //运单附件弹窗
       noteVisible: false, //运单备注弹窗
       shipNote: null, //运单备注内容
+      sdBillVisible: false, //盛德对账弹窗
+      sdBillInput: '', //盛德对账输入
       trackVisible: false, //物流跟踪弹窗
       trackLoading: false, //物流跟踪loading
       trackMessageList: null, //跟踪信息
@@ -896,6 +921,24 @@ export default {
     this.checkNotify()
   },
   methods:{
+    //提交物流对账输入
+    submitBillInput(){
+      let ships = []
+      let res = this.sdBillInput.split(" \n") //分隔回车
+      res.forEach(item=>{
+        let it = item.split("\t"); //分隔excel列
+        ships.push({
+          's_number': it[0],
+          'envio_number': it[1],
+          'total_box': it[2],
+          'weight': it[3],
+          'price': it[4],
+          'shipping_fee': it[5],
+        })
+      })
+      console.log(ships)
+    },
+
     //设置标签
     set_tag(name, color){
       this.tag.tag_name = name
@@ -1268,6 +1311,11 @@ export default {
 
     //物流操作
     carrierOp(command){
+      // 盛德对账
+      if (command['type'] === 'bill_input') {
+        this.sdBillVisible = true
+      }
+
       // 刷新状态
       if (command['type'] === 'refresh_order') {
         const loading = this.$loading({
