@@ -93,7 +93,7 @@
               <el-dropdown-item :disabled="s_status!=='PREPARING'" :command="{type:'refresh_order'}">刷新状态</el-dropdown-item>
               <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
                                 :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
-              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">盛德对账</el-dropdown-item>
+              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">物流对账</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
 
@@ -749,19 +749,137 @@
         :visible.sync="sdBillVisible"
         :destroy-on-close="true"
         :close-on-click-modal="false"
-        width="800px"
+        width="1000px"
     >
       <div>
         <el-input
+            v-if="this.bill_win==='INPUT'"
             type="textarea"
             :rows="5"
             placeholder="Excel复制粘贴 SO号	FBM号	件数	计费重量	单价	运费"
             v-model="sdBillInput">
         </el-input>
+
+        <el-table
+            ref="billTable"
+            v-if="this.bill_win==='CHECK'"
+            size="mini"
+            :data="billCheckShips"
+            :header-cell-style="{background:'#fafafa'}"
+            style="width: 100%">
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="Envio/SO号">
+            <template slot-scope="scope">
+              <div>{{ scope.row.in_envio_number}}</div>
+              <div>{{ scope.row.in_s_number}}</div>
+              <div v-if="!scope.row.id"><el-tag type="danger">运单不存在！</el-tag></div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="批次号/店铺">
+            <template slot-scope="scope">
+              <div>{{ scope.row.batch}}</div>
+              <div>{{ scope.row.shop}}</div>
+              <el-link
+                       title="物流结算"
+                       :class="scope.row.logi_fee_clear?'small_icon_true':'small_icon'"
+                       :underline="false"><i class="el-icon-money"></i></el-link>
+
+              <el-tooltip effect="dark" :disabled='!scope.row.note' :content="scope.row.note" placement="top">
+                <el-link @click.native="openNote(scope.row)"
+                         title="备注"
+                         :class="scope.row.note?'small_icon_true':'small_icon'"
+                         :underline="false"><i class="el-icon-chat-line-square"></i></el-link>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="运单状态">
+            <template slot-scope="scope">
+              {{ scope.row.s_status | ship_status}}
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="80"
+              align="center"
+              header-align="center"
+              label="件数">
+            <template slot-scope="scope">
+              <div style="font-weight: bold">{{ scope.row.in_total_box}}</div>
+              <div style="font-weight: bold">{{ scope.row.total_box}}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="80"
+              align="center"
+              header-align="center"
+              label="运价">
+            <template slot-scope="scope">
+              <div style="font-weight: bold">{{ scope.row.in_price}}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="80"
+              align="center"
+              header-align="center"
+              label="计费重量">
+            <template slot-scope="scope">
+              <div style="font-weight: bold">{{ scope.row.in_weight}}</div>
+              <div style="font-weight: bold">{{ scope.row.weight}}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="150"
+              align="center"
+              header-align="center"
+              label="运费">
+            <template slot-scope="scope">
+              <el-input-number
+                  style="width: 100%"
+                  v-model="scope.row.in_shipping_fee"
+                  :precision="2"
+                  controls-position="right"
+                  :min="0"></el-input-number>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              width="100"
+              align="center"
+              header-align="center"
+              label="对账">
+            <template slot-scope="scope">
+              <el-switch
+                  v-model="scope.row.confirmed">
+              </el-switch>
+            </template>
+          </el-table-column>
+
+        </el-table>
       </div>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="sdBillVisible=false">关 闭</el-button>
-        <el-button size="small" type="primary" @click="submitBillInput">确认交运</el-button>
+        <el-button size="small" type="primary"
+                   v-if="this.bill_win==='INPUT'"
+                   :loading="billLoading"
+                   @click="submitBillInput">检 查</el-button>
+        <el-button size="small" type="primary"
+                   v-if="this.bill_win==='CHECK'"
+                   :loading="billLoading"
+                   @click="submitBillCheck">确认对账</el-button>
         </span>
     </el-dialog>
 
@@ -812,7 +930,10 @@ export default {
       noteVisible: false, //运单备注弹窗
       shipNote: null, //运单备注内容
       sdBillVisible: false, //盛德对账弹窗
+      billLoading: false, //盛德对账loading
       sdBillInput: '', //盛德对账输入
+      bill_win: 'INPUT', //对账窗口显示
+      billCheckShips: [], // 对账数据
       trackVisible: false, //物流跟踪弹窗
       trackLoading: false, //物流跟踪loading
       trackMessageList: null, //跟踪信息
@@ -912,6 +1033,15 @@ export default {
       if (value === '&platform=NOON') return 'Noon';
       return '';
     },
+    //平台格式化
+    ship_status: function (value) {
+      if (value === 'PREPARING') return '备货中';
+      if (value === 'SHIPPED') return '已发货';
+      if (value === 'BOOKED') return '已预约';
+      if (value === 'FINISHED') return '已完成';
+      if (value === 'ERROR') return '异常';
+      return '';
+    },
 
   },
 
@@ -928,15 +1058,33 @@ export default {
       res.forEach(item=>{
         let it = item.split("\t"); //分隔excel列
         ships.push({
-          's_number': it[0],
-          'envio_number': it[1],
-          'total_box': it[2],
-          'weight': it[3],
-          'price': it[4],
-          'shipping_fee': it[5],
+          'in_s_number': it[0],
+          'in_envio_number': it[1],
+          'in_total_box': it[2],
+          'in_weight': it[3],
+          'in_price': it[4],
+          'in_shipping_fee': it[5],
         })
       })
-      console.log(ships)
+      this.billLoading = true
+      this.postRequest('api/ml_ship/bill_check/', {'ships': ships}).then(resp => {
+      this.billLoading = false
+        if (resp) {
+          this.billCheckShips = resp.ships
+          this.bill_win = 'CHECK'
+        }
+      })
+    },
+
+    //提交物流对账
+    submitBillCheck(){
+      this.billLoading = true
+      this.postRequest('api/ml_ship/bill_submit/', {'ships': this.billCheckShips}).then(resp => {
+        this.billLoading = false
+        if (resp.ships) {
+          this.billCheckShips = resp.ships
+        }
+      })
     },
 
     //设置标签
@@ -1313,6 +1461,7 @@ export default {
     carrierOp(command){
       // 盛德对账
       if (command['type'] === 'bill_input') {
+        this.bill_win = 'INPUT'
         this.sdBillVisible = true
       }
 
