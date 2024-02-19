@@ -477,6 +477,9 @@
                 {{ scope.row.sku }}
               </el-link>
               <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+              <el-tag v-if="scope.row.create_type==='MOVE'"
+                      style="margin-left: 5px"
+                      size="mini" effect="dark">迁移</el-tag>
             </div>
             <div>{{ scope.row.p_name }}</div>
             <div class="packing">{{ scope.row.packing_name }} - {{ scope.row.packing_size }}</div>
@@ -567,6 +570,7 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+                <el-dropdown-item :command="{type:'move', obj:scope.row}">库存迁移</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
                                   v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
@@ -701,6 +705,7 @@
                 <el-dropdown-item :command="{type:'check_product', obj:scope.row}"
                                   v-if="permission.purchase_dataCheck">数据核查</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit_note', obj:scope.row}">编辑备注</el-dropdown-item>
+                <el-dropdown-item :command="{type:'move', obj:scope.row}">库存迁移</el-dropdown-item>
                 <el-dropdown-item :command="{type:'delete', id:scope.row.id}"
                                   v-if="permission.purchase_delete">删除</el-dropdown-item>
               </el-dropdown-menu>
@@ -1023,6 +1028,119 @@
         </span>
     </el-dialog>
 
+    <!--    迁移弹窗-->
+    <el-dialog
+        title="库存迁移"
+        :visible.sync="moveVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="800px"
+    >
+      <div>
+
+
+        <div>
+          <span style="font-weight: bold">迁出产品：</span><br>
+        </div>
+        <el-table
+            ref="fbmTable"
+            :data="move_from_list"
+            :header-cell-style="{background:'#fafafa'}"
+            style="width: 100%">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image | smpic"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="产品">
+            <template slot-scope="scope">
+              <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
+              </div>
+
+              <div>{{ scope.row.p_name }}</div>
+              <div><span class="remove">{{ scope.row.shop }} </span></div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="库存数量"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <div style="font-weight: bold">{{ scope.row.qty}}</div>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
+        <div style="margin-top: 20px">
+          <span style="font-weight: bold">目标SKU：</span>
+          <el-input v-model="target_sku"
+                    @change="move_check"
+                    style="width: 200px" placeholder="请输入目标SKU"></el-input>
+        </div>
+
+        <el-table
+            v-if="move_target_list.length"
+            ref="fbmTable"
+            :data="move_target_list"
+            :header-cell-style="{background:'#f0f9eb'}"
+            style="width: 100%">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image | smpic"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              label="产品">
+            <template slot-scope="scope">
+              <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
+              </div>
+
+              <div>{{ scope.row.p_name }}</div>
+              <div><span class="remove">{{ scope.row.shop }} </span></div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="迁移数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.move_qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="moveVisible=false">取 消</el-button>
+          <el-button size="small" type="primary" @click="summitMove">确认迁移</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -1059,6 +1177,25 @@ export default {
       noteVisible: false, // 编辑备注弹窗
       note_value: '', // 备注
       checkVisible: false, // 产品数据核查弹窗
+      moveVisible: false, // 迁移弹窗
+      move_from: {
+        id: null,
+        sku: '',
+        p_name: '',
+        image: '',
+        qty: 0,
+        shop: '',
+      }, //迁移产品
+      move_target: {
+        sku: '',
+        p_name: '',
+        image: '',
+        move_qty: 1,
+        shop: '',
+      }, //迁移产品
+      move_from_list: [],
+      move_target_list: [],
+      target_sku: '', //迁移目标sku
       productDetailVisible: false, // 产品详情弹窗
       timer: null,
       productID: null, // 产品id
@@ -1156,6 +1293,46 @@ export default {
     this.calcPurchases();
   },
   methods:{
+    //提交迁移
+    summitMove(){
+      if (this.move_target.move_qty > this.move_from.qty) {
+        this.$message.error('迁移数量有误！')
+        return ''
+      }
+      let data ={
+        'from_id': this.move_from.id,
+        'from_sku': this.move_from.sku,
+        'from_qty': this.move_from.qty,
+        'target_sku': this.move_target.sku,
+        'move_qty': this.move_target.move_qty,
+      }
+      this.postRequest('api/ml_purchase/move_sku/', data).then(resp => {
+        if (resp.code === 'success') {
+          this.moveVisible = false
+          this.initPurchaseList()
+        }
+      })
+    },
+    //产品迁移检查
+    move_check(){
+      if (this.target_sku === this.move_from.sku) {
+        this.$message.error('目标sku不能是源迁移产品！')
+        return ''
+      }
+      this.move_target_list = []
+      this.postRequest('api/ml_purchase/move_check/', {'sku': this.target_sku}).then(resp => {
+        if (resp) {
+          this.move_target.sku = resp.product.sku
+          this.move_target.p_name = resp.product.p_name
+          this.move_target.image = resp.product.image
+          this.move_target.shop = resp.product.shop
+          this.move_qty = 1
+
+          this.move_target_list.push(this.move_target)
+        }
+      })
+    },
+
     // 打开产品详情弹窗
     productDetail(sku){
       this.postRequest('api/ml_products/get_product_id/', {'sku': sku}).then(resp => {
@@ -1180,6 +1357,26 @@ export default {
       this.productDetailVisible = false;
     },
     handleProductOp(command){
+      //库存迁移
+      if (command['type'] === 'move') {
+        this.moveVisible = true
+        this.target_sku = ''
+        this.move_from_list = []
+        this.move_target_list = []
+
+        this.move_from.id = command['obj'].id
+        this.move_from.sku = command['obj'].sku
+        this.move_from.p_name = command['obj'].p_name
+        this.move_from.image = command['obj'].image
+        this.move_from.shop = command['obj'].shop
+        if (command['obj'].p_status === 'RECEIVED') {
+          this.move_from.qty = command['obj'].rec_qty
+        } else {
+          this.move_from.qty = command['obj'].pack_qty
+        }
+        this.move_from_list.push(this.move_from)
+      }
+
       // 数据核查
       if (command['type'] === 'check_product') {
         this.initPacking()
@@ -1546,5 +1743,8 @@ export default {
 }
 .item_main{
   margin-left: 20px;
+}
+.remove{
+  color: #cac6c6;
 }
 </style>
