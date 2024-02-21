@@ -26,6 +26,11 @@
 
             <el-button size="small" :type="s_status==='FINISHED'?'primary':''" @click="changeStatus('FINISHED')">已完成</el-button>
 
+            <el-button size="small"
+                       style="margin-left: 20px"
+                       icon="el-icon-warning-outline"
+                       :type="s_status==='ERROR'?'primary':''" @click="changeStatus('ERROR')">异常</el-button>
+
         </div>
 
 
@@ -481,6 +486,12 @@
                                     :disabled="!permission.ship_edit"
                                     :command="{type:'edit', id:scope.row.id}">编辑运单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'tag', obj:scope.row}">编辑标签</el-dropdown-item>
+                  <el-dropdown-item :disabled="!user.is_superuser"
+                                    v-if="scope.row.s_status==='SHIPPED' || scope.row.s_status==='BOOKED'"
+                                    :command="{type:'error', id:scope.row.id}">转入异常</el-dropdown-item>
+                  <el-dropdown-item :disabled="!user.is_superuser"
+                                    v-if="scope.row.s_status==='ERROR'"
+                                    :command="{type:'out_error', id:scope.row.id}">转回运输</el-dropdown-item>
                   <el-dropdown-item :disabled="!permission.ship_delete || !user.is_superuser && scope.row.user_id === 0"
                                     v-if="scope.row.s_status==='PREPARING'"
                                     :command="{type:'delete', id:scope.row.id}">删除运单</el-dropdown-item>
@@ -1681,7 +1692,47 @@ export default {
           }).catch(() => {
             this.$message({
               type: 'info',
-              message: '已取消删除'
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+
+      // 确认转入异常状态
+      if (command['type'] === 'error') {
+        this.$confirm('是否确认将运单转入异常?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //确认转入异常状态
+          this.postRequest('api/ml_ship/mark_error/', {'id': command['id']}).then(resp => {
+            this.initShips();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+
+      // 确认转出异常状态
+      if (command['type'] === 'out_error') {
+        this.$confirm('是否确认将运单转回运输?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          //确认转出异常状态
+          this.postRequest('api/ml_ship/mark_out_error/', {'id': command['id']}).then(resp => {
+            this.initShips();
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
             });
           });
         })

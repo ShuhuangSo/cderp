@@ -289,7 +289,7 @@
             style="margin-left: 50px;"
             ref="upload"
             name="excel"
-            :data="{'id': this.shopID}"
+            :data="{'id': this.shopID, 'mel_row': this.mel_row}"
             :headers="headers"
             :on-success="onSuccess"
             :auto-upload="false"
@@ -304,7 +304,11 @@
             <el-link href="/media/template/mercado_order_template.xlsx" target="_blank">美客多模板</el-link>
             <el-link style="margin-left: 10px" href="/media/template/invoice_report_template.xlsx" target="_blank">Noon模板1</el-link>
             <el-link style="margin-left: 10px" href="/media/template/old_consolidated_report_template.xlsx" target="_blank">Noon模板2</el-link>
+            <div style="margin-top: 10px">
+              美客多默认标题行数: <el-input-number v-model="mel_row" size="mini" controls-position="right"></el-input-number>
+            </div>
           </div>
+
         </el-upload>
 
       </div>
@@ -468,6 +472,7 @@ export default {
       width: '150px',
     },
       timer: '',
+      mel_row: window.localStorage.getItem('order_mel_row')?window.localStorage.getItem('order_mel_row'):3, //美客多订单上传默认标题行数
       // 批量上传认证
       headers: {
         Authorization: window.localStorage.getItem('tokenStr'),
@@ -679,6 +684,9 @@ export default {
       }
 
       this.uploadVisible = false;
+
+      //更新默认标题行
+      window.localStorage.setItem('order_mel_row', this.mel_row)
     },
     // 上传
     submitUpload() {
