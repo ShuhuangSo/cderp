@@ -442,6 +442,10 @@ export default {
         {
           code: 'NOON',
           name: 'Noon'
+        },
+        {
+          code: 'OZON',
+          name: 'OZON'
         }], //平台
       activeName: 'one',
       mlProduct:{

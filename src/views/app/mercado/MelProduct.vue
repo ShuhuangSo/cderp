@@ -580,7 +580,10 @@ export default {
     onSuccess(response, file, fileList) {
       this.loading = false;
       this.$refs.upload.clearFiles();
-      // this.$message.success(response.msg)
+      if (response.status === 'error') {
+        this.$message.error(response.msg)
+      }
+
       this.initMLProducts();
       this.uploadVisible = false;
     },

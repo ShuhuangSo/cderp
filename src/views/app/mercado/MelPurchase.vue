@@ -1239,6 +1239,10 @@ export default {
           name: 'Noon',
           value: '&platform=NOON'
         },
+        {
+          name: 'OZON',
+          value: '&platform=OZON'
+        },
       ],
     }
   },
@@ -1279,6 +1283,7 @@ export default {
     pf: function (value) {
       if (value === 'MERCADO') return '美客多';
       if (value === 'NOON') return 'Noon';
+      if (value === 'OZON') return 'OZON';
       return '';
     },
   },
