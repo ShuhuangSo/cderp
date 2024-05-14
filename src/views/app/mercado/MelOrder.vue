@@ -155,13 +155,19 @@
             <el-tag v-if="scope.row.order_status==='UNCHECK'"
                     style="margin-left: 5px"
                     type="warning"
-                    size="mini" effect="dark">
+                    size="mini">
               {{ scope.row.order_status | status }}</el-tag>
             <el-tag v-if="scope.row.order_status==='RETURN' || scope.row.order_status==='CASE' || scope.row.order_status==='CANCEL'"
                     style="margin-left: 5px"
                     type="danger"
                     size="mini" effect="dark">
               {{ scope.row.order_status | status }}</el-tag>
+
+            <el-tag v-if="!scope.row.finance_check1 && scope.row.platform === 'OZON'"
+                    style="margin-left: 5px"
+                    type="warning"
+                    size="mini">
+              待结算</el-tag>
           </template>
         </el-table-column>
 
@@ -254,7 +260,7 @@
             width="150">
           <template slot-scope="scope">
             <div :title="scope.row.order_time_bj | bjdate">
-              <span v-if="scope.row.platform === 'MERCADO'">{{ scope.row.order_time | date}}</span>
+              <span v-if="scope.row.platform === 'MERCADO' || scope.row.platform === 'OZON'">{{ scope.row.order_time | date}}</span>
               <span v-if="scope.row.platform === 'NOON'">{{ scope.row.order_time | date2}}</span>
             </div>
           </template>
@@ -374,19 +380,31 @@
         </el-descriptions>
 
           <h3 style="color: #409EFF">财务统计</h3>
-          <el-collapse :value="['1', '2', '3']">
+          <el-collapse :value="['1', '2', '3', '4']">
             <el-collapse-item title="销售费用" name="1">
               <div style="width: 500px">
                 <el-descriptions :column="1" size="medium" :label-style="LS">
                   <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item label="运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="佣金比例">{{ this.orderDetail.fee_rate | rate }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="FBO费用">{{ this.orderDetail.fbo_fee | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="最后一公里费用">{{ this.orderDetail.last_mile_fee | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="总运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="收单费用">{{ this.orderDetail.payment_fee | f_currency }}</el-descriptions-item>
                   <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="VAT税">{{ this.orderDetail.VAT | f_currency }}</el-descriptions-item>
                   <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="成交价">{{ this.orderDetail.invoice_price | f_currency }}</el-descriptions-item>
                   <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="优惠金额">{{ this.orderDetail.promo_coupon | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
                   <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                </el-descriptions>
+              </div>
+            </el-collapse-item>
+            <el-collapse-item  v-if="orderDetail.platform ==='OZON'" title="服务商费用" name="4">
+              <div style="width: 500px">
+                <el-descriptions :column="1"  size="medium" :label-style="LS">
+                  <el-descriptions-item label="手续费">{{ this.orderDetail.sp_fee | currency}}</el-descriptions-item>
+                  <el-descriptions-item label="费率">{{ this.orderDetail.sp_fee_rate | currency }}</el-descriptions-item>
                 </el-descriptions>
               </div>
             </el-collapse-item>
@@ -607,7 +625,10 @@ export default {
       if (value==='CASE') return 'CASE';
       if (value==='CANCEL') return '取消';
       if (value==='PROCESS') return '仓库处理中';
-      if (value==='UNCHECK') return '未核算';
+      if (value==='UNCHECK') return '待核算';
+      if (value==='WAIT_ASS') return '等待配货';
+      if (value==='WAIT_SHIP') return '等待发货';
+      if (value==='DELIVERED') return '已交付';
     },
     //图片地址格式化
     smpic: function (value) {

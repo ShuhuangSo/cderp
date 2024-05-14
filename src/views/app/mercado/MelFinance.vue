@@ -67,6 +67,7 @@
               @change="changeType" v-model="finance.f_type">
             <el-radio-button label="WD">店铺提现</el-radio-button>
             <el-radio-button label="EXC" v-if="permission.finance_exchangeList">资金结汇</el-radio-button>
+            <el-radio-button label="FEE">店铺费用</el-radio-button>
           </el-radio-group>
 
         </div>
@@ -86,6 +87,14 @@
                      :disabled="!shopID || !permission.finance_exchangeCreate"
                      type="success"
                      @click="openCreateEXC">新增结汇
+          </el-button>
+
+          <el-button icon="el-icon-plus"
+                     v-if="finance.f_type==='FEE'"
+                     style="margin-right: 10px"
+                     :disabled="!shopID"
+                     type="success"
+                     @click="openCreateFEE">新增费用
           </el-button>
         </div>
       </div>
@@ -221,6 +230,57 @@
 
         </el-table>
 
+<!--        店铺费用-->
+        <el-table
+            v-if="finance.f_type==='FEE'"
+            ref="financeTable"
+            :data="finances"
+            :header-cell-style="{background:'#fafafa'}"
+            v-loading="loading"
+            style="width: 100%">
+
+          <el-table-column
+              label="类型"
+              align="center"
+              header-align="center"
+              width="180">
+            <template slot-scope="scope">
+              <div>{{ scope.row.f_type | status}}</div>
+              <div style="color: #99a9bf" v-if="all_onway">{{ scope.row.shop_name}}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="费用类型"
+              align="center"
+              header-align="center"
+              width="100">
+            <template slot-scope="scope">
+              <div>{{ scope.row.currency | fee_type}}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="费用金额"
+              align="center"
+              header-align="center">
+            <template slot-scope="scope">
+              <div>{{ scope.row.income | currencyRMB }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="日期"
+              align="center"
+              header-align="center"
+              width="180">
+            <template slot-scope="scope">
+              <div>{{ scope.row.wd_date }}</div>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
         <div class="pagination">
           <el-pagination
               background
@@ -310,6 +370,50 @@
         </span>
     </el-dialog>
 
+    <!--    新增店铺费用弹窗-->
+    <el-dialog
+        title="店铺费用"
+        :visible.sync="createFEEVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="400px"
+    >
+      <div>
+        费用类型：
+        <el-select v-model="finance.currency" style="width: 100%" placeholder="请选择">
+          <el-option
+              v-for="item in fee_options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
+      <div style="margin-top: 10px">
+        费用金额 (rmb)：
+        <el-input-number
+            style="width: 100%"
+            v-model="finance.income"
+            :precision="2"
+            controls-position="right"
+            :min="0"></el-input-number>
+      </div>
+      <div style="margin-top: 10px">
+        产生日期：
+        <el-date-picker
+            style="width: 100%"
+            v-model="finance.wd_date"
+            value-format="yyyy-MM-dd"
+            type="date"
+            placeholder="选择费用日期">
+        </el-date-picker>
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="createFEEVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" :disabled="!finance.income || !finance.wd_date || !finance.currency" @click="summitCreateFEE">确 定</el-button>
+        </span>
+    </el-dialog>
+
 
     <!--    确认提现弹窗-->
     <el-dialog
@@ -362,10 +466,12 @@ export default {
         exc_date: null,
         wd_date: null,
         shop: null,
+        currency: null,
         f_type: 'WD',
       },
       financeID: null,
       createWDVisible: false, //新增店铺提现
+      createFEEVisible: false, //新增店铺费用
       createEXCVisible: false, //新增结汇
       confirmWDVisible: false, //确认提现
       default_currency: '', // 默认提现币种
@@ -373,6 +479,22 @@ export default {
       income_rmb: 0.0,
       rest_income: 0.0,
       all_onway: false,
+      fee_options: [{
+        value: 1,
+        label: '账号注册费用'
+      }, {
+        value: 2,
+        label: '开发票'
+      }, {
+        value: 3,
+        label: '物流相关杂费'
+      }, {
+        value: 4,
+        label: '产品相关杂费'
+      }, {
+        value: 5,
+        label: '其它杂费'
+      }],
     }
   },
   filters: {
@@ -390,6 +512,15 @@ export default {
     status: function (value) {
       if (value==='WD') return '店铺提现';
       if (value==='EXC') return '结汇';
+      if (value==='FEE') return '店铺费用';
+    },
+    //费用类型格式化
+    fee_type: function (value) {
+      if (value==='1') return '账号注册费用';
+      if (value==='2') return '开发票';
+      if (value==='3') return '物流相关杂费';
+      if (value==='4') return '产品相关杂费';
+      if (value==='5') return '其它杂费';
     },
   },
   mounted() {
@@ -430,6 +561,11 @@ export default {
       this.finance.wd_date = this.getDate()
       this.confirmWDVisible = true
     },
+    //打开新增店铺费用弹窗
+    openCreateFEE(){
+      this.finance.wd_date = this.getDate()
+      this.createFEEVisible = true
+    },
     //确认提现到账
     confirmReceived(){
       this.loading = true;
@@ -455,6 +591,20 @@ export default {
           this.createWDVisible = false
           this.initFinances();
           this.getFund()
+        }
+      })
+    },
+    //提交创建店铺费用
+    summitCreateFEE(){
+      this.finance.shop = this.shopID
+      this.finance.f_type = 'FEE'
+
+      this.loading = true;
+      this.postRequest('api/ml_finance/create_fee/', this.finance).then(resp => {
+        this.loading = false;
+        if (resp) {
+          this.createFEEVisible = false
+          this.initFinances();
         }
       })
     },
