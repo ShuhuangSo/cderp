@@ -310,6 +310,8 @@
             <el-link href="/media/template/mercado_order_template.xlsx" target="_blank">美客多模板</el-link>
             <el-link style="margin-left: 10px" href="/media/template/invoice_report_template.xlsx" target="_blank">Noon模板1</el-link>
             <el-link style="margin-left: 10px" href="/media/template/old_consolidated_report_template.xlsx" target="_blank">Noon模板2</el-link>
+            <el-link style="margin-left: 10px" href="/media/template/ozon_orders_template.xlsx" target="_blank">OZON模板1</el-link>
+            <el-link style="margin-left: 10px" href="/media/template/ozon_orders_checkout_template.xlsx" target="_blank">OZON模板2</el-link>
             <div style="margin-top: 10px">
               美客多默认标题行数: <el-input-number v-model="mel_row" size="mini" controls-position="right"></el-input-number>
             </div>
@@ -403,8 +405,8 @@
             <el-collapse-item  v-if="orderDetail.platform ==='OZON'" title="服务商费用" name="4">
               <div style="width: 500px">
                 <el-descriptions :column="1"  size="medium" :label-style="LS">
-                  <el-descriptions-item label="手续费">{{ this.orderDetail.sp_fee | currency}}</el-descriptions-item>
-                  <el-descriptions-item label="费率">{{ this.orderDetail.sp_fee_rate | currency }}</el-descriptions-item>
+                  <el-descriptions-item label="手续费">{{ this.orderDetail.sp_fee | f_currency}}</el-descriptions-item>
+                  <el-descriptions-item label="费率">{{ this.orderDetail.sp_fee_rate | rate }}</el-descriptions-item>
                 </el-descriptions>
               </div>
             </el-collapse-item>
@@ -485,6 +487,7 @@ export default {
         'VAT': null,
         'invoice_price': null,
         'promo_coupon': null,
+        'payment_fee': null,
       }, //订单详情
       LS: {
       width: '150px',

@@ -251,21 +251,21 @@
           </el-table-column>
 
           <el-table-column
-              label="费用类型"
-              align="center"
-              header-align="center"
-              width="100">
-            <template slot-scope="scope">
-              <div>{{ scope.row.currency | fee_type}}</div>
-            </template>
-          </el-table-column>
-
-          <el-table-column
               label="费用金额"
               align="center"
               header-align="center">
             <template slot-scope="scope">
               <div>{{ scope.row.income | currencyRMB }}</div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              label="费用说明"
+              align="center"
+              header-align="center"
+              width="100">
+            <template slot-scope="scope">
+              <div>{{ scope.row.note}}</div>
             </template>
           </el-table-column>
 
@@ -379,15 +379,20 @@
         width="400px"
     >
       <div>
-        费用类型：
-        <el-select v-model="finance.currency" style="width: 100%" placeholder="请选择">
+        费用说明：
+        <el-select v-model="finance.currency"
+                   @change="finance.note=finance.currency"
+                   style="width: 100%" placeholder="请选择">
           <el-option
               v-for="item in fee_options"
               :key="item.value"
               :label="item.label"
-              :value="item.value">
+              :value="item.label">
           </el-option>
         </el-select>
+        <el-input style="margin-top: 5px"
+                  v-if="finance.currency"
+                  type="textarea" v-model="finance.note"></el-input>
       </div>
       <div style="margin-top: 10px">
         费用金额 (rmb)：
@@ -410,7 +415,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="createFEEVisible = false">取 消</el-button>
-          <el-button size="small" type="primary" :disabled="!finance.income || !finance.wd_date || !finance.currency" @click="summitCreateFEE">确 定</el-button>
+          <el-button size="small" type="primary" :disabled="!finance.income || !finance.wd_date || !finance.note" @click="summitCreateFEE">确 定</el-button>
         </span>
     </el-dialog>
 
@@ -467,6 +472,7 @@ export default {
         wd_date: null,
         shop: null,
         currency: null,
+        note: null,
         f_type: 'WD',
       },
       financeID: null,
@@ -513,14 +519,6 @@ export default {
       if (value==='WD') return '店铺提现';
       if (value==='EXC') return '结汇';
       if (value==='FEE') return '店铺费用';
-    },
-    //费用类型格式化
-    fee_type: function (value) {
-      if (value==='1') return '账号注册费用';
-      if (value==='2') return '开发票';
-      if (value==='3') return '物流相关杂费';
-      if (value==='4') return '产品相关杂费';
-      if (value==='5') return '其它杂费';
     },
   },
   mounted() {
