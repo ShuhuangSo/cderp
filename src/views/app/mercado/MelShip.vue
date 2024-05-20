@@ -989,6 +989,10 @@ export default {
           name: 'Noon',
           value: '&platform=NOON'
         },
+        {
+          name: 'OZON',
+          value: '&platform=OZON'
+        },
       ],
       predefineColors: [
         '#ff4500',
@@ -1042,6 +1046,7 @@ export default {
     pf: function (value) {
       if (value === '&platform=MERCADO') return '美客多';
       if (value === '&platform=NOON') return 'Noon';
+      if (value === '&platform=OZON') return 'OZON';
       return '';
     },
     //平台格式化
