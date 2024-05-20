@@ -368,9 +368,13 @@
     >
       <div style="padding-left: 30px;padding-right: 30px">
 
-        <h3 style="color: #409EFF">订单状态</h3>
-        <el-tag>
-          {{ this.orderDetail.order_status | status }}</el-tag>
+        <h3 style="color: #409EFF">订单详情</h3>
+        <el-descriptions :column="1" size="medium" :label-style="LS">
+          <el-descriptions-item label="订单状态"><el-tag>
+            {{ this.orderDetail.order_status | status }}</el-tag></el-descriptions-item>
+          <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="发货编号">{{ this.orderDetail.dispatch_number }}</el-descriptions-item>
+        </el-descriptions>
+
         <h3 style="color: #409EFF">买家信息</h3>
         <el-descriptions :column="1" size="medium" :label-style="LS">
           <el-descriptions-item label="收件人">{{ this.orderDetail.buyer_name }}</el-descriptions-item>
@@ -488,6 +492,7 @@ export default {
         'invoice_price': null,
         'promo_coupon': null,
         'payment_fee': null,
+        'dispatch_number': null,
       }, //订单详情
       LS: {
       width: '150px',
@@ -570,8 +575,12 @@ export default {
           value: '&order_status=FINISHED'
         },
         {
-          name: '未核算',
+          name: '未结算(Noon)',
           value: '&order_status=UNCHECK'
+        },
+        {
+          name: '未结算(OZON)',
+          value: '&finance_check1=False'
         },
       ],
       chart_options: [{
