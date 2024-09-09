@@ -178,62 +178,109 @@
         </div>
 
         <div style="display: flex;padding-top: 20px">
-          <div class="msg_title">
+          <div class="msg_title2">
             快捷入口
           </div>
-          <div class="kuaijie">
-            <div>
-              <el-link
-                  @click.native="goDetail('product', '')"
-                  :underline="false">
-                <span style="font-size: 20px"><i class="el-icon-goods"></i></span>
-              </el-link>
+          <div style="display: flex; flex-wrap: wrap;">
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('product', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-goods"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">产品库</div>
             </div>
-            <div  class="small_zi">产品库</div>
-          </div>
 
-          <div class="kuaijie">
-            <div>
-              <el-link
-                  @click.native="goDetail('shop_stock', '')"
-                  :underline="false">
-                <span style="font-size: 20px"><i class="el-icon-school"></i></span>
-              </el-link>
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('shop_stock', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-school"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">FBM库存</div>
             </div>
-            <div  class="small_zi">FBM库存</div>
-          </div>
 
-          <div class="kuaijie">
-            <div>
-              <el-link
-                  @click.native="goDetail('orders', '')"
-                  :underline="false">
-                <span style="font-size: 20px"><i class="el-icon-tickets"></i></span>
-              </el-link>
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('orders', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-tickets"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">销售订单</div>
             </div>
-            <div  class="small_zi">销售订单</div>
-          </div>
 
-          <div class="kuaijie">
-            <div>
-              <el-link
-                  @click.native="goDetail('finance', '')"
-                  :underline="false">
-                <span style="font-size: 20px"><i class="el-icon-money"></i></span>
-              </el-link>
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('finance', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-money"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">财务管理</div>
             </div>
-            <div  class="small_zi">财务管理</div>
-          </div>
 
-          <div class="kuaijie">
-            <div>
-              <el-link
-                  @click.native="goDetail('upc', '')"
-                  :underline="false">
-                <span style="font-size: 20px"><i class="el-icon-postcard"></i></span>
-              </el-link>
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('upc', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-postcard"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">UPC号码</div>
             </div>
-            <div  class="small_zi">UPC号码</div>
+
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('calcPrice', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-notebook-2"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">定价工具</div>
+            </div>
+
+            <div class="kuaijie"   v-if="permission.devproduct">
+              <div>
+                <el-link
+                    @click.native="goDetail('devProduct', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-files"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">产品开发</div>
+            </div>
+
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('phoneModels', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-mobile-phone"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">手机型号</div>
+            </div>
+
+            <div class="kuaijie">
+              <div>
+                <el-link
+                    @click.native="goDetail('nameTool', '')"
+                    :underline="false">
+                  <span style="font-size: 20px"><i class="el-icon-c-scale-to-original"></i></span>
+                </el-link>
+              </div>
+              <div  class="small_zi">SKU生成</div>
+            </div>
+
           </div>
 
         </div>
@@ -290,6 +337,13 @@
         </el-descriptions>
 
       </el-card>
+<!--      邮编分区-->
+      <el-card class="main-card-big" shadow="never">
+        <div class="main-win-big_postcode">
+          <span class="chartTitle">邮编分区</span>
+          <MelPostcodeArea></MelPostcodeArea>
+        </div>
+      </el-card>
 <!--      销量统计-->
       <el-card class="main-card-big" shadow="never"  v-if="permission.dashboard_saleChart">
         <div class="main-chart-big">
@@ -339,10 +393,11 @@
 import moment from "moment/moment";
 import MelSalesCharts from "@/components/app/mercado/MelSalesCharts";
 import MelShopFinance from "@/components/app/mercado/MelShopFinance";
+import MelPostcodeArea from "@/views/app/mercado/MelPostcodeArea";
 
 export default {
   name: "MelDashboard",
-  components:{MelSalesCharts, MelShopFinance},
+  components:{MelSalesCharts, MelShopFinance, MelPostcodeArea},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -429,6 +484,22 @@ export default {
       } else if (activeName === 'shipInfo'){
         this.$router.push({
           path: '/shipInfo',
+        });
+      }else if (activeName === 'calcPrice'){
+        this.$router.push({
+          path: '/melProfitCalc',
+        });
+      }else if (activeName === 'devProduct'){
+        this.$router.push({
+          path: '/devProduct',
+        });
+      }else if (activeName === 'phoneModels'){
+        this.$router.push({
+          path: '/productDeviceModel',
+        });
+      }else if (activeName === 'nameTool'){
+        this.$router.push({
+          path: '/melNameTool',
         });
       }
       else {
@@ -584,7 +655,7 @@ export default {
 .small-card {
   border-radius: 15px;
   width: 590px;
-  height: 300px;
+  min-height: 300px;
   margin-left: 5px;
   margin-right: 5px;
   margin-bottom: 10px;
@@ -646,9 +717,16 @@ export default {
   font-size: 12px
 }
 .msg_title{
-  text-align: center;
+  text-align: left;
   font-size: 14px;
   padding-top: 10px;
+  width: 60px;
+}
+.msg_title2{
+  text-align: left;
+  font-size: 14px;
+  padding-top: 10px;
+  width: 110px;
 }
 .out_stock{
   color: red;
@@ -656,6 +734,8 @@ export default {
 }
 .kuaijie {
   width: 95px;
-  text-align:center
+  text-align:center;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>

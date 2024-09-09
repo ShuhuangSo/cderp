@@ -367,7 +367,9 @@
           </div>
         </div>
       </el-tab-pane>
-<!--      <el-tab-pane label="OZON" name="ozon">ozon</el-tab-pane>-->
+      <el-tab-pane label="邮编分区" name="postcode">
+        <MelPostcodeArea></MelPostcodeArea>
+      </el-tab-pane>
 
     </el-tabs>
   </div>
@@ -375,10 +377,12 @@
 
 <script>
 import el from "element-ui/src/locale/lang/el";
+import MelPostcodeArea from "@/views/app/mercado/MelPostcodeArea";
 
 let _this = this   //**定义全局变量**
 export default {
   name: "ProfitCalc",
+  components: {MelPostcodeArea},
   data(){
     return{
       p_width: null,

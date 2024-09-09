@@ -24,6 +24,7 @@ import MelEditShip from "@/views/app/mercado/MelEditShip";
 import MLPermission from "@/views/setting/MLPermission";
 import MelDashboard from "@/views/app/mercado/MelDashboard";
 import MelShipInfo from "@/views/app/mercado/MelShipInfo";
+import DevListingManage from "@/views/app/devproduct/DevListingManage";
 
 
 
@@ -143,6 +144,11 @@ const routes = [
                 path: '/shipInfo',
                 name: '运单通知',
                 component: MelShipInfo
+            },
+            {
+                path: '/devListingManage',
+                name: '产品开发 > 账号刊登管理',
+                component: DevListingManage
             },
         ]
     },

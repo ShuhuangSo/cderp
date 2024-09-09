@@ -41,7 +41,7 @@ export default {
   margin-top: 20px;
 }
 .card{
-  width: 590px;
+  width: 900px;
   height: 600px;
   margin-left: 5px;
   margin-right: 5px;

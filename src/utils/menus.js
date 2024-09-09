@@ -53,6 +53,8 @@ export const formatRoutes = (routes) => {
                     require(['../views/app/bonus/' + component + '.vue'], resolve);
                 } else if (component.startsWith('Mel')) {
                     require(['../views/app/mercado/' + component + '.vue'], resolve);
+                } else if (component.startsWith('Dev')) {
+                    require(['../views/app/devproduct/' + component + '.vue'], resolve);
                 }
             }
         }

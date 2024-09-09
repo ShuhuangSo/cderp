@@ -237,6 +237,7 @@ export default {
       if (value === 'FINANCE') return '财务管理';
       if (value === 'PURCHASE') return '采购管理';
       if (value === 'SYSTEM') return '系统管理';
+      if (value === 'DEVP') return '产品开发';
     },
   },
   mounted() {

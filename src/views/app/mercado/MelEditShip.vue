@@ -64,6 +64,7 @@
                 label="目标FBM仓库" prop="fbm_warehouse">
               <el-select v-model="ship.fbm_warehouse"
                          style="width: 350px;"
+                         @change="changeWarehouse"
                          placeholder="请选择FBM仓库">
                 <el-option
                     v-for="item in fbm_warehouses"
@@ -74,6 +75,17 @@
                   <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
                 </el-option>
               </el-select>
+            </el-form-item>
+
+            <el-form-item
+                v-if="warehouse_address"
+                label="">
+              <el-alert
+                  :title="warehouse_title"
+                  type="success"
+                  :description="warehouse_address"
+                  :closable="false">
+              </el-alert>
             </el-form-item>
 
             <el-form-item label="承运商" prop="carrier">
@@ -387,7 +399,9 @@
         :close-on-click-modal="false"
         width="800px"
     >
-      <MelAddProduct ref="addProduct" @func="getAddProducts"></MelAddProduct>
+      <MelAddProduct ref="addProduct"
+                     :shopName="shopName"
+                     @func="getAddProducts"></MelAddProduct>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="addProductVisible = false">取 消</el-button>
           <el-button size="small" type="primary" @click="confirmAddProduct">确 定</el-button>
@@ -417,6 +431,9 @@ export default {
       time_flag: '', //运单是否被修改标签
       time: 0, //定时器
       ship_changed: false,
+      shopName: '', //店铺名称
+      warehouse_address: '', //当前仓库地址
+      warehouse_title: '', //当前仓库地址
       ship: {
         target: 'FBM',
         platform: '',
@@ -522,6 +539,15 @@ export default {
     },
   },
   methods:{
+    //目标FBM仓库变动
+    changeWarehouse(){
+      this.fbm_warehouses.forEach(item=>{
+        if (this.ship.fbm_warehouse === item.w_code) {
+          this.warehouse_address = item.address + ' ' + item.note
+          this.warehouse_title = item.name
+        }
+      })
+    },
     //检查运单是否已被编辑
     check_if_ship_edit(){
       this.postRequest('api/ml_ship/check_if_ship_edit/', {'time_flag':this.time_flag, 'ship_id': this.shipID}).then(resp => {
@@ -678,6 +704,12 @@ export default {
         if (resp) {
           this.ship = resp;
           if (resp.user_id === 0) this.all_see = true
+          // 添加产品弹窗变量
+          if (this.ship.target === 'FBM') {
+            this.shopName = this.ship.shop
+          }else {
+            this.shopName = ''
+          }
 
           this.ship.ship_shipDetail.forEach(item=>{
             if (item.user_id === this.user.id || this.user.is_superuser) {

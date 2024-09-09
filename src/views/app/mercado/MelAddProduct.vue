@@ -38,6 +38,13 @@
         </template>
       </el-table-column>
       <el-table-column
+          prop="shop"
+          label="店铺"
+          align="center"
+          header-align="center"
+          width="80">
+      </el-table-column>
+      <el-table-column
           prop="sku"
           label="SKU"
           align="center"
@@ -51,6 +58,7 @@
 
       <el-table-column
           prop="item_id"
+          width="120"
           label="ItemID">
       </el-table-column>
 
@@ -77,6 +85,7 @@ import moment from "moment";
 
 export default {
   name: "MelAddProduct",
+  props: ['shopName'],
   data(){
     return{
       loading: false,
@@ -128,6 +137,7 @@ export default {
     },
     initMLProducts() {
       let url = '/api/ml_products/?page=' + this.page + '&page_size=' + this.size
+      if (this.shopName) url += '&shop=' + this.shopName
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
       }

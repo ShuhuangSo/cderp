@@ -40,6 +40,7 @@
 
             <el-form-item label="目标店铺" required prop="shop">
               <el-select v-model="ship.shop"
+                         @change="changeShop"
                          style="width: 300px;"
                          placeholder="请选择店铺">
                 <el-option
@@ -217,7 +218,9 @@
         :close-on-click-modal="false"
         width="800px"
     >
-      <MelAddProduct ref="addProduct" @func="getAddProducts"></MelAddProduct>
+      <MelAddProduct ref="addProduct"
+                     :shopName="shopName"
+                     @func="getAddProducts"></MelAddProduct>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="addProductVisible = false">取 消</el-button>
           <el-button size="small" type="primary" @click="confirmAddProduct">确 定</el-button>
@@ -240,6 +243,7 @@ export default {
       user: JSON.parse(window.sessionStorage.getItem('user')),
       obj: this.$route.query.obj?JSON.parse(this.$route.query.obj):'', // 补货推荐传递数据
       loading: false,
+      shopName: '', //店铺名称
       ship: {
         platform: 'MERCADO',
         target: 'FBM',
@@ -303,6 +307,14 @@ export default {
     },
   },
   methods:{
+    //目标店铺变动
+    changeShop(){
+      if (this.ship.target === 'FBM') {
+        this.shopName = this.ship.shop
+      }else {
+        this.shopName = ''
+      }
+    },
 
     //  保存运单
     submitForm() {
