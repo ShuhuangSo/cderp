@@ -75,11 +75,11 @@
     <el-pagination
         style="margin-top: 10px"
         background
-        small
-        :hide-on-single-page="true"
-        layout="prev, pager, next, ->, total"
+        :page-sizes="[20, 30, 40, 50, 100]"
         @current-change="currentChange"
-        :page-size="size"
+        @size-change="sizeChange"
+        layout="sizes, prev, pager, next, jumper, ->, total"
+        :current-page="page"
         :total="total">
     </el-pagination>
 
@@ -271,6 +271,12 @@ export default {
     // 页码
     currentChange(page) {
       this.page = page;
+      this.initAccounts();
+    },
+    // 分页大小
+    sizeChange(size) {
+      this.page = 1;
+      this.size = size;
       this.initAccounts();
     },
     updateAccount(){
