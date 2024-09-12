@@ -190,7 +190,7 @@
 
               <el-col :span="24">
                 <el-form-item label="采购链接1">
-                  <el-input v-model="devProduct.buy_url1">
+                  <el-input maxlength="500" v-model="devProduct.buy_url1">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -198,7 +198,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="采购链接2">
-                  <el-input v-model="devProduct.buy_url2">
+                  <el-input maxlength="500" v-model="devProduct.buy_url2">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -206,7 +206,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="采购链接3">
-                  <el-input v-model="devProduct.buy_url3">
+                  <el-input maxlength="500" v-model="devProduct.buy_url3">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -214,7 +214,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="采购链接4">
-                  <el-input v-model="devProduct.buy_url4">
+                  <el-input maxlength="500" v-model="devProduct.buy_url4">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -222,7 +222,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="采购链接5">
-                  <el-input v-model="devProduct.buy_url5">
+                  <el-input maxlength="500" v-model="devProduct.buy_url5">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -230,7 +230,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="销售参考1">
-                  <el-input v-model="devProduct.refer_url1">
+                  <el-input maxlength="500" v-model="devProduct.refer_url1">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -238,7 +238,7 @@
 
               <el-col :span="24" style="width: 100%">
                 <el-form-item label="销售参考2">
-                  <el-input v-model="devProduct.refer_url2">
+                  <el-input maxlength="500" v-model="devProduct.refer_url2">
                     <template slot="prepend">Http://</template>
                   </el-input>
                 </el-form-item>
@@ -265,13 +265,19 @@
 
           </el-form>
         </el-tab-pane>
+        <el-tab-pane :lazy="true" label="关联产品" name="cp">
+          <DevCp :productID="productID"></DevCp>
+        </el-tab-pane>
         <el-tab-pane :lazy="true" label="产品定价" name="second">
           <DevPrice :productID="productID"></DevPrice>
         </el-tab-pane>
-        <el-tab-pane :lazy="true" label="发布渠道" name="third" v-if="permission.devproduct_online_check">
+        <el-tab-pane :lazy="true" label="发布渠道" name="third"
+                     v-if="permission.devproduct_online_check && devProduct.p_status !== 'DRAFT'">
           <DevListingChannel :productID="productID"></DevListingChannel>
         </el-tab-pane>
-        <el-tab-pane :lazy="true" label="上架账号" name="forth">
+        <el-tab-pane :lazy="true"
+                     v-if="devProduct.p_status !== 'DRAFT'"
+                     label="上架账号" name="forth">
           <DevListingAccount :productID="productID"></DevListingAccount>
         </el-tab-pane>
         <el-tab-pane :lazy="true" label="操作日志" name="five">
@@ -289,11 +295,12 @@ import DevPrice from "@/views/app/devproduct/DevPrice";
 import DevListingChannel from "@/views/app/devproduct/DevListingChannel";
 import DevListingAccount from "@/views/app/devproduct/DevListingAccount";
 import DevProductLog from "@/views/app/devproduct/DevProductLog";
+import DevCp from "@/views/app/devproduct/DevCp";
 export default {
   name: "DevProductDetail",
   props: ['productID', 'tab'],
   components: {
-    DevPrice, DevListingChannel, DevListingAccount, DevProductLog
+    DevPrice, DevListingChannel, DevListingAccount, DevProductLog, DevCp
   },
   data(){
     return{

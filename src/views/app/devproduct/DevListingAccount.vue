@@ -50,14 +50,14 @@
           label="平台"
           align="center"
           header-align="center"
-          width="100">
+          width="60">
       </el-table-column>
       <el-table-column
           prop="site"
           label="站点"
           align="center"
           header-align="center"
-          width="100">
+          width="60">
       </el-table-column>
 
       <el-table-column
@@ -98,6 +98,16 @@
               effect="dark" type="info">
             <span style="font-weight: bold">未上架</span>
           </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+          align="center"
+          header-align="center"
+          width="100"
+          label="上线时间">
+        <template slot-scope="scope">
+          <div>{{scope.row.life_time}}</div>
+          <div style="color: #99a9bf;">{{scope.row.online_time | date}}</div>
         </template>
       </el-table-column>
       <el-table-column
@@ -227,6 +237,8 @@
 </template>
 
 <script>
+import moment from "moment";
+
 export default {
   name: "DevListingAccount",
   props: ['productID'],
@@ -282,6 +294,13 @@ export default {
       ],
     }
   },
+  filters:{
+    //时间日期格式化
+    date: function (value) {
+      if (value) return moment(value).format("YYYY-MM-DD");
+      return ''
+    },
+  },
   mounted() {
     this.initListingAccount()
   },
@@ -336,7 +355,7 @@ export default {
         let url = 'api/dev_listing_account/end_listing/'
         this.postRequest(url, {'id': id}).then(resp => {
           this.loading = false
-          if (resp) {
+          if (resp.status === 'success') {
             this.initListingAccount();
           }
         })
@@ -391,7 +410,7 @@ export default {
         }
       })
     },
-    //上架
+    //更新
     updateListing(){
       this.loading = true
       let url = 'api/dev_listing_account/update_listing/'
@@ -447,7 +466,7 @@ export default {
   margin-left: 5px;
 }
 .small_icon_true{
-  color: #aa0515;
+  color: #aa0515!important;
   margin-left: 5px;
 }
 .operate {

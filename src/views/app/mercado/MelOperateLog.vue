@@ -193,6 +193,10 @@ export default {
           value: '&op_module=FINANCE'
         },
         {
+          name: '产品开发',
+          value: '&op_module=DEVP'
+        },
+        {
           name: '系统管理',
           value: '&op_module=SYSTEM'
         },

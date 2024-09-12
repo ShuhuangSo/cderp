@@ -17,18 +17,19 @@
           label="平台"
           align="center"
           header-align="center"
-          width="100">
+          width="60">
       </el-table-column>
       <el-table-column
           prop="site"
           label="站点"
           align="center"
           header-align="center"
-          width="100">
+          width="60">
       </el-table-column>
       <el-table-column
           align="center"
           header-align="center"
+          width="120"
           label="定价">
         <template slot-scope="scope">
           {{ scope.row.currency + ' '}} {{scope.row.price}}
@@ -37,6 +38,7 @@
       <el-table-column
           align="center"
           header-align="center"
+          width="120"
           label="预估毛利润">
         <template slot-scope="scope">
           {{scope.row.profit | rmb_currency}}
@@ -45,6 +47,7 @@
       <el-table-column
           align="center"
           header-align="center"
+          width="60"
           label="毛利率">
         <template slot-scope="scope">
           {{scope.row.gross_margin | interPercent}}
@@ -54,7 +57,14 @@
           prop="ex_rate"
           align="center"
           header-align="center"
+          width="80"
           label="定价汇率">
+      </el-table-column>
+      <el-table-column
+          prop="note"
+          align="center"
+          header-align="center"
+          label="备注">
       </el-table-column>
       <el-table-column
           v-if="permission.devproduct_price_op"
@@ -137,6 +147,9 @@
                            :precision="2" :min="0" :step="1"></el-input-number>
           <span class="note" >预估毛利润 (人民币)</span>
         </el-form-item>
+        <el-form-item  label="备注" prop="note">
+          <el-input type="textarea" v-model="devPrice.note" class="inputwidth"></el-input>
+        </el-form-item>
 
       </el-form>
 
@@ -172,6 +185,7 @@ export default {
         profit: null,
         id: null,
         currency: '',
+        note: ''
       },
       loading: false,
       createPriceVisible: false,
@@ -267,6 +281,7 @@ export default {
     //打开定价弹窗
     addPriceVisible(){
       this.devPrice.site = ''
+      this.devPrice.note = ''
       this.devPrice.price = null
       this.devPrice.ex_rate = null
       this.devPrice.profit = null
@@ -288,6 +303,7 @@ export default {
       this.devPrice.price = row.price
       this.devPrice.ex_rate = row.ex_rate
       this.devPrice.profit = row.profit
+      this.devPrice.note = row.note
       this.createPriceVisible = true
     },
     //修改定价

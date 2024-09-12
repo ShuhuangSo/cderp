@@ -277,7 +277,7 @@
           :data="devProducts"
           :header-cell-style="{background:'#fafafa'}"
           v-loading="loading"
-
+          highlight-current-row
           @selection-change="handleSelectionChange"
           style="width: 100%">
 
@@ -304,7 +304,7 @@
         <el-table-column
             label="产品"
             show-overflow-tooltip
-            width="300">
+            min-width="300">
           <template slot-scope="scope">
             <div>
               <el-link
@@ -331,7 +331,7 @@
               <el-tag size="mini"
                       style="margin-left: 5px;"
                       :type="tag_type(scope.row.cp_id)"
-                      @click="selectGroup(scope.row.cp_id)"
+                      @click="productDetail(scope.row.id, 'cp')"
                       v-if="scope.row.cp_count"><i class="el-icon-connection"></i>关联({{scope.row.cp_count}})</el-tag>
               <el-tag
                   style="margin-left: 5px"
@@ -347,6 +347,7 @@
         <el-table-column
             label="定价"
             align="left"
+            width="150"
             header-align="left">
           <template slot-scope="scope">
             <div v-for="i in scope.row.dev_price">
@@ -358,6 +359,7 @@
         <el-table-column
             label="成本价"
             align="center"
+            width="100"
             header-align="center">
           <template slot-scope="scope">
             <div>{{ scope.row.unit_cost | rmb_currency }}</div>
@@ -913,23 +915,23 @@ export default {
       myDataLoading: false,
       filterIds: '', //筛选的产品id
       myData:{
-        offline_product_qty: null, // 未上架产品
+        offline_product_qty: 0, // 未上架产品
         offline_product_ids: '', // 未上架产品 过滤id
-        offline_account_qty: null, // 未上架账号
+        offline_account_qty: 0, // 未上架账号
         offline_account_ids: '', // 未上架账号 过滤id
-        day7_qty: null, // 未上架账号
+        day7_qty: 0, // 未上架账号
         day7_product_ids: '', // 未上架账号 过滤id
-        price_notify: null, // 调价确认
+        price_notify: 0, // 调价确认
         price_notify_ids: '', // 调价确认 过滤id
-        pause_notify: null, // 暂停确认
+        pause_notify: 0, // 暂停确认
         pause_notify_ids: '', // 暂停确认 过滤id
       }, //我的数据
       filterBuyStatus: '', //备货状态
       buyData:{
-        checking_qty: null, // 审批中产品
-        wait_buy_qty: null, // 待采购产品
-        wait_rec_qty: null, // 待收货产品
-        rejected_qty: null, // 审批不通过产品
+        checking_qty: 0, // 审批中产品
+        wait_buy_qty: 0, // 待采购产品
+        wait_rec_qty: 0, // 待收货产品
+        rejected_qty: 0, // 审批不通过产品
       }, //备货数据
       statisticVisible: false, //数据统计弹窗
       tagVisible: false, //标签弹窗
@@ -1095,11 +1097,6 @@ export default {
       let type = ''
       type = typeGroup[num % 5]
       return type
-    },
-    //筛选关联产品
-    selectGroup(num){
-      this.searchValue = num
-      this.initDevProducts();
     },
     //关联产品
     cpProducts(){
@@ -1454,7 +1451,9 @@ export default {
           this.myData.end_notify = resp.end_notify;
           this.myData.end_notify_ids = resp.end_notify_ids;
         }
+
       })
+
     },
     //获取我的备货情况
     getBuyData(){
@@ -1592,5 +1591,9 @@ export default {
 }
 .gray_zi{
   color: #99a9bf;
+}
+::v-deep .el-table__body tr.current-row>td {
+  /*color: #fff;*/
+  background: #f0f9eb!important;
 }
 </style>

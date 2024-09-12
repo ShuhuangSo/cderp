@@ -108,7 +108,7 @@
       <el-table-column
           label="产品"
           show-overflow-tooltip
-          width="300">
+          min-width="300">
         <template slot-scope="scope">
           <div>
             <el-link
@@ -174,13 +174,15 @@
         </template>
       </el-table-column>
 
+
       <el-table-column
           label="产品链接"
           align="center"
+          min-width="300"
           header-align="center">
         <template slot-scope="scope">
           <div v-if="scope.row.item_id">
-            {{scope.row.item_id}}
+            <span class="gray_zi">{{scope.row.item_id}}</span>
             <el-link :href="scope.row.sale_url"
                      title="查看平台链接"
                      :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
@@ -238,9 +240,10 @@
           width="130"
           label="发布|上架时间">
         <template slot-scope="scope">
-          <div v-if="scope.row.online_time">{{scope.row.online_time | dateT}}</div>
+          <div>{{scope.row.life_time}}</div>
+          <div v-if="scope.row.online_time" class="gray_zi">{{scope.row.online_time | dateT}}</div>
           <div v-if="!scope.row.online_time"><i class="el-icon-time"></i></div>
-          <div>{{scope.row.create_time | dateT}}</div>
+          <div class="gray_zi">{{scope.row.create_time | dateT}}</div>
         </template>
       </el-table-column>
 
@@ -404,6 +407,11 @@ export default {
       if (!value) return ''
       return moment(value).format("YYYY-MM-DD HH:mm");
     },
+    //时间日期格式化
+    date: function (value) {
+      if (value) return moment(value).format("YYYY-MM-DD");
+      return ''
+    },
     //图片地址格式化
     smpic: function (value) {
       if (!value) return '';
@@ -528,7 +536,7 @@ export default {
         let url = 'api/dev_listing_account/end_listing/'
         this.postRequest(url, {'id': id}).then(resp => {
           this.loading = false
-          if (resp) {
+          if (resp.status === 'success') {
             this.initListingAccount();
           }
         })
@@ -673,7 +681,7 @@ export default {
   margin-left: 5px;
 }
 .small_icon_true{
-  color: #aa0515;
+  color: #aa0515!important;
   margin-left: 5px;
 }
 .operate {
