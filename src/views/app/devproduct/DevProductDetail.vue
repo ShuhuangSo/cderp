@@ -280,6 +280,11 @@
                      label="上架账号" name="forth">
           <DevListingAccount :productID="productID"></DevListingAccount>
         </el-tab-pane>
+        <el-tab-pane :lazy="true"
+                     v-if="devProduct.p_status !== 'DRAFT'"
+                     label="销售订单" name="order">
+          <DevAccountOrder :productID="productID"></DevAccountOrder>
+        </el-tab-pane>
         <el-tab-pane :lazy="true" label="操作日志" name="five">
           <DevProductLog :productID="productID"></DevProductLog>
         </el-tab-pane>
@@ -296,11 +301,12 @@ import DevListingChannel from "@/views/app/devproduct/DevListingChannel";
 import DevListingAccount from "@/views/app/devproduct/DevListingAccount";
 import DevProductLog from "@/views/app/devproduct/DevProductLog";
 import DevCp from "@/views/app/devproduct/DevCp";
+import DevAccountOrder from "@/views/app/devproduct/DevAccountOrder";
 export default {
   name: "DevProductDetail",
   props: ['productID', 'tab'],
   components: {
-    DevPrice, DevListingChannel, DevListingAccount, DevProductLog, DevCp
+    DevPrice, DevListingChannel, DevListingAccount, DevProductLog, DevCp, DevAccountOrder
   },
   data(){
     return{

@@ -111,6 +111,15 @@
         </template>
       </el-table-column>
       <el-table-column
+          align="center"
+          header-align="center"
+          width="60"
+          label="销量">
+        <template slot-scope="scope">
+          <div v-if="scope.row.total_sold">{{scope.row.total_sold}}</div>
+        </template>
+      </el-table-column>
+      <el-table-column
           label="产品链接"
           align="center"
           header-align="center">

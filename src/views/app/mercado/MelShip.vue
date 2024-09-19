@@ -499,7 +499,7 @@
               </el-dropdown>
             </div>
 
-            <div style="margin-top: 5px" v-if="scope.row.s_status==='PREPARING'">
+            <div style="margin-top: 5px">
               <el-dropdown @command="handleShipOp">
                 <el-button :disabled="!permission.ship_export" size="mini" type="info" plain round>
                   <i class="el-icon-arrow-down"></i> 导出

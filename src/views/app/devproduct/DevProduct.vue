@@ -157,7 +157,7 @@
         </div>
       </el-card>
     </div>
-<!--    筛选信息-->
+<!--    导航信息-->
     <div style="display: flex;justify-content: space-between">
       <div>
         <el-radio-group v-model="devStatus" style="margin-right: 20px" size="medium" @change="initDevProducts">
@@ -170,6 +170,12 @@
                             path: '/devListingManage',
                           });"
                    plain size="medium">账号刊登管理</el-button>
+        <el-button icon="el-icon-shopping-bag-2"
+                   style="margin-left: 10px"
+                   @click="$router.push({
+                            path: '/devOrder',
+                          });"
+                   plain size="medium">订单管理</el-button>
       </div>
       <div>
         <el-button type="" icon="el-icon-connection"
@@ -186,6 +192,7 @@
         </el-button>
       </div>
     </div>
+    <!--    筛选信息-->
     <div class="operate">
       <div>
         <el-input size="small" placeholder="SKU 名称"
@@ -341,6 +348,32 @@
                 <i class="el-icon-warning"></i> 信息需确认
               </el-tag>
             </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="120"
+            label="销量">
+          <template slot-scope="scope">
+            <div>7天销量: <span class="zi">{{scope.row.day7_sold}} </span>
+            </div>
+            <div>15天销量: <span class="zi">{{scope.row.day15_sold}} </span>
+            </div>
+            <div>30天销量: <span class="zi">{{scope.row.day30_sold}} </span>
+            </div>
+            <div>累计销量: <span class="zi">{{scope.row.total_sold}}</span></div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            width="150"
+            label="利润">
+          <template slot-scope="scope">
+            <div>平均毛利润: <span :class="scope.row.avg_profit>0?'positive':'negitive'">{{scope.row.avg_profit | rmb_currency}} </span>
+            </div>
+            <div>平均毛利率: <span :class="scope.row.avg_profit_rate>0?'positive':'negitive'">{{scope.row.avg_profit_rate | rate}} </span>
+            </div>
+            <div>累计利润: <span :class="scope.row.total_profit>0?'positive':'negitive'">{{scope.row.total_profit | rmb_currency}}</span></div>
           </template>
         </el-table-column>
 
@@ -1069,6 +1102,12 @@ export default {
       if (value) return moment(value).format("YYYY-MM-DD");
       return ''
     },
+    //rmb金额格式化
+    rate: function (value) {
+      if (!value) return 0;
+      value = value * 100
+      return `${value.toFixed(1)}%`;
+    },
     //人民币金额格式化
     rmb_currency: function (value) {
       if (!value) return 0.00;
@@ -1591,6 +1630,18 @@ export default {
 }
 .gray_zi{
   color: #99a9bf;
+}
+.zi {
+  font-weight: bold;
+  color: green;
+}
+.positive {
+  font-weight: bold;
+  color: green;
+}
+.negitive {
+  font-weight: bold;
+  color: #aa0515;
 }
 ::v-deep .el-table__body tr.current-row>td {
   /*color: #fff;*/

@@ -117,7 +117,7 @@
             </el-table-column>
 
             <el-table-column
-                v-if="!action"
+                v-if="user.is_superuser"
                 label="操作"
                 width="100"
                 align="center"
@@ -131,6 +131,7 @@
                     type="" size="mini" icon="el-icon-edit" circle></el-button>
 
                 <el-button
+                    v-if="!action"
                     title="删除"
                     @click="removeBox(scope.row.id)"
                     type="" size="mini" icon="el-icon-delete" circle></el-button>
@@ -498,6 +499,7 @@ export default {
   components:{ShipLog, MelShipAttachment},
   data(){
     return{
+      user: JSON.parse(window.sessionStorage.getItem('user')),
       shipID: this.$route.query.id, // 运单id
       action: this.$route.query.action,
       click_from: this.$route.query.click_from, // 从哪点击过来

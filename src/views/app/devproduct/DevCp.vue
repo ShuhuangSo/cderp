@@ -54,6 +54,7 @@
           label="操作"
           align="center"
           header-align="center"
+          v-if="permission.devproduct_cp"
           width="120">
         <template slot-scope="scope">
           <el-button size="mini" plain @click="upcProduct(scope.row.id)">解除关联</el-button>
@@ -70,6 +71,7 @@ export default {
   props: ['productID'],
   data(){
     return{
+      permission: JSON.parse(window.sessionStorage.getItem('ml_permission')),
       loading: false,
       products: []
     }

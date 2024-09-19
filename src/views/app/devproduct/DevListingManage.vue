@@ -6,6 +6,12 @@
                             path: '/devProduct',
                           });"
                  plain size="medium">产品管理</el-button>
+      <el-button icon="el-icon-shopping-bag-2"
+                 style="margin-left: 10px"
+                 @click="$router.push({
+                            path: '/devOrder',
+                          });"
+                 plain size="medium">订单管理</el-button>
     </div>
     <div class="operate">
 
