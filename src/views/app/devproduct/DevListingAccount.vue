@@ -133,8 +133,12 @@
                      title="修改"
                      style="margin-left: 5px"
                      :underline="false" target="_blank"><i class="el-icon-edit-outline"></i></el-link>
+
+
+          </div>
+          <div>
             <el-tooltip effect="dark" :disabled='!scope.row.note' :content="scope.row.note" placement="top">
-              <el-link @click.native="openUpdateWindow(scope.row)"
+              <el-link @click.native="openNoteWindow(scope.row)"
                        title="备注"
                        :class="scope.row.note?'small_icon_true':'small_icon'"
                        :underline="false"><i class="el-icon-chat-line-square"></i></el-link>
@@ -242,6 +246,30 @@
       </span>
     </el-dialog>
 
+    <!--    备注弹窗-->
+    <el-dialog
+        title="备注"
+        :visible.sync="noteVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        append-to-body
+        width="500px"
+    >
+      <el-form ref="listingForm" label-width="100px">
+        <el-form-item  label="备注" prop="note">
+          <el-input type="textarea" v-model="listingItem.note" class="inputwidth"></el-input>
+        </el-form-item>
+
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="noteVisible=false">取 消</el-button>
+          <el-button size="small"
+                     :disabled="!listingItem.note"
+                     @click="updateNote" type="primary">修 改</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -262,6 +290,7 @@ export default {
       selectedUser: false, //仅看自己账号
       listingAccount: [],
       listingVisible: false, //弹窗
+      noteVisible: false, //弹窗
       listingItem: {
         id: null,
         item_id: null,
@@ -385,6 +414,11 @@ export default {
       Object.assign(this.listingItem, row)
       this.listingVisible = true
     },
+    //修改备注弹窗
+    openNoteWindow(row){
+      Object.assign(this.listingItem, row)
+      this.noteVisible = true
+    },
     // 分页大小
     sizeChange(size) {
       this.page = 1;
@@ -428,6 +462,18 @@ export default {
         if (resp.status === 'success') {
           this.initListingAccount();
           this.listingVisible = false;
+        }
+      })
+    },
+    //更新备注
+    updateNote(){
+      this.loading = true
+      let url = 'api/dev_listing_account/'+ this.listingItem.id + '/'
+      this.patchRequest(url, {'note': this.listingItem.note}).then(resp => {
+        this.loading = false
+        if (resp) {
+          this.initListingAccount();
+          this.noteVisible = false;
         }
       })
     },

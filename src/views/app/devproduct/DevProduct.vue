@@ -450,7 +450,8 @@
             header-align="center"
             width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.create_time | date }}</span>
+            <div>{{ scope.row.create_time | date }}</div>
+            <div class="gray_zi">{{scope.row.user_name}}</div>
           </template>
         </el-table-column>
         <el-table-column
@@ -460,7 +461,8 @@
             header-align="center"
             width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.online_time | date }}</span>
+            <div>{{ scope.row.online_time | date }}</div>
+            <div class="gray_zi">{{scope.row.user_name}}</div>
           </template>
         </el-table-column>
         <el-table-column
@@ -470,7 +472,8 @@
             header-align="center"
             width="100">
           <template slot-scope="scope">
-            <span>{{ scope.row.offline_time | date }}</span>
+            <div>{{ scope.row.offline_time | date }}</div>
+            <div class="gray_zi">{{scope.row.user_name}}</div>
           </template>
         </el-table-column>
 
