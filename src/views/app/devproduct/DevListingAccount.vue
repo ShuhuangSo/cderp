@@ -255,17 +255,14 @@
         append-to-body
         width="500px"
     >
-      <el-form ref="listingForm" label-width="100px">
-        <el-form-item  label="备注" prop="note">
-          <el-input type="textarea" v-model="listingItem.note" class="inputwidth"></el-input>
-        </el-form-item>
 
-      </el-form>
+      <el-input type="textarea"
+                style="width: 100%"
+                v-model="listingItem.note" ></el-input>
 
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="noteVisible=false">取 消</el-button>
           <el-button size="small"
-                     :disabled="!listingItem.note"
                      @click="updateNote" type="primary">修 改</el-button>
       </span>
     </el-dialog>
