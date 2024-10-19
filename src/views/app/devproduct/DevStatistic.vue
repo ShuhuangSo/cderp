@@ -3,7 +3,6 @@
 */
 <template>
   <div>
-    <el-skeleton :loading="loading" :rows="16" animated>
       <el-tabs v-model="activeName">
         <el-tab-pane :lazy="true" label="开发统计" name="first">
           <el-descriptions size='medium' column="1">
@@ -61,7 +60,6 @@
         </el-tab-pane>
 
       </el-tabs>
-    </el-skeleton>
 
   </div>
 </template>
@@ -77,7 +75,7 @@ export default {
       devData: null, //开发数据
     }
   },
-  created() {
+  mounted() {
     this.initDevData()
     this.initAllUserData()
   },

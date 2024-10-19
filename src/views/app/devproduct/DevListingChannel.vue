@@ -23,6 +23,16 @@
       <el-table-column
           align="center"
           header-align="center"
+          label="包含跨境号">
+        <template slot-scope="scope">
+          <el-checkbox  @change="updateIncludeChina(scope.row)"
+                       :disabled="!permission.devproduct_online_list"
+                       v-model="scope.row.include_china"></el-checkbox>
+        </template>
+      </el-table-column>
+      <el-table-column
+          align="center"
+          header-align="center"
           label="是否发布">
         <template slot-scope="scope">
           <el-checkbox @change="updateChannel(scope.row)"
@@ -49,6 +59,32 @@ export default {
     this.initListingChannel()
   },
   methods:{
+    // 修改包含跨境号
+    updateIncludeChina(row){
+      if (row.is_active) {
+        this.$confirm('是否确定变更？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.loading = true
+          let url = 'api/dev_channel/update_include_china/'
+          this.postRequest(url, {'id': row.id, 'is_active': row.is_active, 'include_china': row.include_china}).then(resp => {
+            this.loading = false
+            if (resp) {
+              this.initListingChannel();
+            }
+          })
+        }).catch(() => {
+          this.initListingChannel();
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });
+        });
+      }
+
+    },
     // 修改渠道
     updateChannel(row){
       this.$confirm('是否确定变更？', '提示', {
@@ -58,7 +94,7 @@ export default {
       }).then(() => {
         this.loading = true
         let url = 'api/dev_channel/update_channel/'
-        this.postRequest(url, {'id': row.id, 'is_active': row.is_active}).then(resp => {
+        this.postRequest(url, {'id': row.id, 'is_active': row.is_active, 'include_china': row.include_china}).then(resp => {
           this.loading = false
           if (resp) {
             this.initListingChannel();

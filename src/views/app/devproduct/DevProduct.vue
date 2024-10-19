@@ -160,7 +160,7 @@
 <!--    导航信息-->
     <div style="display: flex;justify-content: space-between">
       <div>
-        <el-radio-group v-model="devStatus" style="margin-right: 20px" size="medium" @change="initDevProducts">
+        <el-radio-group v-model="devStatus" style="margin-right: 20px" size="medium" @change="changeFilter">
           <el-radio-button label="DRAFT"><i class="el-icon-edit"></i> 草稿箱</el-radio-button>
           <el-radio-button label="ONLINE"><i class="el-icon-tickets"></i> 已发布</el-radio-button>
           <el-radio-button label="OFFLINE"><i class="el-icon-sold-out"></i> 已下线</el-radio-button>
@@ -704,7 +704,15 @@
           <el-table-column
               align="center"
               header-align="center"
-              label="选择">
+              label="包含跨境号">
+            <template slot-scope="scope">
+              <el-checkbox v-model="scope.row.include_china"></el-checkbox>
+            </template>
+          </el-table-column>
+          <el-table-column
+              align="center"
+              header-align="center"
+              label="选择发布">
             <template slot-scope="scope">
               <el-checkbox v-model="scope.row.default_active"></el-checkbox>
             </template>

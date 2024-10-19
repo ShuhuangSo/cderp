@@ -32,6 +32,12 @@
           label="平台">
       </el-table-column>
       <el-table-column
+          prop="ac_type"
+          align="center"
+          header-align="center"
+          label="类型">
+      </el-table-column>
+      <el-table-column
           prop="site"
           align="center"
           header-align="center"
@@ -56,7 +62,7 @@
       <el-table-column
           align="center"
           header-align="center"
-          width="350"
+          width="450"
           label="操作">
         <template slot-scope="scope">
           <el-button size="mini" type="text" @click="editAccount(scope.row)" >编辑</el-button>
@@ -65,7 +71,9 @@
           <el-divider direction="vertical"></el-divider>
           <el-button size="mini" type="text" @click="syncAccount(scope.row, 'SITE')" >同步站点</el-button>
           <el-divider direction="vertical"></el-divider>
-          <el-button size="mini" type="text" @click="syncAccount(scope.row, 'STATUS')" >同步状态</el-button>
+          <el-button size="mini" type="text" @click="syncAccount(scope.row, 'AC_TYPE')" >同步账号类型</el-button>
+          <el-divider direction="vertical"></el-divider>
+          <el-button size="mini" type="text" @click="syncAccount(scope.row, 'STATUS')" >同步启用状态</el-button>
 <!--          <el-divider direction="vertical"></el-divider>-->
 <!--          <el-button size="mini" type="text" @click="deleteAccount(scope.row.id)" >删除</el-button>-->
         </template>
@@ -108,6 +116,16 @@
             <el-select v-model="account.site" placeholder="请选择" class="inputwidth">
               <el-option
                   v-for="item in siteList"
+                  :key="item.value"
+                  :label="item.name"
+                  :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item  label="类型" prop="ac_type">
+            <el-select v-model="account.ac_type" placeholder="请选择" class="inputwidth">
+              <el-option
+                  v-for="item in typeList"
                   :key="item.value"
                   :label="item.name"
                   :value="item.value">
@@ -169,6 +187,7 @@ export default {
       account: {
         id: null,
         type: null,
+        ac_type: null,
         site: null,
         name: '',
         manager: null,
@@ -189,6 +208,10 @@ export default {
         {name: '澳洲', value: 'AU'},
         {name: '美国', value: 'US'},
         {name: '德国', value: 'DE'},
+      ],
+      typeList: [
+        {name: '跨境号', value: 'CHINA'},
+        {name: '本土号', value: 'LOCAL'},
       ],
     }
   },
@@ -228,6 +251,7 @@ export default {
         'account_name': row.name,
         'user_name': row.manager.name,
         'op_type': op_type,
+        'ac_type': row.ac_type,
         'is_active': row.is_active
       }
       this.$confirm('是否确定同步？', '提示', {
