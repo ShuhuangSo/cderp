@@ -510,11 +510,18 @@
                   <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_wc', id:scope.row.id}">导出微草申报单</el-dropdown-item>
                   <el-dropdown-item
+                      divided
                       v-if="scope.row.platform === 'OZON'"
                       :command="{type:'export_ozon_products', id:scope.row.id}">导出OZON产品入仓单</el-dropdown-item>
                   <el-dropdown-item
                       v-if="scope.row.platform === 'OZON'"
                       :command="{type:'export_ozon_package', id:scope.row.id}">导出OZON产品装箱单</el-dropdown-item>
+                  <el-dropdown-item
+                      v-if="scope.row.platform === 'OZON'"
+                      :command="{type:'export_ozon_package_in_muti_box', id:scope.row.id, note:scope.row.note}">导出OZON产品装箱单-跨箱</el-dropdown-item>
+                  <el-dropdown-item
+                      v-if="scope.row.platform === 'OZON'"
+                      :command="{type:'export_ozon_package_match', id:scope.row.id}">导出OZON物流箱唛号映射表</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -1573,6 +1580,59 @@ export default {
           type: 'warning'
         }).then(() => {
           let url = 'api/ml_ship/export_ozon_package/'
+          this.postRequest(url, {'id': command['id']}).then(resp => {
+            if (resp.status === 'success') {
+              window.open(resp.url, '_blank')
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+      // 导出OZON产品装箱单-跨箱
+      if (command['type'] === 'export_ozon_package_in_muti_box') {
+        if (!command['note']) {
+          this.$message.error('装箱分配备注为空')
+          return;
+        }
+        let p_list = command['note'].split('\n') //去除换行符
+        let new_list = []
+        p_list.forEach(item=>{
+          new_list.push(item.split(','))
+        })
+
+        this.$confirm('是否导出OZON产品装箱单-跨箱?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let url = 'api/ml_ship/export_ozon_package_in_muti_box/'
+          this.postRequest(url, {'id': command['id'], 'p_list': new_list}).then(resp => {
+            if (resp.status === 'success') {
+              window.open(resp.url, '_blank')
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+
+      }
+
+      // 导出OZON物流箱唛号映射表
+      if (command['type'] === 'export_ozon_package_match') {
+        this.$confirm('是否导出OZON物流箱唛号映射表?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let url = 'api/ml_ship/export_ozon_package_match/'
           this.postRequest(url, {'id': command['id']}).then(resp => {
             if (resp.status === 'success') {
               window.open(resp.url, '_blank')

@@ -30,7 +30,7 @@
                   style="width: 400px;"
                   type="textarea"
                   :rows="4"
-                  placeholder="请输入备注"
+                  placeholder="请输入备注 (ozon跨箱备注格式：sku,箱号,数量 + 回车分隔多项数据)"
                   @change="changeNote"
                   v-model="ship.note">
               </el-input>
