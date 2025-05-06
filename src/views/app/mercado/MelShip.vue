@@ -99,6 +99,7 @@
               <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
                                 :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
               <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">物流对账</el-dropdown-item>
+              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'cookie_setting'}">cookies设置</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
 
@@ -907,6 +908,30 @@
         </span>
     </el-dialog>
 
+    <!--    盛德cookie设置弹窗-->
+    <el-dialog
+        title="盛德cookies设置"
+        :visible.sync="cookieSettingVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="1000px"
+    >
+      <div>
+        <el-input
+            type="textarea"
+            :rows="5"
+            placeholder="请输入cookies"
+            v-model="sdCookieInput">
+        </el-input>
+
+      </div>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="cookieSettingVisible=false">关 闭</el-button>
+        <el-button size="small" type="primary"
+                   @click="submitSdCookieInput">保 存</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -958,6 +983,8 @@ export default {
       sdBillInput: '', //盛德对账输入
       bill_win: 'INPUT', //对账窗口显示
       billCheckShips: [], // 对账数据
+      cookieSettingVisible: false, //盛德cookie设置弹窗
+      sdCookieInput: '', // cookies值
       trackVisible: false, //物流跟踪弹窗
       trackLoading: false, //物流跟踪loading
       trackMessageList: null, //跟踪信息
@@ -1080,6 +1107,13 @@ export default {
     this.checkNotify()
   },
   methods:{
+    //提交盛德物流cookies设置
+    submitSdCookieInput(){
+      this.postRequest('api/ml_ship/sd_cookies_setting/', {'sd_cookies': this.sdCookieInput}).then(resp => {
+        this.cookieSettingVisible = false
+      })
+    },
+
     //提交物流对账输入
     submitBillInput(){
       let ships = []
@@ -1492,6 +1526,16 @@ export default {
       if (command['type'] === 'bill_input') {
         this.bill_win = 'INPUT'
         this.sdBillVisible = true
+      }
+
+      // 盛德cookie设置
+      if (command['type'] === 'cookie_setting') {
+        this.getRequest('/api/ml_ship/sd_cookies_setting/').then(resp => {
+          if (resp) {
+            this.sdCookieInput = resp.sd_cookies
+          }
+        })
+        this.cookieSettingVisible = true
       }
 
       // 刷新状态
