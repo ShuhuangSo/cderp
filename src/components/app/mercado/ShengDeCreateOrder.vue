@@ -233,7 +233,7 @@ export default {
       ], //头程类型
       warehouse_list: [
         {
-          name: '深圳石岩仓(需预约)',
+          name: '东莞塘厦仓',
           value: '0200'
         },
       ], //收货仓库
