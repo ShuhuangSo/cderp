@@ -1033,6 +1033,10 @@ export default {
           name: 'OZON',
           value: '&platform=OZON'
         },
+        {
+          name: 'EMAG',
+          value: '&platform=EMAG'
+        },
       ],
       predefineColors: [
         '#ff4500',
@@ -1087,6 +1091,7 @@ export default {
       if (value === '&platform=MERCADO') return '美客多';
       if (value === '&platform=NOON') return 'Noon';
       if (value === '&platform=OZON') return 'OZON';
+      if (value === '&platform=EMAG') return 'EMAG';
       return '';
     },
     //平台格式化

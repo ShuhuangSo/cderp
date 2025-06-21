@@ -446,6 +446,10 @@ export default {
         {
           code: 'OZON',
           name: 'OZON'
+        },
+        {
+          code: 'EMAG',
+          name: 'EMAG'
         }], //平台
       activeName: 'one',
       mlProduct:{

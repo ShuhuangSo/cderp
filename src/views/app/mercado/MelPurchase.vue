@@ -1243,6 +1243,10 @@ export default {
           name: 'OZON',
           value: '&platform=OZON'
         },
+        {
+          name: 'EMAG',
+          value: '&platform=EMAG'
+        },
       ],
     }
   },
@@ -1284,6 +1288,7 @@ export default {
       if (value === 'MERCADO') return '美客多';
       if (value === 'NOON') return 'Noon';
       if (value === 'OZON') return 'OZON';
+      if (value === 'EMAG') return 'EMAG';
       return '';
     },
   },
