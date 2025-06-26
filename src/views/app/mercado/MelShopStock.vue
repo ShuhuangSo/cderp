@@ -172,7 +172,13 @@
             min-width="120"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="font-weight: bold">{{ scope.row.sku }}
+            <div >
+              <el-link
+                  style="font-weight: bold; margin-right: 4px;margin-bottom: 1px"
+                  @click.native="productDetail(scope.row.sku)"
+                  :underline="false">
+                {{ scope.row.sku }}
+              </el-link>
               <el-link @click.native="copyText(scope.row.sku)"
                        style="margin-bottom: 3px"
                        :underline="false"><i class="el-icon-copy-document"></i></el-link>
@@ -539,6 +545,23 @@
         </span>
     </el-dialog>
 
+    <!--    产品详情弹窗-->
+    <el-dialog
+        title="产品详情"
+        :visible.sync="productDetailVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        width="1200px"
+    >
+      <MelProductDetail ref="productDetail"
+                        :key="timer"
+                        :productID="productID"
+                        @closeProductDetail="closeProductDetail"></MelProductDetail>
+      <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="productDetailVisible = false">关 闭</el-button>
+        </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -546,11 +569,12 @@
 import moment from "moment/moment";
 import MelStockDetail from "@/components/app/mercado/MelStockDetail";
 import MLStockLog from "@/components/app/mercado/MLStockLog";
+import MelProductDetail from "@/views/app/mercado/MelProductDetail";
 
 export default {
   name: "MelShopStock",
   props: ["p_shop_id", 'p_filter_name'],
-  components:{MelStockDetail, MLStockLog},
+  components:{MelStockDetail, MLStockLog, MelProductDetail},
   data(){
     return{
       user: JSON.parse(window.sessionStorage.getItem('user')),
@@ -586,6 +610,7 @@ export default {
       reason: '', // 盘点理由
       timer: '',
       isShow: true,
+      productDetailVisible: false, // 产品详情弹窗
       filter_group: [
         {
           name: '全部产品',
@@ -728,6 +753,19 @@ export default {
     this.getTodayStock() // 计算库存
   },
   methods:{
+    // 打开产品详情弹窗
+    productDetail(sku){
+      this.postRequest('api/ml_products/get_product_id/', {'sku': sku}).then(resp => {
+        if (resp.id) {
+          this.timer = new Date().getTime();
+          this.productID = resp.id;
+          this.productDetailVisible = true;
+        } else {
+          this.$message.error('产品不存在!')
+        }
+      })
+    },
+
     // 盘点库存
     submitChangeStock(){
       this.tStockLoading = true

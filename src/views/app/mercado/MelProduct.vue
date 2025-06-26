@@ -238,6 +238,7 @@
                 <el-dropdown-item :disabled="!permission.product_editAll && selectedUser === 0"
                                   :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit', id:scope.row.id}">编辑产品</el-dropdown-item>
+                <el-dropdown-item :command="{type:'copy', obj:scope.row}">复制产品</el-dropdown-item>
                 <el-dropdown-item :disabled="!permission.product_deleteAll && selectedUser === 0"
                                   :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
               </el-dropdown-menu>
@@ -523,6 +524,28 @@ export default {
     },
     // 产品更多操作
     handleProductOp(command) {
+      // 复制
+      if (command['type'] === 'copy') {
+        this.$prompt('请输入产品SKU编码', '复制产品', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputValue: command['obj'].sku + 'CP',
+          inputPattern: /^[^\s]{1,15}$/,
+          inputErrorMessage: 'SKU格式不正确'
+        }).then(({ value }) => {
+          let url = 'api/ml_products/cp_product/'
+          this.postRequest(url, {'old_id': command['obj'].id, 'new_sku': value}).then(resp => {
+            if (resp) {
+              this.initMLProducts()
+            }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消复制'
+          });
+        });
+      }
       // 编辑图片
       if (command['type'] === 'editImage') {
         this.imageUrl = command['obj'].image,
