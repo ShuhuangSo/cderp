@@ -239,6 +239,7 @@
                                   :command="{type:'editImage', obj:scope.row}">更换图片</el-dropdown-item>
                 <el-dropdown-item :command="{type:'edit', id:scope.row.id}">编辑产品</el-dropdown-item>
                 <el-dropdown-item :command="{type:'copy', obj:scope.row}">复制产品</el-dropdown-item>
+                <el-dropdown-item :command="{type:'print', obj:scope.row}">打印条码</el-dropdown-item>
                 <el-dropdown-item :disabled="!permission.product_deleteAll && selectedUser === 0"
                                   :command="{type:'delete', id:scope.row.id}">删除产品</el-dropdown-item>
               </el-dropdown-menu>
@@ -322,6 +323,67 @@
         </span>
     </el-dialog>
 
+    <!--    产品标签打印弹窗-->
+      <el-dialog
+          v-loading="loading"
+          title="产品标签打印"
+          :visible.sync="labelVisible"
+          :destroy-on-close="true"
+          :close-on-click-modal="false"
+          @close="closePrint"
+          width="800px"
+      >
+        <el-table
+            :header-cell-style="{background:'#eef1f6'}"
+            :data="printProducts"
+            border
+            size="mini"
+            v-loading="loading"
+            style="width: 98%; margin: 10px">
+
+          <el-table-column
+              label="图片"
+              align="center"
+              header-align="center"
+              width="80">
+            <template slot-scope="scope">
+              <el-image
+                  style="width: 40px; height: 40px"
+                  :src="scope.row.image"
+                  :preview-src-list="[scope.row.image]"
+                  fit="fill">
+              </el-image>
+            </template>
+          </el-table-column>
+          <el-table-column
+              width="100px"
+              prop="sku"
+              label="SKU">
+          </el-table-column>
+          <el-table-column
+              prop="p_name"
+              label="产品名称">
+          </el-table-column>
+          <el-table-column
+              label="打印数量"
+              align="center"
+              header-align="center"
+              width="160">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.qty" :min="1"></el-input-number>
+            </template>
+          </el-table-column>
+
+
+        </el-table>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="closePrint">取 消</el-button>
+          <el-button size="small" type="primary"
+                     :loading="printLoading"
+                     @click="submitPrint">打 印</el-button>
+        </span>
+      </el-dialog>
+
     <!--    批量上传弹窗-->
     <el-dialog
         title="批量上传"
@@ -399,6 +461,9 @@ export default {
       version: Math.random(),
       is_check: '',
       p_status: '',
+      labelVisible: false, // 产品标签打印弹窗
+      printProducts: [],  // 打印标签产品
+      printLoading: false,
       check_group: [
         {
           name: '全部数据',
@@ -475,6 +540,24 @@ export default {
     this.inintShops();
   },
   methods: {
+    //关闭标签打印
+    closePrint(){
+      this.labelVisible = false
+      this.printProducts = []
+    },
+    //提交打印
+    submitPrint(){
+      this.printLoading = true
+      this.postRequest('api/ml_products/create_label/', {'products': this.printProducts}).then(resp => {
+        this.printLoading = false
+        if (resp.url) {
+          this.labelVisible = false
+          this.$refs.productTable.clearSelection();
+          window.open(resp.url, '_blank')
+        }
+      })
+    },
+
     //点击复制
     copyText(value){
       let text = value;
@@ -524,6 +607,17 @@ export default {
     },
     // 产品更多操作
     handleProductOp(command) {
+      // 打印条码
+      if (command['type'] == 'print') {
+        this.printProducts.push({
+          'image': command['obj'].image,
+          'sku': command['obj'].sku,
+          'p_name': command['obj'].p_name,
+          'qty': 1
+        })
+        this.labelVisible = true
+      }
+
       // 复制
       if (command['type'] === 'copy') {
         this.$prompt('请输入产品SKU编码', '复制产品', {
