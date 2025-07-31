@@ -36,37 +36,61 @@
 
       </div>
 
+      <div style="margin-top: 10px">
+        <el-input size="small" placeholder="批次号 Envio 物流单号 备注"
+                  clearable
+                  @clear="clearSearchValue"
+                  @keyup.enter.native="doSearch"
+                  v-model="searchValue"
+                  style="width: 350px; margin-right: 5px">
+          <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
+        </el-input>
+
+        <span style="font-size: 12px; color: #303133;margin-left: 10px;margin-right: 5px" v-if="s_status==='PREPARING'">装箱运单</span>
+        <el-switch
+            v-if="s_status==='PREPARING'"
+            @change="initShips"
+            v-model="is_ship_packed">
+        </el-switch>
+
+        <span style="font-size: 12px; color: #303133;margin-left: 10px;margin-right: 5px" v-if="s_status==='BOOKED'">入仓核查</span>
+        <el-switch
+            v-if="s_status==='BOOKED'"
+            @change="initShips"
+            v-model="wait_check">
+        </el-switch>
+      </div>
+
       <div class="filter">
         <div>
-          <el-input size="small" placeholder="批次号 Envio 物流单号 备注"
-                    clearable
-                    @clear="clearSearchValue"
-                    @keyup.enter.native="doSearch"
-                    v-model="searchValue"
-                    style="width: 350px; margin-right: 5px">
-            <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
-          </el-input>
 
-          <span style="font-size: 12px; color: #303133;margin-left: 10px;margin-right: 5px" v-if="s_status==='BOOKED'">入仓核查</span>
-          <el-switch
-              v-if="s_status==='BOOKED'"
-              @change="initShips"
-              v-model="wait_check">
-          </el-switch>
-
-          <el-radio-group
-              style="margin-left: 50px"
-              @change="changeTarget" v-model="target">
-            <el-radio-button label="">全部</el-radio-button>
-            <el-radio-button label="FBM">FBM入仓单</el-radio-button>
-            <el-radio-button label="TRANSIT">中转仓单</el-radio-button>
-          </el-radio-group>
+          <el-select v-model="target"
+                     style="width: 120px;"
+                     @change="changeTarget" placeholder="请选择运单类型">
+            <el-option
+                v-for="item in target_list"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
 
           <el-select v-model="platform"
                      style="width: 150px;margin-left: 5px; "
                      @change="changeTarget" placeholder="请选择平台">
             <el-option
                 v-for="item in platforms"
+                :key="item.name"
+                :label="item.name"
+                :value="item.value">
+            </el-option>
+          </el-select>
+
+          <el-select v-model="create_time"
+                     style="width: 150px;margin-left: 5px; "
+                     @change="initShips" placeholder="请选择运单">
+            <el-option
+                v-for="item in create_list"
                 :key="item.name"
                 :label="item.name"
                 :value="item.value">
@@ -374,6 +398,7 @@
             width="200">
           <template slot-scope="scope">
             <div><span class="tt">物流名称: </span>{{scope.row.carrier}}</div>
+            <div><span class="tt">头程类型: </span>{{scope.row.ship_type}}</div>
             <div><span class="tt">物流单号: </span>
               <el-link @click.native="fastEditSNumber(scope.row)"
                        v-if="!scope.row.s_number"
@@ -957,7 +982,6 @@ export default {
       filterBatch: '', // 筛选批次
       filterShop: '', // 筛选店铺
       filterSort: '', // 排序名称
-      target: '',
       s_status: this.shipStatusName? this.shipStatusName : 'PREPARING',// 筛选状态
       ships: [],
       pre_qty: 0, // 备货运单数量
@@ -996,6 +1020,7 @@ export default {
       wait_check: this.shipWaitCheck?true:false, // 入仓核查
       remove_items_count: 0, //变动清单待处理数量
       sort: '-create_time', //排序变量
+      is_ship_packed: false, // 运单是否已装箱
       tag: {
         tag_color: '#409EFF',
         tag_name: '',
@@ -1014,6 +1039,21 @@ export default {
           value: '-book_date'
         },
 
+      ],
+      target: '', //入仓目标类型
+      target_list: [
+        {
+          name: '全部类型',
+          value: ''
+        },
+        {
+          name: '直运入仓单',
+          value: 'FBM'
+        },
+        {
+          name: '中转仓单',
+          value: 'TRANSIT'
+        },
       ],
       platform: '', //平台
       platforms: [
@@ -1036,6 +1076,17 @@ export default {
         {
           name: 'EMAG',
           value: '&platform=EMAG'
+        },
+      ],
+      create_time: '180DAYS', //创建日期
+      create_list: [
+        {
+          name: '全部运单',
+          value: ''
+        },
+        {
+          name: '最近半年运单',
+          value: '180DAYS'
         },
       ],
       predefineColors: [
@@ -1438,6 +1489,7 @@ export default {
       this.page = 1;
       this.s_status = value
       this.wait_check = false
+      this.is_ship_packed = false
       this.initShips()
     },
 
@@ -2029,6 +2081,18 @@ export default {
         let today = moment(new Date()).format("YYYY-MM-DD")
         url += '&book_date__lt=' + today
       }
+      // 是否装箱
+      if (this.is_ship_packed) {
+        url += '&total_box__gt=0'
+      }
+      if (this.create_time === '180DAYS') {
+        // 获取当前时间，减去180天，然后设置为当天00:00:00
+        const pastDate = moment().subtract(180, 'days').startOf('day');
+        // 格式化为"YYYY-MM-DD HH:mm:ss"字符串
+        const startDate = pastDate.format('YYYY-MM-DD HH:mm:ss');
+        url += '&create_time__gte=' + startDate
+      }
+
       url += '&target=' + this.target
       url += '&s_status=' + this.s_status
       url += '&ordering=' + this.sort
