@@ -198,6 +198,7 @@
             width="80">
           <template slot-scope="scope">
             <div>{{ scope.row.price }}</div>
+            <div v-if="scope.row.platform ==='EMAG'">{{ scope.row.invoice_price }}</div>
           </template>
         </el-table-column>
 
@@ -207,7 +208,7 @@
             header-align="center"
             width="80">
           <template slot-scope="scope">
-            <div>{{ scope.row.fees }}</div>
+            <div>{{ scope.row.fees}}</div>
           </template>
         </el-table-column>
 
@@ -260,7 +261,7 @@
             width="150">
           <template slot-scope="scope">
             <div :title="scope.row.order_time_bj | bjdate">
-              <span v-if="scope.row.platform === 'MERCADO' || scope.row.platform === 'OZON'">{{ scope.row.order_time | date}}</span>
+              <span v-if="scope.row.platform !== 'NOON'">{{ scope.row.order_time | date}}</span>
               <span v-if="scope.row.platform === 'NOON'">{{ scope.row.order_time | date2}}</span>
             </div>
           </template>
@@ -389,18 +390,43 @@
           <el-collapse :value="['1', '2', '3', '4']">
             <el-collapse-item title="销售费用" name="1">
               <div style="width: 500px">
-                <el-descriptions :column="1" size="medium" :label-style="LS">
+                <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='MERCADO'">
                   <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="佣金比例">{{ this.orderDetail.fee_rate | rate }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="FBO费用">{{ this.orderDetail.fbo_fee | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="最后一公里费用">{{ this.orderDetail.last_mile_fee | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="总运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='OZON'" label="收单费用">{{ this.orderDetail.payment_fee | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="VAT税">{{ this.orderDetail.VAT | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="成交价">{{ this.orderDetail.invoice_price | f_currency }}</el-descriptions-item>
-                  <el-descriptions-item v-if="orderDetail.platform ==='NOON'" label="优惠金额">{{ this.orderDetail.promo_coupon | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
+                  <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                </el-descriptions>
+                <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='NOON'">
+                  <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="总运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="VAT税">{{ this.orderDetail.VAT | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="成交价">{{ this.orderDetail.invoice_price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="优惠金额">{{ this.orderDetail.promo_coupon | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
+                  <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                </el-descriptions>
+                <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='OZON'">
+                  <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="佣金比例">{{ this.orderDetail.fee_rate | rate }}</el-descriptions-item>
+                  <el-descriptions-item label="FBO费用">{{ this.orderDetail.fbo_fee | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="最后一公里费用">{{ this.orderDetail.last_mile_fee | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="总运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="收单费用">{{ this.orderDetail.payment_fee | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
+                  <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                </el-descriptions>
+                <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='EMAG'">
+                  <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="销售额(含VAT)">{{ this.orderDetail.invoice_price | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="FBE运费(固定预估)">{{ this.orderDetail.postage | currency }}</el-descriptions-item>
+                  <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | currency }}</el-descriptions-item>
                   <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
                   <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
                 </el-descriptions>
