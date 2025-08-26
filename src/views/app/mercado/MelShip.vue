@@ -689,8 +689,8 @@
       <el-divider>常用标签</el-divider>
       <div>
         <el-tag color="#ff8c00"
-                @click="set_tag('已提交', '#ff8c00')"
-                size="medium" effect="dark" style="border: none">已提交</el-tag>
+                @click="set_tag('已核重', '#ff8c00')"
+                size="medium" effect="dark" style="border: none">已核重</el-tag>
         <el-tag color="#00ced1"
                 @click="set_tag('已确认预约', '#00ced1')"
                 size="medium" effect="dark" style="border: none; margin-left: 5px">已确认预约</el-tag>

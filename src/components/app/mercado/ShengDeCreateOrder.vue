@@ -211,7 +211,7 @@ export default {
         d_code: this.ship_obj.fbm_warehouse, //fbm仓库代码
         address1: '', //fbm仓库地址
         zip_code: '', //fbm仓库邮编
-        sellerid: '本土号', //sellerid
+        sellerid: this.ship_obj.shop_type === 'LOCAL'? '本土号': this.ship_obj.shop_id, //sellerid
         envio: this.ship_obj.envio_number, //envio
         product: '手机壳', //品名
         ProductNature: ['普货'], //产品性质
