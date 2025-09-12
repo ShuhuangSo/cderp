@@ -393,6 +393,7 @@
                 <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='MERCADO'">
                   <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="平台佣金">{{ this.orderDetail.fees | f_currency }}</el-descriptions-item>
+                  <el-descriptions-item label="VAT" v-if="this.orderDetail.VAT">{{ this.orderDetail.VAT | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="总运费">{{ this.orderDetail.postage | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
