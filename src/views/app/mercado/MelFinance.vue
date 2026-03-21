@@ -625,6 +625,8 @@ export default {
       this.page = 1;
       this.initFinances();
       this.getFund()
+      //保存过滤参数
+      window.sessionStorage.setItem('ml_ship_id', JSON.stringify(this.shopID));
     },
 
     // 重置搜索内容
@@ -685,7 +687,12 @@ export default {
         })
       }
       if (this.shops.length) {
-        this.shopID = this.shops[0].id
+        if(window.sessionStorage.getItem('ml_ship_id')) {
+          this.shopID = JSON.parse(window.sessionStorage.getItem('ml_ship_id'));
+        } else
+        {
+          this.shopID = this.shops[0].id
+        }
         this.initFinances()
         this.getFund()
       }

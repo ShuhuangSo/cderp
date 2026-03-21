@@ -398,6 +398,8 @@
                   <el-descriptions-item label="收入资金">{{ this.orderDetail.receive_fund | f_currency }}</el-descriptions-item>
                   <el-descriptions-item label="币种">{{ this.orderDetail.currency }}</el-descriptions-item>
                   <el-descriptions-item label="即时汇率">{{ this.orderDetail.ex_rate }}</el-descriptions-item>
+                  <el-descriptions-item label="额外报税税率" v-if="this.orderDetail.sp_fee_rate">{{ this.orderDetail.sp_fee_rate | rate }}</el-descriptions-item>
+                  <el-descriptions-item label="额外报税金额" v-if="this.orderDetail.sp_fee">{{ this.orderDetail.sp_fee | f_currency }}</el-descriptions-item>
                 </el-descriptions>
                 <el-descriptions :column="1" size="medium" :label-style="LS" v-if="orderDetail.platform ==='NOON'">
                   <el-descriptions-item label="销售额">{{ this.orderDetail.price | f_currency }}</el-descriptions-item>
@@ -757,6 +759,8 @@ export default {
     changeShop(){
       this.page = 1;
       this.initOrders();
+      //保存过滤参数
+      window.sessionStorage.setItem('ml_ship_id', JSON.stringify(this.shopID));
     },
     //改变筛选动作
     changeFilter(){
@@ -824,10 +828,6 @@ export default {
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
 
-        if (this.shops.length) {
-          this.shopID = this.shops[0].id
-          this.initOrders()
-        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
         if (!this.permission.order_allShopCheck) {
@@ -837,13 +837,18 @@ export default {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
-
-            if (this.shops.length) {
-              this.shopID = this.shops[0].id
-              this.initOrders()
-            }
           }
         })
+      }
+      //加载默认选择的店铺id或保存选择过的id
+      if (this.shops.length) {
+        if(window.sessionStorage.getItem('ml_ship_id')) {
+          this.shopID = JSON.parse(window.sessionStorage.getItem('ml_ship_id'));
+        } else
+        {
+          this.shopID = this.shops[0].id
+        }
+        this.initOrders()
       }
 
     },

@@ -901,6 +901,8 @@ export default {
       this.filter_name = '&p_status__in=NORMAL,HOT_SALE,CLEAN'
       this.initShopStock();
       this.getTodayStock() // 计算库存
+      //保存过滤参数
+      window.sessionStorage.setItem('ml_ship_id', JSON.stringify(this.shopID));
     },
 
     //获取今日库存
@@ -949,12 +951,6 @@ export default {
       //获取所有可选店铺
       if(window.sessionStorage.getItem('ml_shops')) {
         this.shops = JSON.parse(window.sessionStorage.getItem('ml_shops'));
-
-        if (this.shops.length) {
-          this.shopID = this.p_shop_id ? Number(this.p_shop_id) : this.shops[0].id
-          this.filter_name = this.p_filter_name?this.p_filter_name : '&p_status__in=NORMAL,HOT_SALE,CLEAN'
-          this.initShopStock()
-        }
       }else{
         let url = 'api/ml_shops/?warehouse_type=FBM&page_size=1000&ordering=create_time'
         if (!this.user.is_superuser) {
@@ -964,14 +960,23 @@ export default {
           if (resp.results) {
             this.shops = resp.results;
             window.sessionStorage.setItem('ml_shops', JSON.stringify(this.shops));
-
-            if (this.shops.length) {
-              this.shopID = this.p_shop_id ? Number(this.p_shop_id) : this.shops[0].id
-              this.filter_name = this.p_filter_name?this.p_filter_name : '&p_status__in=NORMAL,HOT_SALE,CLEAN'
-              this.initShopStock()
-            }
           }
         })
+      }
+      if (this.shops.length) {
+        // 如果有传送店铺id就用传送id，否则从session中取，没有再使用默认
+        if (this.p_shop_id) {
+          this.shopID = Number(this.p_shop_id)
+        } else {
+          if(window.sessionStorage.getItem('ml_ship_id')) {
+            this.shopID = JSON.parse(window.sessionStorage.getItem('ml_ship_id'));
+          } else
+          {
+            this.shopID = this.shops[0].id
+          }
+        }
+        this.filter_name = this.p_filter_name?this.p_filter_name : '&p_status__in=NORMAL,HOT_SALE,CLEAN'
+        this.initShopStock()
       }
 
     },

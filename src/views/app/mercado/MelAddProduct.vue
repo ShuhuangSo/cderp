@@ -52,8 +52,11 @@
           width="80">
       </el-table-column>
       <el-table-column
-          prop="p_name"
           label="产品名称">
+        <template slot-scope="scope">
+          <div>{{ scope.row.p_name }}</div>
+          <div v-if="scope.row.note"><el-tag>{{ scope.row.note }}</el-tag></div>
+        </template>
       </el-table-column>
 
       <el-table-column
