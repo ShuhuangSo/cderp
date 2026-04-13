@@ -59,7 +59,7 @@
                   v-for="item in first_ship_types"
                   :key="item.name"
                   :label="item.name"
-                  :value="item.name">
+                  :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -85,24 +85,6 @@
                 type="date"
                 placeholder="选择日期">
             </el-date-picker>
-          </el-form-item>
-
-          <el-form-item label="预约时间" prop="reserveid">
-            <el-select v-model="ship_data.reserveid"
-                       @change="get_time_value"
-                       remote
-                       :loading="reserve_loading"
-                       style="width: 300px;"
-                       placeholder="请选择时间">
-              <el-option
-                  v-for="item in reserve_time_list"
-                  :key="ship_data.reserveid"
-                  :label="item.time"
-                  :value="item.reserveid">
-                <span style="float: left">{{ item.time }}</span>
-                <span style="float: right; color: #8492a6; font-size: 13px">剩余：{{ item.reservesum }}</span>
-              </el-option>
-            </el-select>
           </el-form-item>
           
         </el-form>
@@ -135,11 +117,10 @@
                        placeholder="请选择FBM仓库">
               <el-option
                   v-for="item in fbm_warehouse_list"
-                  :key="item.d_code"
-                  :label="item.d_code"
-                  :value="item.d_code">
-                <span style="float: left">{{ item.d_code }}</span>
-                <span style="float: right; color: #8492a6; font-size: 13px" v-if="item.zip">邮编：{{ item.zip }}</span>
+                  :key="item"
+                  :label="item"
+                  :value="item">
+                <span style="float: left">{{ item }}</span>
               </el-option>
             </el-select>
           </el-form-item>
@@ -202,16 +183,14 @@ export default {
     return{
       ship_data:{
         ship_id: this.ship_obj.id,
-        EntrustType: '空运',
-        warehouseid: '0200',
+        EntrustType: 2,
+        warehouseid: '东莞凤岗仓',
         apptdate: '',
-        DeliveryTime: '',
-        reserveid: '',
         country_code: '墨西哥',
         d_code: this.ship_obj.fbm_warehouse, //fbm仓库代码
         address1: '', //fbm仓库地址
         zip_code: '', //fbm仓库邮编
-        sellerid: this.ship_obj.shop_type === 'LOCAL'? '本土号': this.ship_obj.shop_id, //sellerid
+        sellerid: this.ship_obj.shop_type === 'LOCAL'? 'Local': this.ship_obj.shop_id, //sellerid
         envio: this.ship_obj.envio_number, //envio
         product: '手机壳', //品名
         ProductNature: ['普货'], //产品性质
@@ -228,13 +207,13 @@ export default {
       first_ship_types: [
         {
           name: '空运',
-          value: '空运'
+          value: 2
         },
       ], //头程类型
       warehouse_list: [
         {
-          name: '东莞塘厦仓',
-          value: '0200'
+          name: '东莞凤岗仓',
+          value: '东莞凤岗仓'
         },
       ], //收货仓库
       country_list: [
@@ -274,7 +253,6 @@ export default {
         },
       ], //产品性质
       fbm_warehouse_list: [], //入仓fbm仓库列表
-      reserve_time_list: [], //预约时间列表
       custom_rules: {
         product: [
           {required: true, message: '请填写品名', trigger: 'blur'},
@@ -322,35 +300,15 @@ export default {
         }
       })
     },
-    //获取预约时间
-    getReserveTime(){
-      this.reserve_time_list = []
-      this.ship_data.DeliveryTime = ''
-      this.ship_data.reserveid = ''
-      this.reserve_loading = true
-      this.postRequest('api/ml_carriers/get_sd_reserve/', {'apptdate': this.ship_data.apptdate}).then(resp => {
-        this.reserve_loading = false
-        if (resp.status === 'success') {
-          this.reserve_time_list = resp.data
-          this.reserve_time_list.forEach(item=>{
-            item['time'] = item['reservestart'] + '~' + item['reserveend']
-          })
 
-        }
-      })
-    },
-
-    // 获取预约时间
-    get_time_value(){
-      let reserve = this.reserve_time_list.find(item => item.reserveid === this.ship_data.reserveid)
-      this.ship_data.DeliveryTime = this.ship_data.apptdate + ' ' + reserve['reservestart'] + '~' + reserve['reserveend']
-    },
 
     //获取盛德fbm仓库列表
     get_fbm_warehouse(){
       this.getRequest('api/ml_carriers/get_fbm_warehouse/').then(resp => {
         if (resp.status === 'success') {
-          this.fbm_warehouse_list = JSON.parse(resp.data)
+          // 直接拿到 d_code 列表
+          this.fbm_warehouse_list = resp.d_codes
+          console.log('d_code列表：', this.fbm_warehouse_list)
 
         }
       })
@@ -380,7 +338,7 @@ export default {
 
         this.$emit('placeOrderLoadingTrue');
         this.loading = true
-        this.postRequest('api/ml_ship/carrier_place_order/', this.ship_data).then(resp => {
+        this.postRequest('api/ml_ship/carrier_place_order_new/', this.ship_data).then(resp => {
           this.$emit('placeOrderLoadingFalse');
           this.loading = false
           if (resp.status === 'success') {

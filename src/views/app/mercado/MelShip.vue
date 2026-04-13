@@ -123,7 +123,7 @@
               <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
                                 :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
               <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">物流对账</el-dropdown-item>
-              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'cookie_setting'}">cookies设置</el-dropdown-item>
+              <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'cookie_setting'}">Token设置</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
 
@@ -419,6 +419,8 @@
             <div><span class="tt_msg">{{scope.row.latest_track | ellipsis}}</span></div>
             <div v-if="scope.row.s_status ==='PREPARING'">
               <el-tag effect="plain" size="mini" v-if="scope.row.carrier_order_status==='WAIT'">待受理</el-tag>
+              <el-tag type="warning" effect="plain" size="mini" v-if="scope.row.carrier_order_status==='PACKED'">已装箱，需上传箱唛</el-tag>
+              <el-tag type="info" effect="plain" size="mini" v-if="scope.row.carrier_order_status==='UNSUBMIT'">资料已上传,等待预报</el-tag>
               <el-tag type="success" size="mini" effect="plain" v-if="scope.row.carrier_order_status==='ACCEPTED'">已受理</el-tag>
             </div>
 <!--            <div><span class="tt">发货方式: </span>{{scope.row.ship_type}}</div>-->
@@ -559,8 +561,8 @@
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item :disabled="scope.row.carrier !== '盛德物流'" :command="{type:'place_order', obj:scope.row}">物流交运</el-dropdown-item>
-                  <el-dropdown-item :disabled="scope.row.carrier_order_status !== 'ACCEPTED'" :command="{type:'print_receipt', num:scope.row.s_number}">打印物流交运单</el-dropdown-item>
-                  <el-dropdown-item :disabled="scope.row.carrier_order_status !== 'ACCEPTED'" :command="{type:'print_box', num:scope.row.s_number}">打印物流箱唛</el-dropdown-item>
+                  <el-dropdown-item v-if="scope.row.carrier_order_status === 'ACCEPTED' || scope.row.carrier_order_status === 'WAIT'" :command="{type:'print_receipt', obj:scope.row}">打印物流交运单</el-dropdown-item>
+                  <el-dropdown-item v-if="scope.row.carrier_order_status === 'ACCEPTED' || scope.row.carrier_order_status === 'WAIT'" :command="{type:'print_box', obj:scope.row}">打印物流箱唛</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -1292,6 +1294,9 @@ export default {
       if(window.sessionStorage.getItem('ml_ship_filterShop')) {
         this.filterShop = JSON.parse(window.sessionStorage.getItem('ml_ship_filterShop'));
       }
+      if(window.sessionStorage.getItem('ml_is_ship_packed')) {
+        this.is_ship_packed = JSON.parse(window.sessionStorage.getItem('ml_is_ship_packed'));
+      }
       if(window.sessionStorage.getItem('ml_ship_filterSort')) {
         this.filterSort = JSON.parse(window.sessionStorage.getItem('ml_ship_filterSort'));
         if (this.filterSort) {
@@ -1820,7 +1825,7 @@ export default {
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         });
-        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['num'], 'label_type': 'RECEIPT'}).then(resp => {
+        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['obj'].s_number, 'ship_id': command['obj'].id, 'label_type': 'RECEIPT'}).then(resp => {
           loading.close();
           if (resp.status === 'success') {
             window.open(resp.link, '_blank')
@@ -1836,7 +1841,7 @@ export default {
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         });
-        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['num'], 'label_type': 'BOX'}).then(resp => {
+        this.postRequest('api/ml_ship/carrier_label/', {'s_number': command['obj'].s_number, 'ship_id': command['obj'].id,'label_type': 'BOX'}).then(resp => {
           loading.close();
           if (resp.status === 'success') {
             window.open(resp.link, '_blank')
@@ -2111,6 +2116,7 @@ export default {
       window.sessionStorage.setItem('ml_ship_platform', JSON.stringify(this.platform));
       window.sessionStorage.setItem('ml_ship_filterShop', JSON.stringify(this.filterShop));
       window.sessionStorage.setItem('ml_ship_filterSort', JSON.stringify(this.filterSort));
+      window.sessionStorage.setItem('ml_is_ship_packed', JSON.stringify(this.is_ship_packed));
 
       this.calcShips();
     }
