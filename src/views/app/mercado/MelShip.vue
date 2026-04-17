@@ -122,6 +122,8 @@
               <el-dropdown-item :disabled="s_status!=='PREPARING'" :command="{type:'refresh_order'}">刷新状态</el-dropdown-item>
               <el-dropdown-item :disabled="s_status==='PREPARING' || s_status==='FINISHED'"
                                 :command="{type:'refresh_tracking'}">刷新跟踪</el-dropdown-item>
+              <el-dropdown-item :disabled="s_status==='FINISHED'"
+                                :command="{type:'sd_manual_sync'}">同步交运/信息</el-dropdown-item>
               <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'bill_input'}">物流对账</el-dropdown-item>
               <el-dropdown-item v-if="this.user.is_superuser" :command="{type:'cookie_setting'}">Token设置</el-dropdown-item>
             </el-dropdown-menu>
@@ -429,13 +431,46 @@
 
         <el-table-column
             label="包裹信息"
-            width="140">
+            width="260">
           <template slot-scope="scope">
             <div><span class="tt">总数量: </span><span class="zi">{{scope.row.total_qty}}</span></div>
-            <div><span class="tt">总箱数: </span><span class="zi">{{scope.row.total_box}}</span></div>
-            <div><span class="tt">总重量: </span><span class="zi">{{scope.row.weight | kg}}</span></div>
+            <div><span class="tt">总箱数: </span><span class="zi">{{scope.row.total_box}}</span>
+              <span class="zi_green" v-if="scope.row.carrier_GoodsNum">
+                <el-divider direction="vertical"></el-divider>{{scope.row.carrier_GoodsNum}}
+              </span>
+            </div>
+            <div>
+              <span class="tt">总重量: </span><span class="zi">{{scope.row.weight | kg}}</span>
+              <span class="zi_green" v-if="scope.row.carrier_ckweight">
+                <el-divider direction="vertical"></el-divider>{{scope.row.carrier_ckweight}}
+                <el-divider direction="vertical"></el-divider>{{scope.row.carrier_ckvolume}}
+              </span>
+            </div>
+            <div><span class="tt">总体积: </span><span class="zi">{{scope.row.cbm | cbm}}</span>
+              <span class="zi_green" v-if="scope.row.carrier_ckcbm">
+                <el-divider direction="vertical"></el-divider>{{scope.row.carrier_ckcbm | cbm}}
+              </span>
+            </div>
             <div><span class="tt">总净量: </span><span class="zi">{{scope.row.products_weight | kg}}</span></div>
-            <div><span class="tt">总体积: </span><span class="zi">{{scope.row.cbm | cbm}}</span></div>
+            <div>
+              <el-popconfirm
+                  v-if="scope.row.carrier_rec_check==='ERROR'"
+                  @confirm="confirmWeight(scope.row.id)"
+                  confirm-button-text='确认'
+                  cancel-button-text='取消'
+                  icon="el-icon-info"
+                  icon-color="red"
+                  title="物流收货数量/重量有差异，是否确认?"
+              >
+                <el-button
+                           slot="reference"
+                           icon="el-icon-warning"
+                           type="danger"
+                           plain
+                           size="mini" round>差异</el-button>
+              </el-popconfirm>
+
+            </div>
           </template>
         </el-table-column>
 
@@ -1253,6 +1288,14 @@ export default {
         }
       })
     },
+    //确认核查收货重量
+    confirmWeight(id){
+      this.postRequest('api/ml_ship/confirm_weight/', {'ship_id': id}).then(resp => {
+        if (resp) {
+          this.initShips()
+        }
+      })
+    },
     // 物流跟踪弹窗
     checkShipTrack(num){
       this.trackUpdateTime = null
@@ -1612,6 +1655,14 @@ export default {
           loading.close();
           if (resp) {
             this.initShips()
+          }
+        })
+      }
+      // 手动同步交运/信息
+      if (command['type'] === 'sd_manual_sync') {
+        this.getRequest('/api/ml_ship/sd_manual_sync/').then(resp => {
+          if (resp) {
+            // this.initShips()
           }
         })
       }
@@ -2153,6 +2204,10 @@ export default {
 .zi {
   font-weight: bold;
   color: #E6A23C;
+}
+.zi_green {
+  font-weight: bold;
+  color: #008080;
 }
 .jiantou{
   margin-left: 8px;
