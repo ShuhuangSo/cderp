@@ -210,7 +210,8 @@
                   show-overflow-tooltip>
                 <template slot-scope="scope">
                   <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
-                    <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+                    <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini">新</el-tag>
+                    <el-tag v-if="!scope.row.is_label_complete" type="warning" size="mini">缺标</el-tag>
                   </div>
 
                   <div>{{ scope.row.p_name }}</div>
@@ -569,6 +570,7 @@
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item :command="{type:'export_purchase', id:scope.row.id}">导出采购单</el-dropdown-item>
+                  <el-dropdown-item :command="{type:'export_product_labels', id:scope.row.id}">导出产品标签</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_qc', id:scope.row.id}">导出质检单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_sd', id:scope.row.id}">导出盛德申报单</el-dropdown-item>
                   <el-dropdown-item :command="{type:'export_wc', id:scope.row.id}">导出微草申报单</el-dropdown-item>
@@ -1705,8 +1707,36 @@ export default {
             });
           });
         })
-
       }
+
+      // 导出产品标签
+      if (command['type'] === 'export_product_labels') {
+        this.$confirm('是否导出产品标签?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const loading = this.$loading({
+            lock: true,
+            text: '正在生成产品标签...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          let url = 'api/ml_ship/export_product_labels/'
+          this.postRequest(url, {'id': command['id']}).then(resp => {
+            loading.close();
+            if (resp.status === 'success') {
+              window.open(resp.url, '_blank')
+            }
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消'
+            });
+          });
+        })
+      }
+
       // 导出OZON产品入仓单
       if (command['type'] === 'export_ozon_products') {
         this.$confirm('是否导出OZON产品入仓单?', '提示', {

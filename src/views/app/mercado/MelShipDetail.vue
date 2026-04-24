@@ -169,7 +169,13 @@
               width="300">
             <template slot-scope="scope">
               <div><span style="font-weight: bold">{{ scope.row.sku }} </span>
-                <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini" effect="dark">新</el-tag>
+                <el-tag v-if="scope.row.s_type==='NEW'" type="success" size="mini">新</el-tag>
+                <el-tag v-if="!scope.row.is_label_complete" type="warning" size="mini">缺标</el-tag>
+                <el-link @click.native="printLabel(scope.row)"
+                         v-if="scope.row.is_label_complete"
+                         title="打印标签"
+                         class="small_icon"
+                         :underline="false"><i class="el-icon-printer"></i></el-link>
               </div>
 
               <div>{{ scope.row.p_name }}</div>
@@ -657,6 +663,22 @@ export default {
       });
 
       return sums;
+    },
+
+    //打印产品标签
+    printLabel(row){
+      const loading = this.$loading({
+        lock: true,
+        text: '正在生成产品标签...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      this.postRequest('api/ml_products/create_label/', {'products': [{'sku':row.sku, 'qty': row.qty}], 'platform': this.ship.platform}).then(resp => {
+        loading.close();
+        if (resp.url) {
+          window.open(resp.url, '_blank')
+        }
+      })
     },
 
     //保存改变的备注信息

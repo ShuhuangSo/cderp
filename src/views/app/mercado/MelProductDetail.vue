@@ -273,6 +273,7 @@
                   <el-col :span="24">
                     <el-form-item label="FBM条码">
                       <el-input v-model="mlProduct.label_code"
+                                :disabled="true"
                                 class="label"
                                 prop="label_code">
                       </el-input>

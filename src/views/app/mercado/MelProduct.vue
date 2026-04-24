@@ -154,6 +154,7 @@
               <span
                   v-if="scope.row.is_incomplete"
                   style="margin-left: 5px;color: #FFAE00; font-size: 16px"><i class="el-icon-warning"></i></span>
+              <el-tag v-if="!scope.row.is_label_complete" type="warning" size="mini">缺标</el-tag>
             </div>
 
             <div>{{ scope.row.p_name }}</div>
@@ -463,6 +464,7 @@ export default {
       p_status: '',
       labelVisible: false, // 产品标签打印弹窗
       printProducts: [],  // 打印标签产品
+      selectedPlatform: '',  // 选择的平台
       printLoading: false,
       check_group: [
         {
@@ -548,7 +550,7 @@ export default {
     //提交打印
     submitPrint(){
       this.printLoading = true
-      this.postRequest('api/ml_products/create_label/', {'products': this.printProducts}).then(resp => {
+      this.postRequest('api/ml_products/create_label/', {'products': this.printProducts, 'platform': this.selectedPlatform}).then(resp => {
         this.printLoading = false
         if (resp.url) {
           this.labelVisible = false
@@ -615,6 +617,7 @@ export default {
           'p_name': command['obj'].p_name,
           'qty': 1
         })
+        this.selectedPlatform = command['obj'].platform
         this.labelVisible = true
       }
 
