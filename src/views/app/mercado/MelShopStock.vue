@@ -852,15 +852,15 @@ export default {
         },
         {
           name: 'FBM库存数量↓',
-          value: '-qty'
+          value: '-total_qty'
         },
         {
-          name: '在途数量↓',
-          value: '-onway_qty'
+          name: 'fbm在途数量↓',
+          value: '-total_fbm_onway_qty'
         },
         {
           name: '中转仓数量↓',
-          value: '-trans_qty'
+          value: '-total_trans_onway_qty'
         },
         {
           name: '总销量↓',
@@ -868,11 +868,15 @@ export default {
         },
         {
           name: '30天销量↓',
-          value: '-day30_sold'
+          value: '-total_day30_sold'
         },
         {
           name: '15天销量↓',
-          value: '-day15_sold'
+          value: '-total_day15_sold'
+        },
+        {
+          name: '7天销量↓',
+          value: '-total_day7_sold'
         },
         {
           name: '退款率↓',
@@ -883,13 +887,17 @@ export default {
           value: '-total_profit'
         },
         {
-          name: '毛利润↓',
-          value: '-avg_profit'
+          name: '平均毛利润↓',
+          value: '-total_avg_profit'
         },
         {
-          name: '毛利率↓',
-          value: '-avg_profit_rate'
+          name: '平均毛利率↓',
+          value: '-total_avg_profit_rate'
         },
+        {
+          name: '库存价值↓',
+          value: '-total_stock_value'   // 新增
+        }
       ],
       reason_group: [
         {
@@ -1220,7 +1228,7 @@ export default {
       if (this.filter_name) {
         url += this.filter_name;
       }
-      url += '&ordering=' + this.sort + ',item_id'
+      url += '&ordering=' + this.sort
 
       this.loading = true
       this.getRequest(url).then(resp => {
