@@ -152,159 +152,393 @@
           v-loading="loading"
           style="width: 100%">
 
+
+
+        <!--        变体sku-->
+        <el-table-column type="expand">
+          <template slot="header" slot-scope="scope">
+            <el-button size="medium" type="text" icon="el-icon-circle-plus"
+                       @click="expendChange"
+                       v-if="!expandStatus">
+            </el-button>
+            <el-button size="medium" type="text" icon="el-icon-remove"
+                       @click="expendChange"
+                       v-if="expandStatus">
+            </el-button>
+          </template>
+          <template slot-scope="props">
+            <el-table
+                :data="props.row.children"
+                :header-cell-style="{background:'#FEFCE5'}"
+                size="mini">
+              <el-table-column
+                  label="图片"
+                  align="center"
+                  header-align="center"
+                  width="100">
+                <template slot-scope="scope">
+                  <el-image
+                      style="width: 60px; height: 60px"
+                      :src="scope.row.image | smpic"
+                      :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
+                      fit="fill">
+                  </el-image>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  label="产品"
+                  min-width="120"
+                  show-overflow-tooltip>
+                <template slot-scope="scope">
+                  <div >
+                    <el-link
+                        style="font-weight: bold; margin-right: 4px;margin-bottom: 1px"
+                        @click.native="productDetail(scope.row.sku)"
+                        :underline="false">
+                      {{ scope.row.sku }}
+                    </el-link>
+                    <el-link @click.native="copyText(scope.row.sku)"
+                             style="margin-bottom: 3px"
+                             :underline="false"><i class="el-icon-copy-document"></i></el-link>
+                  </div>
+
+                  <div>{{ scope.row.p_name }}</div>
+                  <div>{{ scope.row.item_id }}
+                    <el-link :href="scope.row.sale_url"
+                             title="查看平台链接"
+                             :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
+
+                  </div>
+                  <div>
+                    <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
+                    <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
+                    <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
+                    <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  label="FBM库存">
+                <template slot-scope="scope">
+
+                  <div style="display: flex;padding-top: 10px">
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-popover
+                            @show="showTagSelect"
+                            placement="top"
+                            width="500"
+                            trigger="click">
+                          <MelStockDetail
+                              :obj="{'sku': scope.row.sku, 'op_type': 'FINISH'}"
+                              :key="timer" v-if="isShow"></MelStockDetail>
+                          <el-button type="text" slot="reference" class="stock_qty">{{ scope.row.qty }}</el-button>
+                        </el-popover>
+                      </div>
+                      <div>
+                        <div  class="small_zi">FBM</div>
+                      </div>
+                    </div>
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-popover
+                            @show="showTagSelect"
+                            placement="top"
+                            width="500"
+                            trigger="click">
+                          <MelStockDetail
+                              :obj="{'sku': scope.row.sku, 'op_type': 'FBM_ONWAY'}"
+                              :key="timer" v-if="isShow"></MelStockDetail>
+                          <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.fbm_onway_qty }}</el-button>
+                        </el-popover>
+                      </div>
+                      <div>
+                        <div  class="small_zi">FBM在途</div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  label="中转仓">
+                <template slot-scope="scope">
+
+                  <div style="display: flex;padding-top: 10px">
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-popover
+                            @show="showTagSelect"
+                            placement="top"
+                            width="500"
+                            trigger="click">
+                          <MelStockDetail
+                              :obj="{'sku': scope.row.sku, 'op_type': 'TRANS'}"
+                              :key="timer" v-if="isShow"></MelStockDetail>
+                          <el-button type="text" slot="reference" class="zz_qty">{{ scope.row.trans_qty }}</el-button>
+                        </el-popover>
+                      </div>
+                      <div>
+                        <div  class="small_zi">中转</div>
+                      </div>
+                    </div>
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-popover
+                            @show="showTagSelect"
+                            placement="top"
+                            width="500"
+                            trigger="click">
+                          <MelStockDetail
+                              :obj="{'sku': scope.row.sku, 'op_type': 'TRANS_ONWAY'}"
+                              :key="timer" v-if="isShow"></MelStockDetail>
+                          <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.trans_onway_qty }}</el-button>
+                        </el-popover>
+                      </div>
+                      <div>
+                        <div  class="small_zi">中转在途</div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  label="备货中 | 采购中 | 采购到货">
+                <template slot-scope="scope">
+
+                  <div style="display: flex;padding-top: 10px">
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-button type="text" class="stock_qty">{{ scope.row.preparing_qty }}</el-button>
+                      </div>
+                      <div>
+                        <div  class="small_zi">备货中</div>
+                      </div>
+                    </div>
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-button type="text" class="onway_qty">{{ scope.row.p_onway_qty }}</el-button>
+                      </div>
+                      <div>
+                        <div  class="small_zi">采购中</div>
+                      </div>
+                    </div>
+
+                    <div style="width: 50px;text-align:center">
+                      <div>
+                        <el-button type="text" class="zz_qty">{{ scope.row.p_rec_qty }}</el-button>
+                      </div>
+                      <div>
+                        <div  class="small_zi">采购到货</div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  width="120"
+                  label="销量">
+                <template slot-scope="scope">
+                  <div>7天销量: <span class="zi">{{scope.row.day7_sold}} </span>
+                  </div>
+                  <div>15天销量: <span class="zi">{{scope.row.day15_sold}} </span>
+                  </div>
+                  <div>30天销量: <span class="zi">{{scope.row.day30_sold}} </span>
+                  </div>
+                  <div>累计销量: <span class="zi">{{scope.row.total_sold}}</span></div>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  width="150"
+                  label="利润">
+                <template slot-scope="scope">
+                  <div>平均毛利润: <span class="zi">{{scope.row.avg_profit | currency}} </span>
+                  </div>
+                  <div>平均毛利率: <span class="zi">{{scope.row.avg_profit_rate | rate}} </span>
+                  </div>
+                  <div>累计利润: <span class="zi">{{scope.row.total_profit | currency}}</span></div>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  align="center"
+                  header-align="center"
+                  width="60"
+                  label="退款率">
+                <template slot-scope="scope">
+                  <div><span class="zi">{{scope.row.refund_rate | rate}} </span></div>
+                </template>
+              </el-table-column>
+
+              <el-table-column
+                  align="center"
+                  header-align="center"
+                  label="均摊成本 | 均摊头程">
+                <template slot-scope="scope">
+                  {{ scope.row.unit_cost | currency}}
+                  <el-divider direction="vertical"></el-divider>
+                  {{ scope.row.first_ship_cost | currency}}
+                </template>
+              </el-table-column>
+
+
+              <el-table-column
+                  label="操作"
+                  align="center"
+                  header-align="center"
+                  width="50"
+              >
+                <template slot-scope="scope">
+                  <el-dropdown @command="handleProductOp">
+                    <el-button type="text">
+                      <i class="el-icon-more"></i>
+                    </el-button>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item :disabled="!permission.fbmStock_pandian"
+                                        :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
+                      <el-dropdown-item :disabled="!permission.fbmStock_changeStatus"
+                                        :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
+                      <el-dropdown-item
+                          :command="{type:'stockLog', obj:scope.row}">库存日志</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+
+        </el-table-column>
+
+        <!--        父列表-->
         <el-table-column
             label="图片"
             align="center"
             header-align="center"
-            width="100">
+            width="100"
+        >
           <template slot-scope="scope">
-            <el-image
-                style="width: 80px; height: 80px"
-                :src="scope.row.image | smpic"
-                :preview-src-list="[scope.row.image?scope.row.image+'?' + Math.random():'']"
-                fit="fill">
-            </el-image>
+            <!-- 外层统一容器：80x80 + 浅灰色背景 -->
+            <div style="width:80px; height:80px; background:#f5f5f5; position: relative;">
+
+              <!-- 1张图片：占满80x80 -->
+              <div v-if="scope.row.images_list.length == 1" style="width:100%;height:100%">
+                <el-image
+                    style="width:80px;height:80px"
+                    :src="scope.row.images_list[0] | smpic"
+                    :preview-src-list="scope.row.images_list"
+                    fit="cover"
+                ></el-image>
+              </div>
+
+              <!-- 2、3、4张图片：田字格 2x2 -->
+              <div v-else style="display: flex;flex-wrap: wrap;width:80px;height:80px;">
+                <div
+                    v-for="(img, idx) in scope.row.images_list.slice(0,4)"
+                    :key="idx"
+                    style="width:40px;height:40px"
+                >
+                  <el-image
+                      style="width:40px;height:40px"
+                      :src="img | smpic"
+                      :preview-src-list="scope.row.images_list"
+                      fit="cover"
+                  ></el-image>
+                </div>
+              </div>
+
+            </div>
           </template>
         </el-table-column>
 
         <el-table-column
-            label="产品"
-            min-width="120"
+            label="变体"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <div >
-              <el-link
-                  style="font-weight: bold; margin-right: 4px;margin-bottom: 1px"
-                  @click.native="productDetail(scope.row.sku)"
-                  :underline="false">
-                {{ scope.row.sku }}
-              </el-link>
-              <el-link @click.native="copyText(scope.row.sku)"
-                       style="margin-bottom: 3px"
-                       :underline="false"><i class="el-icon-copy-document"></i></el-link>
+            <div style="display: flex;padding-top: 10px" v-if="scope.row.is_group">
+              <div style="width: 50px;text-align:center">
+                <div class="stock_qty">
+                  {{ scope.row.total_skus }}
+                </div>
+                <div>
+                  <div  class="small_zi">总SKU数</div>
+                </div>
+              </div>
             </div>
-
-            <div>{{ scope.row.p_name }}</div>
-            <div>{{ scope.row.item_id }}
-              <el-link :href="scope.row.sale_url"
-                       title="查看平台链接"
-                       :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
-              <el-link @click.native="selectItemID(scope.row.item_id)"
+            <div v-if="!scope.row.is_group">
+              同链接还有{{ scope.row.other_skus }}个sku,
+              <el-link
+                  type="primary"
+                @click.native="selectItemID(scope.row.group_id)"
+                :underline="false">
+                显示全部
+            </el-link>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column
+            label="合并ID"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div>{{ scope.row.group_id }}
+              <el-link @click.native="selectItemID(scope.row.group_id)"
                        title="筛选当前ItemID"
                        style="margin-left: 5px"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
             </div>
-            <div>
-              <el-tag size="small" effect="plain" v-if="scope.row.p_status=='NORMAL'">普通</el-tag>
-              <el-tag type="success" size="small" effect="plain" v-if="scope.row.p_status=='HOT_SALE'">热卖</el-tag>
-              <el-tag type="danger" size="small" effect="plain" v-if="scope.row.p_status=='OFFLINE'">停售</el-tag>
-              <el-tag type="warning" size="small" effect="plain" v-if="scope.row.p_status=='CLEAN'">清仓</el-tag>
-            </div>
           </template>
         </el-table-column>
 
         <el-table-column
-            label="FBM库存">
-          <template slot-scope="scope">
-
-          <div style="display: flex;padding-top: 10px">
-            <div style="width: 50px;text-align:center">
-              <div>
-                <el-popover
-                    @show="showTagSelect"
-                    placement="top"
-                    width="500"
-                    trigger="click">
-                  <MelStockDetail
-                      :obj="{'sku': scope.row.sku, 'op_type': 'FINISH'}"
-                      :key="timer" v-if="isShow"></MelStockDetail>
-                  <el-button type="text" slot="reference" class="stock_qty">{{ scope.row.qty }}</el-button>
-                </el-popover>
-              </div>
-              <div>
-                <div  class="small_zi">FBM</div>
-              </div>
-            </div>
-
-            <div style="width: 50px;text-align:center">
-              <div>
-                <el-popover
-                    @show="showTagSelect"
-                    placement="top"
-                    width="500"
-                    trigger="click">
-                  <MelStockDetail
-                      :obj="{'sku': scope.row.sku, 'op_type': 'FBM_ONWAY'}"
-                      :key="timer" v-if="isShow"></MelStockDetail>
-                  <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.fbm_onway_qty }}</el-button>
-                </el-popover>
-              </div>
-              <div>
-                <div  class="small_zi">FBM在途</div>
-              </div>
-            </div>
-          </div>
-
-
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            label="中转仓">
-          <template slot-scope="scope">
+            label="链接FBM库存">
+          <template slot-scope="scope" v-if="scope.row.is_group">
 
             <div style="display: flex;padding-top: 10px">
-
               <div style="width: 50px;text-align:center">
-                <div>
-                  <el-popover
-                      @show="showTagSelect"
-                      placement="top"
-                      width="500"
-                      trigger="click">
-                    <MelStockDetail
-                        :obj="{'sku': scope.row.sku, 'op_type': 'TRANS'}"
-                        :key="timer" v-if="isShow"></MelStockDetail>
-                    <el-button type="text" slot="reference" class="zz_qty">{{ scope.row.trans_qty }}</el-button>
-                  </el-popover>
+                <div class="stock_qty">
+                  {{ scope.row.total_qty }}
                 </div>
                 <div>
-                  <div  class="small_zi">中转</div>
+                  <div  class="small_zi">FBM</div>
                 </div>
               </div>
 
               <div style="width: 50px;text-align:center">
-                <div>
-                  <el-popover
-                      @show="showTagSelect"
-                      placement="top"
-                      width="500"
-                      trigger="click">
-                    <MelStockDetail
-                        :obj="{'sku': scope.row.sku, 'op_type': 'TRANS_ONWAY'}"
-                        :key="timer" v-if="isShow"></MelStockDetail>
-                    <el-button type="text" slot="reference" class="onway_qty">{{ scope.row.trans_onway_qty }}</el-button>
-                  </el-popover>
+                <div class="onway_qty">
+                  {{ scope.row.total_fbm_onway_qty }}
                 </div>
                 <div>
-                  <div  class="small_zi">中转在途</div>
+                  <div  class="small_zi">FBM在途</div>
                 </div>
               </div>
             </div>
-
-
           </template>
         </el-table-column>
 
         <el-table-column
             label="备货中 | 采购中 | 采购到货">
-          <template slot-scope="scope">
+          <template slot-scope="scope" v-if="scope.row.is_group">
 
             <div style="display: flex;padding-top: 10px">
 
               <div style="width: 50px;text-align:center">
-                <div>
-                  <el-button type="text" class="stock_qty">{{ scope.row.preparing_qty }}</el-button>
+                <div class="stock_qty">
+                  {{ scope.row.total_preparing_qty }}
                 </div>
                 <div>
                   <div  class="small_zi">备货中</div>
@@ -312,8 +546,8 @@
               </div>
 
               <div style="width: 50px;text-align:center">
-                <div>
-                  <el-button type="text" class="onway_qty">{{ scope.row.p_onway_qty }}</el-button>
+                <div class="onway_qty">
+                  {{ scope.row.total_p_onway_qty }}
                 </div>
                 <div>
                   <div  class="small_zi">采购中</div>
@@ -321,8 +555,8 @@
               </div>
 
               <div style="width: 50px;text-align:center">
-                <div>
-                  <el-button type="text" class="zz_qty">{{ scope.row.p_rec_qty }}</el-button>
+                <div class="zz_qty">
+                  {{ scope.row.total_p_rec_qty }}
                 </div>
                 <div>
                   <div  class="small_zi">采购到货</div>
@@ -336,13 +570,13 @@
 
         <el-table-column
             width="120"
-            label="销量">
-          <template slot-scope="scope">
-            <div>7天销量: <span class="zi">{{scope.row.day7_sold}} </span>
+            label="链接销量">
+          <template slot-scope="scope" v-if="scope.row.is_group">
+            <div>7天销量: <span class="zi">{{scope.row.total_day7_sold}} </span>
             </div>
-            <div>15天销量: <span class="zi">{{scope.row.day15_sold}} </span>
+            <div>15天销量: <span class="zi">{{scope.row.total_day15_sold}} </span>
             </div>
-            <div>30天销量: <span class="zi">{{scope.row.day30_sold}} </span>
+            <div>30天销量: <span class="zi">{{scope.row.total_day30_sold}} </span>
             </div>
             <div>累计销量: <span class="zi">{{scope.row.total_sold}}</span></div>
           </template>
@@ -350,11 +584,11 @@
 
         <el-table-column
             width="150"
-            label="利润">
-          <template slot-scope="scope">
-            <div>平均毛利润: <span class="zi">{{scope.row.avg_profit | currency}} </span>
+            label="链接利润">
+          <template slot-scope="scope" v-if="scope.row.is_group">
+            <div>平均毛利润: <span class="zi">{{scope.row.total_avg_profit | currency}} </span>
             </div>
-            <div>平均毛利率: <span class="zi">{{scope.row.avg_profit_rate | rate}} </span>
+            <div>平均毛利率: <span class="zi">{{scope.row.total_avg_profit_rate | rate}} </span>
             </div>
             <div>累计利润: <span class="zi">{{scope.row.total_profit | currency}}</span></div>
           </template>
@@ -363,45 +597,9 @@
         <el-table-column
             align="center"
             header-align="center"
-            width="60"
-            label="退款率">
-          <template slot-scope="scope">
-            <div><span class="zi">{{scope.row.refund_rate | rate}} </span></div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            align="center"
-            header-align="center"
-            label="均摊成本 | 均摊头程">
-          <template slot-scope="scope">
-            {{ scope.row.unit_cost | currency}}
-            <el-divider direction="vertical"></el-divider>
-            {{ scope.row.first_ship_cost | currency}}
-          </template>
-        </el-table-column>
-
-
-        <el-table-column
-            label="操作"
-            align="center"
-            header-align="center"
-            width="50"
-        >
-          <template slot-scope="scope">
-            <el-dropdown @command="handleProductOp">
-              <el-button type="text">
-                <i class="el-icon-more"></i>
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item :disabled="!permission.fbmStock_pandian"
-                                  :command="{type:'editQty', obj:scope.row}">盘点数量</el-dropdown-item>
-                <el-dropdown-item :disabled="!permission.fbmStock_changeStatus"
-                                  :command="{type:'editStatus', obj:scope.row}">修改状态</el-dropdown-item>
-                <el-dropdown-item
-                                  :command="{type:'stockLog', obj:scope.row}">库存日志</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
+            label="库存价值">
+          <template slot-scope="scope" v-if="scope.row.is_group">
+            {{ scope.row.total_stock_value | currency}}
           </template>
         </el-table-column>
 
@@ -611,6 +809,8 @@ export default {
       timer: '',
       isShow: true,
       productDetailVisible: false, // 产品详情弹窗
+      expandStatus: true, // 所有行展开状态
+      expandStorageKey: "ml_fbm_all_expand",  // 展开状态存储
       filter_group: [
         {
           name: '全部产品',
@@ -751,8 +951,32 @@ export default {
   mounted() {
     this.inintShops();
     this.getTodayStock() // 计算库存
+
+    // 新增：读取 session 里的全局展开状态
+    const saved = sessionStorage.getItem(this.expandStorageKey);
+    if (saved !== null) {
+      this.expandStatus = saved === "true";
+    }
   },
   methods:{
+    // 循环设置行展开、收起
+    forArr(arr, isExpand) {
+      arr.forEach(i => {
+        this.$refs.productTable.toggleRowExpansion(i, isExpand);
+        if (i.children) {
+          this.forArr(i.children, isExpand);
+        }
+      })
+    },
+    // 行是否展开切换
+    expendChange() {
+      // 切换状态
+      this.expandStatus = !this.expandStatus;
+      // 立即保存到 session
+      sessionStorage.setItem(this.expandStorageKey, this.expandStatus);
+      // 执行展开/收起
+      this.forArr(this.shopStocks, this.expandStatus);
+    },
     // 打开产品详情弹窗
     productDetail(sku){
       this.postRequest('api/ml_products/get_product_id/', {'sku': sku}).then(resp => {
@@ -844,6 +1068,10 @@ export default {
     selectItemID(item_id){
       this.page = 1;
       this.searchValue = item_id
+
+      // 👇 新增：强制设置为展开状态，并保存到session
+      this.expandStatus = true;
+      sessionStorage.setItem(this.expandStorageKey, this.expandStatus);
       this.initShopStock();
     },
     //触发子组件更新
@@ -871,6 +1099,10 @@ export default {
     // 重置搜索内容
     clearSearchValue() {
       this.searchValue = '';
+
+      // 👇 新增：强制设置为闭合状态，并保存到session
+      this.expandStatus = false;
+      sessionStorage.setItem(this.expandStorageKey, this.expandStatus);
       this.initShopStock();
     },
     // 搜索
@@ -996,6 +1228,11 @@ export default {
         if (resp.results) {
           this.shopStocks = resp.results;
           this.total = resp.count;
+
+          // 新增：加载完自动统一展开/收起
+          this.$nextTick(() => {
+            this.forArr(this.shopStocks, this.expandStatus);
+          });
         }
       })
     }

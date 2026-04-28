@@ -96,7 +96,14 @@
                     </el-form-item>
                   </el-col>
 
-
+                  <el-col :span="12">
+                    <el-form-item label="合并ID" prop="group_id">
+                      <el-input v-model="mlProduct.group_id"
+                                maxlength="40"
+                                prop="group_id">
+                      </el-input>
+                    </el-form-item>
+                  </el-col>
 
                   <el-col :span="12">
                     <el-form-item label="成本价" prop="unit_cost">
@@ -461,6 +468,7 @@ export default {
         label_code: '',
         upc: '',
         item_id: '',
+        group_id: '',
         custom_code: '',
         cn_name: '',
         en_name: '',
