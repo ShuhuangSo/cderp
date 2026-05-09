@@ -181,8 +181,10 @@ export default {
     async handleUploadSuccess(res) {
       this.uploadLoading = false;
       if (res.status === "success") {
-        this.form = res.data;
-        this.form.forma_pago = 'Tarjeta de crédito'
+        this.form = {
+          forma_pago: "Tarjeta de crédito", // 👈 默认值写在这里
+          ...res.data                      // 👈 覆盖识别结果
+        };
         if (!this.form.items?.length) this.form.items = [{ title: "", qty: 1, item_price: 0 }];
         this.showDialog = true;
       } else {
