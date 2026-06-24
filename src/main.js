@@ -37,46 +37,57 @@ router.beforeEach((to, from, next) => {
         initMenu(router, store); // 初始化菜单
         initProduct(store); // 初始化简易产品
 
+        const tasks = []
+
         // ml用户权限
         if (!window.sessionStorage.getItem('ml_permission')) {
-            return getRequest('api/settings/get_ml_permission/').then(resp => {
-                if (resp) {
-                    let data = {}
-                    resp.forEach(item=>{
-                        data[item.component] = item.is_active
-                    })
-                    //存入信息
-                    window.sessionStorage.setItem('ml_permission', JSON.stringify(data));
-                }
-            })
+            tasks.push(
+                getRequest('api/settings/get_ml_permission/').then(resp => {
+                    if (resp) {
+                        const data = {}
+                        resp.forEach(item => {
+                            data[item.component] = item.is_active
+                        })
+                        window.sessionStorage.setItem('ml_permission', JSON.stringify(data))
+                    }
+                })
+            )
         }
 
+        // 用户信息
         if (!window.sessionStorage.getItem('user')) {
-            //判断用户信息是否存在
-            return getRequest('api/settings/users/user_info/').then(resp => {
-                if (resp) {
-                    //存入用户信息
-                    window.sessionStorage.setItem('user', JSON.stringify(resp));
-                    next();
+            tasks.push(
+                getRequest('api/settings/users/user_info/').then(resp => {
+                    if (resp) {
+                        window.sessionStorage.setItem('user', JSON.stringify(resp))
+                    }
+                })
+            )
+        }
+
+        if (tasks.length) {
+            return Promise.all(tasks).then(() => {
+                if (to.path === '/') {
+                    next('/home')
+                } else {
+                    next()
                 }
             })
         }
 
-        //在登录状态下去登录页，自动跳到home
-        if (to.path == '/') {
-            next('/home');
+        // 在登录状态下去登录页，自动跳到home
+        if (to.path === '/') {
+            next('/home')
+        } else {
+            next()
         }
-
-        next();
     } else {
         // 未登录则判断用户是否要去登录页
-        if (to.path == '/') {
-            next();
+        if (to.path === '/') {
+            next()
         } else {
-            // 页面跳转
-            next('/?redirect=' + to.path);
+            next('/?redirect=' + to.path)
         }
-
     }
 })
 

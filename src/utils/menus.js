@@ -55,6 +55,8 @@ export const formatRoutes = (routes) => {
                     require(['../views/app/mercado/' + component + '.vue'], resolve);
                 } else if (component.startsWith('Dev')) {
                     require(['../views/app/devproduct/' + component + '.vue'], resolve);
+                } else if (component.startsWith('Push')) {
+                    require(['../views/app/productbase/' + component + '.vue'], resolve);
                 }
             }
         }

@@ -43,7 +43,17 @@ axios.interceptors.response.use(success => {
     } else if (error.response.status == 403) {
         Message.error({message: '权限不足，请联系管理员!'});
     } else if (error.response.status == 400) {
-        Message.error({message: '用户名或密码错误,请重新登录'});
+        const data = error.response.data
+        let msg = '请求参数错误'
+        if (data && typeof data === 'object') {
+          // 提取第一个字段的第一个错误信息
+          const firstKey = Object.keys(data)[0]
+          if (firstKey) {
+            const val = data[firstKey]
+            msg = Array.isArray(val) ? val[0] : String(val)
+          }
+        }
+        Message.error({message: msg});
     } else if (error.response.status == 406) {
         Message.error({message: error.response.data.msg});
     }  else if (error.response.status == 401) {

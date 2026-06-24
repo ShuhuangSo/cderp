@@ -15,7 +15,9 @@
     "print-template": "^1.2.5",
     "vue": "^2.6.14",
     "vue-animate-number": "^0.4.2",
+    "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.5.1",
+    "vuedraggable": "^2.24.3",
     "vuex": "^3.4.0"
   },
   "devDependencies": {

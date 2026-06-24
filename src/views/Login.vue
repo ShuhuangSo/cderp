@@ -53,23 +53,22 @@ export default {
     submitLogin(formName) {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           this.postRequest('api-token-auth/', this.loginForm).then(resp => {
             if (resp) {
-              this.loading = false;
               // 存储用户token
-              const tokenStr = 'JWT ' + resp.token;
-              window.localStorage.setItem('tokenStr', tokenStr);
-              // 跳转未登录前页面
-              let path = this.$route.query.redirect;
-              this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
+              window.localStorage.setItem('tokenStr', 'JWT ' + resp.token)
+              // 跳转（不关 loading，页面跳转后组件自然销毁）
+              let path = this.$route.query.redirect
+              this.$router.replace((path == '/' || path == undefined) ? '/home' : path)
+            } else {
+              this.loading = false
             }
-            this.loading = false;
+          }).catch(() => {
+            this.loading = false
           })
-        } else {
-          return false;
         }
-      });
+      })
     }
   }
 }
