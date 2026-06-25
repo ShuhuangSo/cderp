@@ -71,12 +71,13 @@
           <el-tab-pane label="基础信息" name="basic">
             <el-form-item label="配置名称" prop="name">
               <el-input v-model="form.name" size="small" placeholder="如：标准刊登" />
+              <div class="form-tip">建议名称格式：国家-账号-物流方式-广告情况，如：AU-MAX-信封-广告15%</div>
             </el-form-item>
             <el-form-item label="默认上架库存">
               <el-input-number v-model="form.default_stock" size="small"
                 :min="0" controls-position="right" style="width: 180px" />
             </el-form-item>
-            <el-form-item label="标签">
+            <el-form-item label="DC标签">
               <el-input v-model="form.tags" size="small" placeholder="多个标签用逗号分隔" />
             </el-form-item>
             <el-form-item label="销售计划">
@@ -123,7 +124,7 @@
               <el-input v-model="form.return_policy" size="small" placeholder="退货政策" />
             </el-form-item>
             <el-form-item label="物品所在地">
-              <el-input v-model="form.item_location" size="small" placeholder="如：中国深圳" />
+              <el-input v-model="form.item_location" size="small" placeholder="物品所在地" />
             </el-form-item>
           </el-tab-pane>
 

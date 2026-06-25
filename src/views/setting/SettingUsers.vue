@@ -64,6 +64,16 @@
                   <el-tag v-if="!scope.row.is_superuser">普通用户</el-tag>
                 </template>
               </el-table-column>
+              <el-table-column
+                  label="激活"
+                  width="80"
+                  align="center"
+                  header-align="center">
+                <template slot-scope="scope">
+                  <el-switch v-model="scope.row.is_active"
+                    @change="toggleActive(scope.row)" />
+                </template>
+              </el-table-column>
 
               <el-table-column
                   label="操作"
@@ -164,6 +174,16 @@
                 <template slot-scope="scope">
                   <el-tag v-if="scope.row.is_superuser" type="success">管理员</el-tag>
                   <el-tag v-if="!scope.row.is_superuser">普通用户</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column
+                  label="激活"
+                  width="80"
+                  align="center"
+                  header-align="center">
+                <template slot-scope="scope">
+                  <el-switch v-model="scope.row.is_active"
+                    @change="toggleActive(scope.row)" />
                 </template>
               </el-table-column>
 
@@ -575,6 +595,26 @@ export default {
     clearSearchValue() {
       this.searchValue = '';
       this.initUsers();
+    },
+
+    toggleActive(row) {
+      const action = row.is_active ? '激活' : '禁用'
+      this.$confirm('确定' + action + '该用户？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.putRequest('api/settings/users/edit_user/', {
+          id: row.id,
+          is_active: row.is_active
+        }).then(resp => {
+          if (!resp) {
+            row.is_active = !row.is_active
+          }
+        })
+      }).catch(() => {
+        row.is_active = !row.is_active
+      })
     },
 
     //初始化用户列表
