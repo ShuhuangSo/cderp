@@ -1,24 +1,144 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import ElementUI from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
-import store from './storage';
+import store from './storage'
 
+// ---- Element UI 按需引入 ----
+import {
+  Container, Header, Aside, Main,
+  Button, ButtonGroup,
+  Table, TableColumn,
+  Form, FormItem,
+  Input, InputNumber,
+  Select, Option,
+  Dialog,
+  Tabs, TabPane,
+  Menu, Submenu, MenuItem,
+  Tag,
+  Divider,
+  Tooltip,
+  Popover, Popconfirm,
+  Switch,
+  Radio, RadioButton, RadioGroup,
+  Checkbox,
+  DatePicker,
+  Upload,
+  Image,
+  Pagination,
+  Dropdown, DropdownMenu, DropdownItem,
+  Breadcrumb, BreadcrumbItem,
+  Card,
+  Row, Col,
+  Alert,
+  Badge,
+  Progress,
+  Tree,
+  Steps, Step,
+  Timeline, TimelineItem,
+  PageHeader,
+  Link,
+  ColorPicker,
+  Descriptions, DescriptionsItem,
+  Collapse, CollapseItem,
+  Skeleton,
+  Empty,
+  Slider,
+  Rate,
+  Result,
+  Autocomplete,
+  Backtop
+} from 'element-ui'
+import 'element-ui/lib/theme-chalk/base.css'
+import 'element-ui/lib/theme-chalk/icon.css'
+import lang from 'element-ui/lib/locale/lang/zh-CN'
+import locale from 'element-ui/lib/locale'
+
+// 配置中文语言
+locale.use(lang)
+
+// 逐个注册组件
+const components = [
+  Container, Header, Aside, Main,
+  Button, ButtonGroup,
+  Table, TableColumn,
+  Form, FormItem,
+  Input, InputNumber,
+  Select, Option,
+  Dialog,
+  Tabs, TabPane,
+  Menu, Submenu, MenuItem,
+  Tag,
+  Divider,
+  Tooltip,
+  Popover, Popconfirm,
+  Switch,
+  Radio, RadioButton, RadioGroup,
+  Checkbox,
+  DatePicker,
+  Upload,
+  Image,
+  Pagination,
+  Dropdown, DropdownMenu, DropdownItem,
+  Breadcrumb, BreadcrumbItem,
+  Card,
+  Row, Col,
+  Alert,
+  Badge,
+  Progress,
+  Tree,
+  Steps, Step,
+  Timeline, TimelineItem,
+  PageHeader,
+  Link,
+  ColorPicker,
+  Descriptions, DescriptionsItem,
+  Collapse, CollapseItem,
+  Skeleton,
+  Empty,
+  Slider,
+  Rate,
+  Result,
+  Autocomplete,
+  Backtop
+]
+components.forEach(c => Vue.use(c))
+
+// ---- Element UI 指令和服务 ----
+import { Loading } from 'element-ui'
+Vue.use(Loading.directive)
+
+import { Message, MessageBox } from 'element-ui'
+Vue.prototype.$message = Message
+Vue.prototype.$confirm = MessageBox.confirm
+Vue.prototype.$alert = MessageBox.alert
+Vue.prototype.$prompt = MessageBox.prompt
+
+// ---- API 工具挂载 ----
 import {postRequest} from "@/utils/api";
 import {getRequest} from "@/utils/api";
 import {putRequest} from "@/utils/api";
 import {deleteRequest} from "@/utils/api";
 import {patchRequest} from "@/utils/api";
+
+// ---- 动态菜单初始化 ----
 import {initMenu} from "@/utils/menus";
-import el from "element-ui/src/locale/lang/el";
 import {initProduct} from "@/utils/skus";
-import * as echarts from 'echarts'
+
+// ---- ECharts 按需引入 ----
+import * as echarts from 'echarts/core'
+import { LineChart, BarChart, PieChart } from 'echarts/charts'
+import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DataZoomComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+
+echarts.use([LineChart, BarChart, PieChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DataZoomComponent, CanvasRenderer])
+
+// ---- 动画计数器 ----
 import VueAnimateNumber from 'vue-animate-number'
 
 Vue.config.productionTip = false
 
-Vue.use(ElementUI, {size: 'small'});
+// Element UI 全局默认尺寸（size 必须设置为 'mini' 或 'small'）
+Vue.prototype.$ELEMENT = { size: 'small' }
 
 Vue.use(VueAnimateNumber)
 
