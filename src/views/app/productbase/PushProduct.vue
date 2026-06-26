@@ -113,7 +113,7 @@
         </el-table-column>
 
         <el-table-column
-            width="120"
+            width="150"
             label="产品供应">
           <template slot-scope="scope">
             <div>{{scope.row.supplier}}</div>
@@ -323,7 +323,7 @@
         </el-table-column>
 
         <el-table-column
-            width="120"
+            width="150"
             label="产品供应">
           <template slot-scope="scope">
             <div>{{scope.row.supplier}}</div>
