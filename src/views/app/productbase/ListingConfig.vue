@@ -106,13 +106,17 @@
           <!-- Tab 2: 刊登模板 -->
           <el-tab-pane label="刊登模板" name="content">
             <el-form-item label="通用刊登模板">
-              <el-input v-model="form.listing_template" size="small" placeholder="通用刊登模板" />
+              <el-select v-model="form.listing_template" size="small" placeholder="通用刊登模板" style="width: 100%" clearable filterable allow-create>
+                <el-option v-for="o in listingTemplateOptions" :key="o" :label="o" :value="o" />
+              </el-select>
             </el-form-item>
             <el-form-item label="付款方式">
               <el-input v-model="form.payment_method" size="small" placeholder="付款方式描述" />
             </el-form-item>
             <el-form-item label="货运方式">
-              <el-input v-model="form.shipping_method" size="small" placeholder="货运方式描述" />
+              <el-select v-model="form.shipping_method" size="small" placeholder="货运方式描述" style="width: 100%" clearable filterable allow-create>
+                <el-option v-for="o in shippingMethodOptions" :key="o" :label="o" :value="o" />
+              </el-select>
             </el-form-item>
             <el-form-item label="不运送地区">
               <el-input v-model="form.excluded_regions" size="small" placeholder="不运送地区列表" />
@@ -124,7 +128,9 @@
               <el-input v-model="form.return_policy" size="small" placeholder="退货政策" />
             </el-form-item>
             <el-form-item label="物品所在地">
-              <el-input v-model="form.item_location" size="small" placeholder="物品所在地" />
+              <el-select v-model="form.item_location" size="small" placeholder="物品所在地" style="width: 100%" clearable filterable allow-create>
+                <el-option v-for="o in itemLocationOptions" :key="o" :label="o" :value="o" />
+              </el-select>
             </el-form-item>
           </el-tab-pane>
 
@@ -205,6 +211,10 @@ export default {
       accountOptions: [],
       // 站点选项
       siteOptions: [],
+      // 下拉预设选项
+      listingTemplateOptions: ['AU本土', 'UK虚拟仓'],
+      shippingMethodOptions: ['澳洲本土_跟踪普通', '澳洲本土_跟踪超厚'],
+      itemLocationOptions: ['澳洲通用', '澳洲-76', '澳洲-GB', '澳洲-XF'],
       siteCodes: {
         'EBAY_US': 'US', 'EBAY_AU': 'AU', 'EBAY_CA': 'CA', 'EBAY_DE': 'DE',
         'EBAY_ES': 'ES', 'EBAY_FR': 'FR', 'EBAY_GB': 'GB', 'EBAY_IE': 'IE',

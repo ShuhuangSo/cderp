@@ -4,6 +4,7 @@ node_modules
 CLAUDE.md
 API_PRODUCTBASE.md
 FRONTEND_CONFIG_GUIDE.md
+deploy.sh
 
 # local env files
 .env.local
