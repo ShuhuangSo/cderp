@@ -199,3 +199,9 @@ v1.8.1
 - Moment.js 剥离无用 locale
 - 第三方依赖拆包，浏览器缓存复用
 - 修复 Element UI 全局 size 配置
+
+v1.8.2
+- 店铺管理增加 AI 优化标题/描述功能
+- 数据统计增加 AI Tokens 和费用统计
+- AI Tokens 大数值自动换算单位(K/M)
+- 优化后显示 AI 已优化状态图标

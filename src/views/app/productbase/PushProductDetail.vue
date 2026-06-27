@@ -415,13 +415,28 @@
               <el-row :gutter="20">
                 <el-col :span="16">
                   <el-form-item label="店铺标题" required>
-                    <el-input v-model="currentShop.title" size="small" maxlength="80" show-word-limit placeholder="店铺展示标题" @input="currentShop._shopDirty = true" />
+                    <el-input v-model="currentShop.title" size="small" maxlength="80" show-word-limit placeholder="店铺展示标题" @input="currentShop._shopDirty = true">
+                      <el-button slot="append" icon="el-icon-magic-stick"
+                        :loading="optimizing === 'title'"
+                        @click="optimizeShopContent('EBAY_TITLE')">AI 优化</el-button>
+                      <i v-if="currentShop.title_optimized" slot="suffix"
+                        class="el-icon-magic-stick" style="color: #67c23a; margin-right: 8px; font-size: 16px"
+                        title="AI 已优化" />
+                    </el-input>
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                 <el-col :span="24">
                   <el-form-item label="产品描述">
+                    <div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px">
+                      <el-button size="mini" icon="el-icon-magic-stick"
+                        :loading="optimizing === 'desc'"
+                        @click="optimizeShopContent('EBAY_DESC')">AI 优化描述</el-button>
+                      <i v-if="currentShop.desc_optimized"
+                        class="el-icon-magic-stick" style="color: #67c23a; font-size: 16px"
+                        title="AI 已优化" />
+                    </div>
                     <quill-editor
                       v-model="currentShop.desc"
                       :options="quillOptions"
@@ -828,6 +843,8 @@ export default {
       addShopVisible: false,
       loadingAccounts: false,
       copyingShop: false,
+      optimizing: null, // 'title' | 'desc' | null
+      optimizeUsage: null, // { total_tokens, total_price }
       newShopForm: {
         shop_accounts: [],
         platform: 'EBAY',
@@ -1926,6 +1943,40 @@ export default {
     // ===================== 店铺管理 =====================
     getShopKey(shop, idx) {
       return shop.id ? 'shop-' + shop.id : 'newshop-' + idx
+    },
+
+    optimizeShopContent(type) {
+      if (!this.currentShop || !this.currentShop.id) {
+        this.$message.warning('请先保存店铺后再使用 AI 优化')
+        return
+      }
+      const key = type === 'EBAY_TITLE' ? 'title' : 'desc'
+      this.optimizing = key
+      this.optimizeUsage = null
+      this.postRequest('api/product_group/optimize/', {
+        id: this.currentShop.id,
+        type: type
+      }).then(resp => {
+        this.optimizing = null
+        if (resp) {
+          if (type === 'EBAY_TITLE' && resp.title) {
+            this.currentShop.title = resp.title
+            this.$set(this.currentShop, 'title_optimized', true)
+            this.currentShop._shopDirty = true
+          } else if (type === 'EBAY_DESC' && resp.desc) {
+            // AI 返回纯文本，\n 转为 <br> 才能被 Quill 正确渲染
+            this.currentShop.desc = resp.desc.replace(/\n/g, '<br>')
+            this.$set(this.currentShop, 'desc_optimized', true)
+            this.currentShop._shopDirty = true
+          }
+          if (resp.usage) {
+            this.optimizeUsage = resp.usage
+          }
+          this.$message.success('AI 优化完成')
+        }
+      }).catch(() => {
+        this.optimizing = null
+      })
     },
 
     showAddShopDialog() {

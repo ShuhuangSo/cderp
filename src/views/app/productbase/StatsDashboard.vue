@@ -51,6 +51,12 @@
       <el-table-column label="变体变更" align="center" sortable prop="stats.skus_created" />
       <el-table-column label="导出店铺" align="center" sortable prop="stats.shops_exported" />
       <el-table-column label="导出SKU" align="center" sortable prop="stats.skus_exported" />
+      <el-table-column label="AI Tokens" align="center" sortable prop="stats.dify_tokens">
+        <template slot-scope="scope">
+          {{ formatTokens(scope.row.stats.dify_tokens) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="AI 费用(¥)" align="center" sortable prop="stats.dify_cost" />
     </el-table>
   </div>
 </template>
@@ -63,7 +69,13 @@ const METRICS = [
   { key: 'shops_created', label: '创建店铺' },
   { key: 'skus_created', label: '变体变更' },
   { key: 'shops_exported', label: '导出店铺' },
-  { key: 'skus_exported', label: '导出SKU' }
+  { key: 'skus_exported', label: '导出SKU' },
+  { key: 'dify_tokens', label: 'AI Tokens', format: val => {
+    if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'K'
+    return val
+  }},
+  { key: 'dify_cost', label: 'AI 费用(¥)', format: val => typeof val === 'number' ? val.toFixed(4) : val }
 ]
 
 export default {
@@ -82,17 +94,26 @@ export default {
   computed: {
     summaryCards() {
       const totals = {}
-      METRICS.forEach(m => { totals[m.key] = 0 })
+      METRICS.forEach(m => { totals[m.key] = m.key === 'dify_cost' ? 0 : 0 })
       this.users.forEach(u => {
         METRICS.forEach(m => {
-          totals[m.key] += u.stats[m.key] || 0
+          const val = u.stats[m.key]
+          if (m.key === 'dify_cost') {
+            totals[m.key] += parseFloat(val) || 0
+          } else {
+            totals[m.key] += (typeof val === 'number' ? val : (parseInt(val) || 0))
+          }
         })
       })
-      return METRICS.map(m => ({
-        key: m.key,
-        label: m.label,
-        value: totals[m.key]
-      }))
+      return METRICS.map(m => {
+        let displayVal = totals[m.key]
+        if (m.format) displayVal = m.format(displayVal)
+        return {
+          key: m.key,
+          label: m.label,
+          value: displayVal
+        }
+      })
     }
   },
   mounted() {
@@ -144,6 +165,12 @@ export default {
         this.setPresetDate(preset)
         this.fetchStats()
       }
+    },
+
+    formatTokens(val) {
+      if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
+      if (val >= 1000) return (val / 1000).toFixed(1) + 'K'
+      return val || 0
     },
 
     fetchStats() {
@@ -206,7 +233,11 @@ export default {
         series: METRICS.map(m => ({
           name: m.label,
           type: 'bar',
-          data: users.map(u => u.stats[m.key] || 0)
+          data: users.map(u => {
+            const val = u.stats[m.key]
+            if (m.key === 'dify_cost') return parseFloat(val) || 0
+            return typeof val === 'number' ? val : (parseInt(val) || 0)
+          })
         }))
       }
       this.chart.setOption(option, true)
