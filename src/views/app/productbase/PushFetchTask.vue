@@ -22,6 +22,14 @@
           </el-option>
         </el-select>
 
+        <el-select v-model="filterStatus" size="small" placeholder="任务状态" clearable
+          style="width: 130px; margin-left: 5px" @change="changeFilter">
+          <el-option label="待处理" value="PENDING" />
+          <el-option label="处理中" value="PROCESSING" />
+          <el-option label="成功" value="SUCCESS" />
+          <el-option label="失败" value="FAILED" />
+        </el-select>
+
       </div>
 
     </div>
@@ -114,6 +122,7 @@ export default {
       searchValue: '',
       users: [],
       user: null, //选择操作人
+      filterStatus: '', // 状态筛选
     }
   },
   filters: {
@@ -168,6 +177,9 @@ export default {
       let url = '/api/fetch_tasks/?page=' + this.page + '&page_size=' + this.size
       if (this.user) {
         url += '&creator=' + this.user;
+      }
+      if (this.filterStatus) {
+        url += '&status=' + this.filterStatus;
       }
       if (this.searchValue) {
         url += '&search=' + this.searchValue;
