@@ -10,7 +10,7 @@
         style="width: 220px" @keyup.enter.native="initList" @clear="initList">
         <el-button slot="append" icon="el-icon-search" @click="initList" />
       </el-input>
-      <el-button size="small" type="primary" icon="el-icon-plus" @click="openDialog()">新建抓取配置</el-button>
+      <el-button size="small" type="primary" icon="el-icon-plus" @click="openDialog()">新建属性配置</el-button>
     </div>
 
     <!-- 表格 -->
@@ -61,7 +61,7 @@
 
     <!-- 新建/编辑弹窗 -->
     <el-dialog :visible.sync="dialogVisible"
-      :title="form.id ? '编辑抓取配置' : '新建抓取配置'"
+      :title="form.id ? '编辑抓取配置' : '新建属性配置'"
       width="650px" destroy-on-close :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="配置名称" prop="name">

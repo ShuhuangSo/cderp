@@ -112,6 +112,7 @@ Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
 Vue.prototype.$alert = MessageBox.alert
 Vue.prototype.$prompt = MessageBox.prompt
+Vue.prototype.$prompt = MessageBox.prompt
 
 // ---- API 工具挂载 ----
 import {postRequest} from "@/utils/api";

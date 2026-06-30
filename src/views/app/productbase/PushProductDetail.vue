@@ -275,6 +275,9 @@
                     <el-dropdown-item command="purchase_url" :class="{ 'is-checked': columnSettings.purchaseUrl }">
                       <i :class="columnSettings.purchaseUrl ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px"></i>采购链接
                     </el-dropdown-item>
+                    <el-dropdown-item command="warehouse" :class="{ 'is-checked': columnSettings.warehouse }">
+                      <i :class="columnSettings.warehouse ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px"></i>仓库
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>
@@ -347,6 +350,17 @@
                 <el-table-column v-if="columnSettings.upc" label="UPC" width="100">
                   <template slot-scope="scope">
                     <el-input v-model="scope.row.UPC" size="mini" placeholder="UPC" />
+                  </template>
+                </el-table-column>
+                <el-table-column v-if="columnSettings.warehouse" label="仓库" width="125">
+                  <template slot="header">
+                    <span>仓库</span>
+                    <el-button size="mini" icon="el-icon-edit" circle
+                      style="margin-left: 4px; vertical-align: middle"
+                      @click="showBatchWarehouseDialog" />
+                  </template>
+                  <template slot-scope="scope">
+                    <el-input v-model="scope.row.warehouse" size="mini" placeholder="仓库" />
                   </template>
                 </el-table-column>
                 <el-table-column v-if="columnSettings.purchaseUrl" label="采购链接" min-width="140">
@@ -809,10 +823,12 @@ export default {
         index: true,
         image: true,
         upc: false,
-        purchaseUrl: false
+        purchaseUrl: false,
+        warehouse: false
       },
       // 批量修改
       batchCost: 0,
+      batchWarehouse: '',
       batchShopPrice: 0,
       // SKU 排序
       sortProp: '',
@@ -1494,13 +1510,38 @@ export default {
       })
     },
 
+    applyBatchWarehouse(val) {
+      if (!val && val !== '') return
+      this.baseProduct.product_groups.forEach(shop => {
+        if (shop._status === 'deleted') return
+        shop.variants.forEach(v => {
+          if (v._status === 'deleted') return
+          v.warehouse = val
+          if (v._status === 'unchanged') v._status = 'modified'
+        })
+        if (shop._status === 'unchanged') shop._status = 'modified'
+      })
+    },
+
+    showBatchWarehouseDialog() {
+      this.$prompt('请输入仓库名称', '批量修改仓库', {
+        confirmButtonText: '应用',
+        cancelButtonText: '取消',
+        inputValue: this.batchWarehouse
+      }).then(({ value }) => {
+        this.batchWarehouse = value
+        this.applyBatchWarehouse(value)
+      }).catch(() => {})
+    },
+
     // ===================== 列设置 =====================
     toggleColumn(command) {
       const keyMap = {
         index: 'index',
         image: 'image',
         upc: 'upc',
-        purchase_url: 'purchaseUrl'
+        purchase_url: 'purchaseUrl',
+        warehouse: 'warehouse'
       }
       const key = keyMap[command]
       if (key) {
@@ -2278,6 +2319,7 @@ export default {
           var2: v.var2 || '',
           var3: v.var3 || '',
           var4: v.var4 || '',
+          warehouse: v.warehouse || '',
           images: (v.images || []).map(img => ({
             image_url: img.image_url,
             sort: img.sort || 0,
