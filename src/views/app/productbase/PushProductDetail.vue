@@ -2,7 +2,7 @@
   <div>
     <el-skeleton :loading="loading" :rows="16" animated>
       <div class="detail-container">
-        <el-tabs type="border-card" v-model="activeTab">
+        <el-tabs type="border-card" v-model="activeTab" @tab-click="onTabClick">
           <!-- ==================== Tab 1: 基本信息 ==================== -->
           <el-tab-pane label="基本信息" name="basic" :lazy="true">
             <el-form ref="productForm" :model="baseProduct" label-position="right" label-width="110px">
@@ -112,6 +112,7 @@
                     <el-autocomplete v-model="baseProduct.supplier" size="small" placeholder="输入或选择供应商"
                       style="width: 100%" clearable
                       :fetch-suggestions="searchDetailSuppliers"
+                      @focus="ensureSupplierOptions"
                       @input="_modified = true"
                       @select="onDetailSupplierChange">
                       <template slot-scope="{ item }">
@@ -468,6 +469,7 @@
                   <el-form-item label="关联配置" required>
                     <el-select v-model="currentShop._listingConfigId" size="small"
                       placeholder="选择刊登配置" style="width: 100%" clearable filterable
+                      @focus="refreshListingConfigs"
                       @change="onListingConfigChange">
                       <el-option v-for="opt in listingConfigOptions" :key="opt.id"
                         :label="opt.name" :value="opt.id" />
@@ -859,6 +861,7 @@ export default {
       addShopVisible: false,
       loadingAccounts: false,
       copyingShop: false,
+      _listingConfigsForShop: '',
       optimizing: null, // 'title' | 'desc' | null
       optimizeUsage: null, // { total_tokens, total_price }
       newShopForm: {
@@ -1019,7 +1022,7 @@ export default {
       }
     },
     activeShopTabName() {
-      this.refreshListingConfigs()
+      // 只触发，不在此加载数据
     }
   },
   filters: {
@@ -1030,15 +1033,12 @@ export default {
   },
   mounted() {
     this.buildSiteOptions()
-    this.loadSupplierOptions()
-    this.loadListingConfigs()
     this.initProduct()
   },
   methods: {
     // ===================== 数据加载 =====================
     initProduct() {
       this._watching = false
-      this.loadListingConfigs()
       this.loading = true
       this.getRequest('api/base_product_group/' + this.productId + '/').then(resp => {
         this.loading = false
@@ -1055,7 +1055,6 @@ export default {
           }
           this.$nextTick(() => {
             this._watching = true
-            this.refreshListingConfigs()
           })
         }
       }).catch(() => {
@@ -1854,6 +1853,11 @@ export default {
       })
     },
 
+    ensureSupplierOptions() {
+      if (this.detailSuppliers.length) return
+      this.loadSupplierOptions()
+    },
+
     loadSupplierOptions() {
       this.getRequest('api/base_suppliers/quick_list/').then(resp => {
         if (resp && Array.isArray(resp)) {
@@ -1873,6 +1877,8 @@ export default {
     },
 
     loadListingConfigs(shopAccount, site) {
+      // 无参数调用且已加载过就跳过
+      if (shopAccount === undefined && site === undefined && Object.keys(this.listingConfigMap).length) return
       let url = 'api/listing_configs/?page_size=100'
       if (shopAccount !== undefined) {
         // 匹配当前店铺账号 或 空值（通用配置）
@@ -1896,9 +1902,12 @@ export default {
     },
 
     refreshListingConfigs() {
-      if (this.currentShop) {
-        this.loadListingConfigs(this.currentShop.shop_account, this.currentShop.site)
-      }
+      if (!this.currentShop) return
+      if (this._listingConfigsForShop === this.currentShop.shop_account + '|' + this.currentShop.site) return
+      this._listingConfigsForShop = this.currentShop.shop_account + '|' + this.currentShop.site
+      // 先确保基础刊登配置已加载（用于名称映射）
+      this.loadListingConfigs()
+      this.loadListingConfigs(this.currentShop.shop_account, this.currentShop.site)
     },
 
     onListingConfigChange(val) {
@@ -1954,6 +1963,12 @@ export default {
       const code = this.siteCodes[shop.site]
       if (!code) return account
       return this.getFlagEmoji(code) + ' ' + account
+    },
+
+    onTabClick(tab) {
+      if (tab.name === 'shop') {
+        this.loadListingConfigs()
+      }
     },
 
     onShopTabEdit(targetName, action) {
