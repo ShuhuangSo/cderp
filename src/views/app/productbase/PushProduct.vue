@@ -15,12 +15,18 @@
     <!--    筛选信息-->
     <div class="operate">
       <div class="operate-left">
-        <el-input size="small" placeholder="请输入搜索内容"
+        <el-input size="small" :placeholder="searchPlaceholder"
                   clearable
                   @clear="clearSearchValue"
                   @keyup.enter.native="doSearch"
                   v-model="searchValue"
-                  style="width: 300px; margin-right: 5px">
+                  style="width: 320px; margin-right: 5px">
+          <el-select slot="prepend" v-model="searchType" size="small"
+            style="width: 80px">
+            <el-option label="综合" value="search" />
+            <el-option label="SKU" value="sku" />
+            <el-option label="标题" value="title" />
+          </el-select>
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
         <el-radio-group v-model="filterMine" size="small" @change="initProducts">
@@ -458,6 +464,7 @@ export default {
       page: 1,
       size: 20,
       searchValue: '',
+      searchType: 'search',
       Products: [],
       p_status: 'PREPARING',
       filterMigrated: false,
@@ -487,6 +494,10 @@ export default {
     }
   },
   computed: {
+    searchPlaceholder() {
+      const map = { search: '搜索类目/系列/标签', sku: '搜索 SKU', title: '搜索标题' }
+      return map[this.searchType] || '请输入搜索内容'
+    },
     hasSelection() {
       const table = this.$refs.productTable
       return table && table.selection && table.selection.length > 0
@@ -553,7 +564,7 @@ export default {
       if (this.filterMigrated) url += '&image_migrated=true'
       if (this.filterMapped) url += '&variant_mapped=true'
       if (this.searchValue) {
-        url += '&search=' + this.searchValue;
+        url += '&' + this.searchType + '=' + encodeURIComponent(this.searchValue)
       }
       this.loading = true
       this.getRequest(url).then(resp => {

@@ -213,7 +213,7 @@ export default {
       siteOptions: [],
       // 下拉预设选项
       listingTemplateOptions: ['AU本土', 'UK虚拟仓'],
-      shippingMethodOptions: ['澳洲本土_跟踪普通', '澳洲本土_跟踪超厚'],
+      shippingMethodOptions: ['澳洲本土_普通信封', '澳洲本土_跟踪超厚'],
       itemLocationOptions: ['澳洲通用', '澳洲-76', '澳洲-GB', '澳洲-XF'],
       siteCodes: {
         'EBAY_US': 'US', 'EBAY_AU': 'AU', 'EBAY_CA': 'CA', 'EBAY_DE': 'DE',
