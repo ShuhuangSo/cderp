@@ -106,6 +106,7 @@ components.forEach(c => Vue.use(c))
 // ---- Element UI 指令和服务 ----
 import { Loading } from 'element-ui'
 Vue.use(Loading.directive)
+Vue.prototype.$loading = Loading.service
 
 import { Message, MessageBox } from 'element-ui'
 Vue.prototype.$message = Message
