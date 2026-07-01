@@ -631,6 +631,12 @@
                   </template>
                 </el-table-column>
               </el-table>
+              <div v-if="currentShop && currentShop.variant_has_more" style="text-align: center; margin-top: 8px">
+                <el-button size="small" type="primary" :loading="loadingMore"
+                  @click="loadAllVariants">
+                  加载全部（{{ currentShop.variant_total }} 条）
+                </el-button>
+              </div>
             </el-form>
 
             <!-- 没有店铺时的提示 -->
@@ -862,6 +868,7 @@ export default {
       loadingAccounts: false,
       copyingShop: false,
       _listingConfigsForShop: '',
+      loadingMore: false,
       optimizing: null, // 'title' | 'desc' | null
       optimizeUsage: null, // { total_tokens, total_price }
       newShopForm: {
@@ -1037,6 +1044,26 @@ export default {
   },
   methods: {
     // ===================== 数据加载 =====================
+    loadAllVariants() {
+      if (!this.currentShop) return
+      this.loadingMore = true
+      this.getRequest('api/base_product_group/' + this.productId + '/?variant_page_size=0').then(resp => {
+        this.loadingMore = false
+        if (resp && resp.product_groups) {
+          // 将完整 variant 数据合并回当前 product_groups
+          this.baseProduct.product_groups = resp.product_groups.map(g => {
+            const old = this.baseProduct.product_groups.find(o => o.id === g.id)
+            if (old) {
+              return { ...old, variants: g.variants, variant_total: g.variant_total, variant_has_more: g.variant_has_more }
+            }
+            return g
+          })
+          // 刷新当前店铺引用
+          this.$nextTick(() => { this._watching = true })
+        }
+      }).catch(() => { this.loadingMore = false })
+    },
+
     initProduct() {
       this._watching = false
       this.loading = true
