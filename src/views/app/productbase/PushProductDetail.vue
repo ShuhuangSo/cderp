@@ -380,6 +380,12 @@
                   </template>
                 </el-table-column>
               </el-table>
+              <div v-if="hasMoreGlobalVariants" style="text-align: center; margin-top: 8px">
+                <el-button size="small" type="primary" :loading="loadingMore"
+                  @click="loadAllVariants">
+                  加载全部（{{ globalVariantTotal }} 条）
+                </el-button>
+              </div>
             </el-form>
           </el-tab-pane>
 
@@ -969,6 +975,14 @@ export default {
         const cmp = va.localeCompare(vb, undefined, { numeric: true })
         return this.sortOrder === 'ascending' ? cmp : -cmp
       })
+    },
+    hasMoreGlobalVariants() {
+      if (!this.baseProduct.product_groups) return false
+      return this.baseProduct.product_groups.some(g => g.variant_has_more)
+    },
+    globalVariantTotal() {
+      if (!this.baseProduct.product_groups || !this.baseProduct.product_groups.length) return 0
+      return this.baseProduct.product_groups[0].variant_total || 0
     },
     groupCount() {
       if (!this.baseProduct.product_groups) return 0
