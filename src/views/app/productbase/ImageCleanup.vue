@@ -1,5 +1,9 @@
 <template>
   <div>
+    <!-- 状态提示 -->
+    <el-alert v-if="stats.computing" title="后台正在计算中，请稍候..." type="info" :closable="false" show-icon
+      style="margin-bottom: 12px" />
+
     <!-- 统计卡片 -->
     <div class="stats-row">
       <div class="stat-card">
@@ -26,51 +30,41 @@
       </div>
     </div>
 
+    <!-- 更新时间 -->
+    <div v-if="stats.updated_at" class="gray_zi" style="margin-bottom: 12px">
+      最后更新：{{ stats.updated_at | fmtTime }}
+    </div>
+
     <div class="toolbar">
-      <el-button size="small" icon="el-icon-refresh" :loading="loadingStats" @click="fetchStats">
+      <el-button size="small" icon="el-icon-refresh" :loading="loadingStats" @click="refreshStats">
         刷新统计
       </el-button>
       <el-button size="small" type="danger" icon="el-icon-delete"
         :loading="cleaning"
-        :disabled="!stats.orphan"
+        :disabled="!stats.orphan || stats.computing"
         @click="handleCleanup">
         清理孤儿图片
       </el-button>
     </div>
 
     <!-- 清理结果 -->
-    <div v-if="lastResult" class="result-box">
-      <el-divider content-position="left">最近清理结果</el-divider>
-      <div class="result-row">
-        <div class="result-item">
-          <span class="result-num">{{ lastResult.orphan }}</span>
-          <span class="result-label">发现孤儿</span>
-        </div>
-        <div class="result-item">
-          <span class="result-num success">{{ lastResult.deleted }}</span>
-          <span class="result-label">已删除</span>
-        </div>
-        <div v-if="lastResult.failed" class="result-item">
-          <span class="result-num fail">{{ lastResult.failed }}</span>
-          <span class="result-label">失败</span>
-        </div>
-        <div class="result-item">
-          <span class="result-num">{{ lastResult.batches }}</span>
-          <span class="result-label">批次</span>
-        </div>
-      </div>
-      <div v-if="lastResult.msg" class="result-msg gray_zi">{{ lastResult.msg }}</div>
-    </div>
-
-    <div v-if="lastResult === null && !loadingStats && stats.cdn_total == null" class="empty-state">
-      <el-empty description="点击「刷新统计」获取图片数据" :image-size="80" />
+    <div v-if="cleanResult" class="result-box">
+      <el-alert :title="cleanResult" type="success" :closable="false" show-icon />
     </div>
   </div>
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
   name: 'ImageCleanup',
+  filters: {
+    fmtTime(val) {
+      if (!val) return ''
+      return moment(val).format('YYYY-MM-DD HH:mm:ss')
+    }
+  },
   data() {
     return {
       loadingStats: false,
@@ -80,13 +74,19 @@ export default {
         db_total: null,
         migrated: null,
         unmigrated: null,
-        orphan: null
+        orphan: null,
+        computing: false,
+        updated_at: ''
       },
-      lastResult: null
+      cleanResult: '',
+      _pollTimer: null
     }
   },
   mounted() {
     this.fetchStats()
+  },
+  beforeDestroy() {
+    if (this._pollTimer) clearTimeout(this._pollTimer)
   },
   methods: {
     fetchStats() {
@@ -99,6 +99,47 @@ export default {
           this.stats.migrated = resp.migrated != null ? resp.migrated : 0
           this.stats.unmigrated = resp.unmigrated != null ? resp.unmigrated : 0
           this.stats.orphan = resp.orphan != null ? resp.orphan : 0
+          this.stats.computing = !!resp.computing
+          this.stats.updated_at = resp.updated_at || ''
+        }
+      }).catch(() => { this.loadingStats = false })
+    },
+
+    // 轮询直到 computing 变为 false
+    pollStats() {
+      if (this._pollTimer) clearTimeout(this._pollTimer)
+      this.getRequest('api/base_product_group/image_stats/').then(resp => {
+        if (resp) {
+          this.stats.computing = !!resp.computing
+          if (resp.computing) {
+            this._pollTimer = setTimeout(() => { this.pollStats() }, 2000)
+          } else {
+            // 计算完成，更新完整数据
+            this.stats.cdn_total = resp.cdn_total != null ? resp.cdn_total : 0
+            this.stats.db_total = resp.db_total != null ? resp.db_total : 0
+            this.stats.migrated = resp.migrated != null ? resp.migrated : 0
+            this.stats.unmigrated = resp.unmigrated != null ? resp.unmigrated : 0
+            this.stats.orphan = resp.orphan != null ? resp.orphan : 0
+            this.stats.updated_at = resp.updated_at || ''
+            this.loadingStats = false
+            this.$message.success('统计刷新完成')
+          }
+        } else {
+          this.loadingStats = false
+        }
+      }).catch(() => { this.loadingStats = false })
+    },
+
+    refreshStats() {
+      this.loadingStats = true
+      this.cleanResult = ''
+      this.postRequest('api/base_product_group/image_stats/').then(resp => {
+        if (resp) {
+          // 任务已提交，开始轮询
+          this.stats.computing = true
+          this.pollStats()
+        } else {
+          this.loadingStats = false
         }
       }).catch(() => { this.loadingStats = false })
     },
@@ -114,22 +155,14 @@ export default {
         type: 'warning'
       }).then(() => {
         this.cleaning = true
+        this.cleanResult = ''
         this.postRequest('api/base_product_group/cleanup_images/').then(resp => {
           this.cleaning = false
           if (resp) {
-            if (resp.msg) {
-              this.lastResult = { orphan: resp.orphan || 0, deleted: 0, failed: 0, batches: 0, msg: resp.msg }
-            } else {
-              this.lastResult = {
-                orphan: resp.orphan || 0,
-                deleted: resp.deleted || 0,
-                failed: resp.failed || 0,
-                batches: resp.batches || 0,
-                msg: ''
-              }
-            }
-            // 刷新统计
-            this.fetchStats()
+            this.cleanResult = resp.msg || '已提交清理任务，后台处理中'
+            this.$message.success(this.cleanResult)
+            // 稍后自动刷新统计
+            setTimeout(() => { this.refreshStats() }, 2000)
           }
         }).catch(() => { this.cleaning = false })
       }).catch(() => {})
@@ -164,6 +197,11 @@ export default {
 }
 .stat-warn .stat-value {
   color: #f56c6c;
+}
+.stat-loading {
+  font-size: 28px;
+  color: #909399;
+  line-height: 1.3;
 }
 .stat-label {
   font-size: 13px;
@@ -202,37 +240,8 @@ export default {
 .result-box {
   margin-top: 8px;
 }
-.result-row {
-  display: flex;
-  gap: 24px;
-}
-.result-item {
-  text-align: center;
-}
-.result-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: #303133;
-}
-.result-num.success {
-  color: #67c23a;
-}
-.result-num.fail {
-  color: #f56c6c;
-}
-.result-label {
-  display: block;
-  font-size: 12px;
-  color: #909399;
-}
-.result-msg {
-  margin-top: 8px;
-}
 .gray_zi {
   color: #99a9bf;
   font-size: 13px;
-}
-.empty-state {
-  margin-top: 60px;
 }
 </style>
