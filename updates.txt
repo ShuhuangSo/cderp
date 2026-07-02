@@ -228,6 +228,9 @@ v1.8.7
 
 v1.8.8
 - 修复 Element UI 按需引入遗漏 Loading.service，导致 $loading 方法不可用
+
+v1.8.9
+- 变体映射删除操作增加拦截：未加载全部 SKU 时提示先加载
 - 数据统计增加 AI Tokens 和费用统计
 - AI Tokens 大数值自动换算单位(K/M)
 - 优化后显示 AI 已优化状态图标

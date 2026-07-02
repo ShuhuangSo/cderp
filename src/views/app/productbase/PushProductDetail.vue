@@ -1196,6 +1196,10 @@ export default {
     },
 
     removeMainVariantName(idx) {
+      if (this.hasMoreGlobalVariants) {
+        this.$message.warning('请先点击"加载全部"按钮加载完整 SKU 列表，再进行删除操作')
+        return
+      }
       this._modified = true
       const list = this.mainVariantNameList.slice()
       const removed = list.splice(idx, 1)[0]
@@ -1367,6 +1371,10 @@ export default {
     },
 
     deleteVariantValue(dimName, value) {
+      if (this.hasMoreGlobalVariants) {
+        this.$message.warning('请先点击"加载全部"按钮加载完整 SKU 列表，再进行删除操作')
+        return
+      }
       if (!this.baseProduct.variant_editor || !this.baseProduct.variant_editor[dimName]) return
       this.$delete(this.baseProduct.variant_editor[dimName], value)
       // 同步删除 var_mappings 中的映射
