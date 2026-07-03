@@ -29,21 +29,29 @@
           </el-select>
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-        <el-radio-group v-model="filterMine" size="small" @change="initProducts">
-          <el-radio-button label="mine">我的产品</el-radio-button>
-          <el-radio-button label="all">所有产品</el-radio-button>
-        </el-radio-group>
+        <el-select v-model="filterUser" size="small" style="width: 140px; margin-right: 5px" @change="initProducts">
+          <el-option label="我的产品" value="" />
+          <el-option label="所有产品" value="__all__" />
+          <el-option v-if="isSuperuser" v-for="u in userOptions" :key="u.username"
+            :label="u.first_name || u.username" :value="u.username" />
+        </el-select>
         <!-- 数据状态筛选（仅数据准备可见） -->
         <el-dropdown @command="handleDataStatus" v-if="p_status==='PREPARING'" style="margin-left: 5px">
           <el-button size="small">
             数据状态<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item :class="{ 'is-checked': filterMigrated }" command="migrated">
-              <i :class="filterMigrated ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px" />图片已迁移
+            <el-dropdown-item :class="{ 'is-checked': filterMigrated === 'true' }" command="migrated-true">
+              <i v-if="filterMigrated === 'true'" class="el-icon-check" style="margin-right: 6px" />图片已迁移
             </el-dropdown-item>
-            <el-dropdown-item :class="{ 'is-checked': filterMapped }" command="mapped">
-              <i :class="filterMapped ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px" />变体已翻译
+            <el-dropdown-item :class="{ 'is-checked': filterMigrated === 'false' }" command="migrated-false">
+              <i v-if="filterMigrated === 'false'" class="el-icon-check" style="margin-right: 6px" />图片未迁移
+            </el-dropdown-item>
+            <el-dropdown-item :class="{ 'is-checked': filterMapped === 'true' }" command="mapped-true">
+              <i v-if="filterMapped === 'true'" class="el-icon-check" style="margin-right: 6px" />变体已翻译
+            </el-dropdown-item>
+            <el-dropdown-item :class="{ 'is-checked': filterMapped === 'false' }" command="mapped-false">
+              <i v-if="filterMapped === 'false'" class="el-icon-check" style="margin-right: 6px" />变体未翻译
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -467,9 +475,10 @@ export default {
       searchType: 'search',
       Products: [],
       p_status: 'PREPARING',
-      filterMigrated: false,
-      filterMapped: false,
-      filterMine: 'mine',
+      filterMigrated: '',
+      filterMapped: '',
+      filterUser: '',
+      userOptions: [],
       addInfoDialogVisible: false,
       addInfoSaving: false,
       selectedRows: [],
@@ -498,6 +507,10 @@ export default {
       const map = { search: '搜索类目/系列/标签', sku: '搜索 SKU', title: '搜索标题' }
       return map[this.searchType] || '请输入搜索内容'
     },
+    isSuperuser() {
+      const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
+      return !!user.is_superuser
+    },
     hasSelection() {
       const table = this.$refs.productTable
       return table && table.selection && table.selection.length > 0
@@ -512,6 +525,7 @@ export default {
     this._reqId = 0 // 非响应式，防止竞态
   },
   mounted() {
+    this.loadUsers()
     this.initProducts()
     this.loadAddInfoRefs()
   },
@@ -520,18 +534,31 @@ export default {
       if (!url) return ''
       return url + (url.indexOf('?') >= 0 ? '&w=100' : '?w=100')
     },
+    loadUsers() {
+      const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
+      if (!user.is_superuser) return
+      this.getRequest('api/settings/users/?is_active=True&page_size=1000').then(resp => {
+        if (resp) {
+          this.userOptions = Array.isArray(resp) ? resp : (resp.results || [])
+        }
+      })
+    },
     changeStatus(value) {
       this.page = 1;
       this.p_status = value
-      this.filterMigrated = false
-      this.filterMapped = false
+      this.filterMigrated = ''
+      this.filterMapped = ''
       this.initProducts()
     },
     handleDataStatus(cmd) {
-      if (cmd === 'migrated') {
-        this.filterMigrated = !this.filterMigrated
-      } else if (cmd === 'mapped') {
-        this.filterMapped = !this.filterMapped
+      if (cmd === 'migrated-true') {
+        this.filterMigrated = this.filterMigrated === 'true' ? '' : 'true'
+      } else if (cmd === 'migrated-false') {
+        this.filterMigrated = this.filterMigrated === 'false' ? '' : 'false'
+      } else if (cmd === 'mapped-true') {
+        this.filterMapped = this.filterMapped === 'true' ? '' : 'true'
+      } else if (cmd === 'mapped-false') {
+        this.filterMapped = this.filterMapped === 'false' ? '' : 'false'
       }
       this.initProducts()
     },
@@ -557,12 +584,16 @@ export default {
       const reqId = ++this._reqId
       let url = '/api/base_product_group/?page=' + this.page + '&page_size=' + this.size
       url += '&p_status=' + this.p_status
-      if (this.filterMine === 'mine') {
+      if (this.filterUser === '__all__') {
+        // 所有产品，不加 creator 筛选
+      } else if (this.filterUser) {
+        url += '&creator=' + encodeURIComponent(this.filterUser)
+      } else {
         const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
         if (user.username) url += '&creator=' + encodeURIComponent(user.username)
       }
-      if (this.filterMigrated) url += '&image_migrated=true'
-      if (this.filterMapped) url += '&variant_mapped=true'
+      if (this.filterMigrated) url += '&image_migrated=' + this.filterMigrated
+      if (this.filterMapped) url += '&variant_mapped=' + this.filterMapped
       if (this.searchValue) {
         url += '&' + this.searchType + '=' + encodeURIComponent(this.searchValue)
       }
