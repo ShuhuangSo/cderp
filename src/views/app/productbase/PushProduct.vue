@@ -29,7 +29,7 @@
           </el-select>
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-        <el-select v-model="filterUser" size="small" style="width: 140px; margin-right: 5px" @change="initProducts">
+        <el-select v-model="filterUser" size="small" style="width: 140px; margin-right: 5px" @change="changeUserFilter">
           <el-option label="我的产品" value="" />
           <el-option label="所有产品" value="__all__" />
           <el-option v-if="isSuperuser" v-for="u in userOptions" :key="u.username"
@@ -550,7 +550,12 @@ export default {
       this.filterMapped = ''
       this.initProducts()
     },
+    changeUserFilter() {
+      this.page = 1
+      this.initProducts()
+    },
     handleDataStatus(cmd) {
+      this.page = 1
       if (cmd === 'migrated-true') {
         this.filterMigrated = this.filterMigrated === 'true' ? '' : 'true'
       } else if (cmd === 'migrated-false') {

@@ -25,6 +25,11 @@
         </template>
       </el-table-column>
       <el-table-column prop="warehouse" label="仓库" min-width="120" />
+      <el-table-column label="MB产品状态" min-width="110" show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ scope.row.mb_product_status || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="priority" label="优先级" width="80" align="center" />
       <el-table-column label="创建时间" width="170" align="center">
         <template slot-scope="scope">
@@ -68,6 +73,15 @@
         <el-form-item label="仓库" prop="warehouse">
           <el-input v-model="form.warehouse" size="small" placeholder="如：华强仓" />
         </el-form-item>
+        <el-form-item label="MB产品状态">
+          <el-select v-model="form.mb_product_status" size="small" placeholder="导出的产品状态" clearable style="width: 100%">
+            <el-option label="自动创建" value="自动创建" />
+            <el-option label="等待开发" value="等待开发" />
+            <el-option label="正常销售" value="正常销售" />
+            <el-option label="商品清仓" value="商品清仓" />
+            <el-option label="停止销售" value="停止销售" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="优先级">
           <el-input-number v-model="form.priority" size="small" :min="0" controls-position="right" style="width: 180px" />
         </el-form-item>
@@ -110,6 +124,7 @@ export default {
         category_id: '',
         category_name: '',
         warehouse: '',
+        mb_product_status: '',
         priority: 0
       },
       rules: {
@@ -138,7 +153,7 @@ export default {
       if (row) {
         this.form = { ...row }
       } else {
-        this.form = { id: null, category_id: '', category_name: '', warehouse: '', priority: 0 }
+        this.form = { id: null, category_id: '', category_name: '', warehouse: '', mb_product_status: '', priority: 0 }
       }
       this.dialogVisible = true
     },

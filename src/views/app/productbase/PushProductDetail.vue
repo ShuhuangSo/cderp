@@ -279,6 +279,9 @@
                     <el-dropdown-item command="warehouse" :class="{ 'is-checked': columnSettings.warehouse }">
                       <i :class="columnSettings.warehouse ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px"></i>仓库
                     </el-dropdown-item>
+                    <el-dropdown-item command="mb_product_status" :class="{ 'is-checked': columnSettings.mbProductStatus }">
+                      <i :class="columnSettings.mbProductStatus ? 'el-icon-check' : 'el-icon-close'" style="margin-right: 6px"></i>MB产品状态
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>
@@ -362,6 +365,11 @@
                   </template>
                   <template slot-scope="scope">
                     <el-input v-model="scope.row.warehouse" size="mini" placeholder="仓库" />
+                  </template>
+                </el-table-column>
+                <el-table-column v-if="columnSettings.mbProductStatus" label="MB产品状态" width="120">
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.mb_product_status || '-' }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column v-if="columnSettings.purchaseUrl" label="采购链接" min-width="140">
@@ -838,7 +846,8 @@ export default {
         image: true,
         upc: false,
         purchaseUrl: false,
-        warehouse: false
+        warehouse: false,
+        mbProductStatus: false
       },
       // 批量修改
       batchCost: 0,
@@ -1589,7 +1598,8 @@ export default {
         image: 'image',
         upc: 'upc',
         purchase_url: 'purchaseUrl',
-        warehouse: 'warehouse'
+        warehouse: 'warehouse',
+        mb_product_status: 'mbProductStatus'
       }
       const key = keyMap[command]
       if (key) {
@@ -2384,6 +2394,7 @@ export default {
           var3: v.var3 || '',
           var4: v.var4 || '',
           warehouse: v.warehouse || '',
+          mb_product_status: v.mb_product_status || '',
           images: (v.images || []).map(img => ({
             image_url: img.image_url,
             sort: img.sort || 0,
