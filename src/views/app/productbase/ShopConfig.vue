@@ -127,6 +127,15 @@
               :label="opt.name" :value="opt.id" />
           </el-select>
         </el-form-item>
+        <template v-if="form.is_main">
+          <el-divider content-position="left">AI 优化</el-divider>
+          <el-form-item label="自动AI优化标题">
+            <el-switch v-model="form.auto_optimize_title" />
+          </el-form-item>
+          <el-form-item label="自动AI优化描述">
+            <el-switch v-model="form.auto_optimize_desc" />
+          </el-form-item>
+        </template>
       </el-form>
       <div slot="footer">
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -169,7 +178,9 @@ export default {
         is_main: false,
         auto_create_shop: false,
         listing_config: null,
-        pricing_rule: null
+        pricing_rule: null,
+        auto_optimize_title: false,
+        auto_optimize_desc: false
       },
       rules: {
         platform: [{ required: true, message: '请选择平台', trigger: 'change' }],
@@ -313,7 +324,8 @@ export default {
       } else {
         this.form = {
           id: null, platform: '', shop_account: '', site: '',
-          is_main: false, auto_create_shop: false, listing_config: null, pricing_rule: null
+          is_main: false, auto_create_shop: false, listing_config: null, pricing_rule: null,
+          auto_optimize_title: false, auto_optimize_desc: false
         }
       }
       this.dialogVisible = true
@@ -334,7 +346,9 @@ export default {
           shop_account: this.form.shop_account,
           site: this.form.site,
           listing_config: this.form.listing_config,
-          pricing_rule: this.form.pricing_rule
+          pricing_rule: this.form.pricing_rule,
+          auto_optimize_title: this.form.auto_optimize_title,
+          auto_optimize_desc: this.form.auto_optimize_desc
         }
         const req = this.form.id
           ? this.patchRequest('api/shop_configs/' + this.form.id + '/', data)

@@ -367,9 +367,9 @@
                     <el-input v-model="scope.row.warehouse" size="mini" placeholder="仓库" />
                   </template>
                 </el-table-column>
-                <el-table-column v-if="columnSettings.mbProductStatus" label="MB产品状态" width="120">
+                <el-table-column v-if="columnSettings.mbProductStatus" label="MB产品状态" width="130">
                   <template slot-scope="scope">
-                    <span>{{ scope.row.mb_product_status || '-' }}</span>
+                    <el-input v-model="scope.row.mb_product_status" size="mini" placeholder="产品状态" />
                   </template>
                 </el-table-column>
                 <el-table-column v-if="columnSettings.purchaseUrl" label="采购链接" min-width="140">
@@ -448,9 +448,11 @@
                       <el-button slot="append" icon="el-icon-magic-stick"
                         :loading="optimizing === 'title'"
                         @click="optimizeShopContent('EBAY_TITLE')">AI 优化</el-button>
-                      <i v-if="currentShop.title_optimized" slot="suffix"
+                      <i v-if="currentShop.title_optimized === true" slot="suffix"
                         class="el-icon-magic-stick" style="color: #67c23a; margin-right: 8px; font-size: 16px"
                         title="AI 已优化" />
+                      <span v-if="currentShop.title_optimized === false" slot="suffix"
+                        style="color: #e6a23c; margin-right: 8px; font-size: 12px">AI 优化中…</span>
                     </el-input>
                   </el-form-item>
                 </el-col>
@@ -462,9 +464,11 @@
                       <el-button size="mini" icon="el-icon-magic-stick"
                         :loading="optimizing === 'desc'"
                         @click="optimizeShopContent('EBAY_DESC')">AI 优化描述</el-button>
-                      <i v-if="currentShop.desc_optimized"
+                      <i v-if="currentShop.desc_optimized === true"
                         class="el-icon-magic-stick" style="color: #67c23a; font-size: 16px"
                         title="AI 已优化" />
+                      <span v-if="currentShop.desc_optimized === false"
+                        style="color: #e6a23c; font-size: 12px">AI 优化中…</span>
                     </div>
                     <quill-editor
                       v-model="currentShop.desc"
@@ -2068,6 +2072,12 @@ export default {
       const key = type === 'EBAY_TITLE' ? 'title' : 'desc'
       this.optimizing = key
       this.optimizeUsage = null
+      // 标记为优化中
+      if (type === 'EBAY_TITLE') {
+        this.$set(this.currentShop, 'title_optimized', false)
+      } else {
+        this.$set(this.currentShop, 'desc_optimized', false)
+      }
       this.postRequest('api/product_group/optimize/', {
         id: this.currentShop.id,
         type: type
@@ -2076,12 +2086,11 @@ export default {
         if (resp) {
           if (type === 'EBAY_TITLE' && resp.title) {
             this.currentShop.title = resp.title
-            this.$set(this.currentShop, 'title_optimized', true)
+            this.$set(this.currentShop, 'title_optimized', resp.title_optimized != null ? resp.title_optimized : true)
             this.currentShop._shopDirty = true
           } else if (type === 'EBAY_DESC' && resp.desc) {
-            // AI 返回纯文本，\n 转为 <br> 才能被 Quill 正确渲染
             this.currentShop.desc = resp.desc.replace(/\n/g, '<br>')
-            this.$set(this.currentShop, 'desc_optimized', true)
+            this.$set(this.currentShop, 'desc_optimized', resp.desc_optimized != null ? resp.desc_optimized : true)
             this.currentShop._shopDirty = true
           }
           if (resp.usage) {
