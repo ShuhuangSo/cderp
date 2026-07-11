@@ -11,6 +11,12 @@
 
         <el-button size="small" :type="p_status==='READY'?'primary':''" @click="changeStatus('READY')">产品列表</el-button>
       </div>
+      <div v-if="p_status !== 'INIT'">
+        <el-radio-group v-model="viewMode" size="small" @change="changeViewMode">
+          <el-radio-button label="product">产品视角</el-radio-button>
+          <el-radio-button label="shop">店铺视角</el-radio-button>
+        </el-radio-group>
+      </div>
     </div>
     <!--    筛选信息-->
     <div class="operate">
@@ -20,8 +26,8 @@
                   @clear="clearSearchValue"
                   @keyup.enter.native="doSearch"
                   v-model="searchValue"
-                  style="width: 320px; margin-right: 5px">
-          <el-select slot="prepend" v-model="searchType" size="small"
+                  :style="viewMode === 'shop' ? 'width: 320px; margin-right: 5px' : 'width: 320px; margin-right: 5px'">
+          <el-select v-if="viewMode !== 'shop'" slot="prepend" v-model="searchType" size="small"
             style="width: 80px">
             <el-option label="综合" value="search" />
             <el-option label="SKU" value="sku" />
@@ -29,14 +35,22 @@
           </el-select>
           <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
         </el-input>
-        <el-select v-model="filterUser" size="small" style="width: 140px; margin-right: 5px" @change="changeUserFilter">
+        <el-select v-if="viewMode === 'shop'" key="shop-account" v-model="filterShopAccount" size="small" placeholder="店铺账号" clearable filterable allow-create
+          style="width: 150px; margin-right: 5px" @change="changeShopAccountFilter">
+          <el-option v-for="acc in shopAccountOptions" :key="acc" :label="acc" :value="acc" />
+        </el-select>
+        <el-select v-if="viewMode === 'shop'" key="listing-config" v-model="filterListingConfig" size="small" placeholder="刊登配置" clearable
+          style="width: 140px; margin-right: 5px" @change="changeShopAccountFilter">
+          <el-option v-for="opt in listingConfigFilterOptions" :key="opt.id" :label="opt.name" :value="opt.id" />
+        </el-select>
+        <el-select key="creator" v-model="filterUser" size="small" style="width: 140px; margin-right: 5px" @change="changeUserFilter">
           <el-option label="我的产品" value="" />
           <el-option label="所有产品" value="__all__" />
           <el-option v-if="isSuperuser" v-for="u in userOptions" :key="u.username"
             :label="u.first_name || u.username" :value="u.username" />
         </el-select>
         <!-- 数据状态筛选（仅数据准备可见） -->
-        <el-dropdown @command="handleDataStatus" v-if="p_status==='PREPARING'" style="margin-left: 5px">
+        <el-dropdown @command="handleDataStatus" v-if="viewMode !== 'shop' && p_status==='PREPARING'" style="margin-left: 5px">
           <el-button size="small">
             数据状态<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
@@ -61,14 +75,16 @@
             批量操作<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-if="p_status==='INIT'" command="fillInfo">批量补充资料</el-dropdown-item>
+            <el-dropdown-item v-if="viewMode !== 'shop' && p_status==='INIT'" command="fillInfo">批量补充资料</el-dropdown-item>
+            <el-dropdown-item v-if="viewMode === 'shop'" command="batchListing">批量替换刊登配置</el-dropdown-item>
             <el-dropdown-item command="delete">批量删除</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
       <div class="operate-right">
+        <template v-if="viewMode !== 'shop'">
         <!-- 导出下拉 -->
-        <el-dropdown @command="handleExportCommand" v-if="p_status==='READY'">
+        <el-dropdown @command="handleExportCommand" v-if="viewMode !== 'shop' && p_status==='READY'">
           <el-button size="small" type="primary">
             导出<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
@@ -79,13 +95,14 @@
             <el-dropdown-item command="listingUnsynced">导出上架信息(未同步)</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
+        </template>
       </div>
     </div>
     <!--数据表格-->
     <div style="margin-top: 5px">
       <!--      草稿箱-->
       <el-table
-          v-if="p_status==='INIT'"
+          v-if="viewMode !== 'shop' && p_status==='INIT'"
           ref="productTable"
           :data="Products"
           :header-cell-style="{background:'#fafafa'}"
@@ -170,7 +187,7 @@
 
       <!--      数据准备-->
       <el-table
-          v-if="p_status==='PREPARING'"
+          v-if="viewMode !== 'shop' && p_status==='PREPARING'"
           ref="productTable"
           :data="Products"
           :header-cell-style="{background:'#fafafa'}"
@@ -294,7 +311,7 @@
 
       <!--      产品列表(READY) -->
       <el-table
-          v-if="p_status==='READY'"
+          v-if="viewMode !== 'shop' && p_status==='READY'"
           ref="productTable"
           :data="Products"
           :header-cell-style="{background:'#fafafa'}"
@@ -387,6 +404,116 @@
         </el-table-column>
       </el-table>
 
+      <!--      店铺视角(数据准备) -->
+      <el-table
+          v-if="viewMode === 'shop' && p_status==='PREPARING'"
+          ref="productTable"
+          :data="ShopProducts"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          highlight-current-row
+          style="width: 100%">
+        <el-table-column type="selection" width="42" />
+        <el-table-column label="图片" align="center" width="90">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 60px; height: 60px; border-radius: 6px"
+                :src="thumbUrl(scope.row.cover_image)"
+                fit="cover">
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column label="店铺信息" min-width="280">
+          <template slot-scope="scope">
+            <div>{{ scope.row.shop_account }}</div>
+            <div class="gray_zi">{{ scope.row.title }}</div>
+            <div class="gray_zi">
+              <el-tag size="mini" type="info">{{ scope.row.base_sku_count }}个SKU</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="产品供应" width="120">
+          <template slot-scope="scope">
+            <div>{{ scope.row.base_supplier }}</div>
+            <div class="gray_zi">{{ scope.row.base_series }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="刊登配置" min-width="120" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.listing_config_name || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="同步" width="75" align="center">
+          <template slot-scope="scope">
+            <el-tag size="mini" :type="scope.row.is_synced ? 'success' : 'info'">
+              {{ scope.row.is_synced ? '已同步' : '未同步' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="70" align="center">
+          <template slot-scope="scope">
+            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id)">
+              详情
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!--      店铺视角(产品列表) -->
+      <el-table
+          v-if="viewMode === 'shop' && p_status==='READY'"
+          ref="productTable"
+          :data="ShopProducts"
+          :header-cell-style="{background:'#fafafa'}"
+          v-loading="loading"
+          highlight-current-row
+          style="width: 100%">
+        <el-table-column type="selection" width="42" />
+        <el-table-column label="图片" align="center" width="90">
+          <template slot-scope="scope">
+            <el-image
+                style="width: 60px; height: 60px; border-radius: 6px"
+                :src="thumbUrl(scope.row.cover_image)"
+                fit="cover">
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column label="店铺信息" min-width="280">
+          <template slot-scope="scope">
+            <div>{{ scope.row.shop_account }}</div>
+            <div class="gray_zi">{{ scope.row.title }}</div>
+            <div class="gray_zi">
+              <el-tag size="mini" type="info">{{ scope.row.base_sku_count }}个SKU</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="产品供应" width="120">
+          <template slot-scope="scope">
+            <div>{{ scope.row.base_supplier }}</div>
+            <div class="gray_zi">{{ scope.row.base_series }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="刊登配置" min-width="120" show-overflow-tooltip>
+          <template slot-scope="scope">
+            {{ scope.row.listing_config_name || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="同步" width="75" align="center">
+          <template slot-scope="scope">
+            <el-tag size="mini" :type="scope.row.is_synced ? 'success' : 'info'">
+              {{ scope.row.is_synced ? '已同步' : '未同步' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="70" align="center">
+          <template slot-scope="scope">
+            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id)">
+              详情
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
       <div class="pagination">
         <el-pagination
             background
@@ -451,6 +578,21 @@
       />
     </el-dialog>
 
+    <!-- ================== 批量替换刊登配置弹窗 ================== -->
+    <el-dialog title="批量替换刊登配置" :visible.sync="batchListingVisible" width="450px" append-to-body :close-on-click-modal="false">
+      <el-form label-width="100px">
+        <el-form-item label="目标配置">
+          <el-select v-model="batchListingId" size="small" placeholder="请选择刊登配置" style="width: 100%" clearable filterable>
+            <el-option v-for="opt in batchListingOptions" :key="opt.id" :label="opt.name" :value="opt.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="batchListingVisible = false">取消</el-button>
+        <el-button type="primary" :loading="batchListingSaving" :disabled="!batchListingId" @click="submitBatchListing">确定替换</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -474,6 +616,16 @@ export default {
       searchValue: '',
       searchType: 'search',
       Products: [],
+      ShopProducts: [],
+      viewMode: 'product',
+      filterShopAccount: '',
+      filterListingConfig: '',
+      shopAccountOptions: [],
+      listingConfigFilterOptions: [],
+      batchListingVisible: false,
+      batchListingId: '',
+      batchListingOptions: [],
+      batchListingSaving: false,
       p_status: 'PREPARING',
       filterMigrated: '',
       filterMapped: '',
@@ -504,6 +656,7 @@ export default {
   },
   computed: {
     searchPlaceholder() {
+      if (this.viewMode === 'shop') return '搜索标题/供应商/系列'
       const map = { search: '搜索类目/系列/标签', sku: '搜索 SKU', title: '搜索标题' }
       return map[this.searchType] || '请输入搜索内容'
     },
@@ -548,11 +701,41 @@ export default {
       this.p_status = value
       this.filterMigrated = ''
       this.filterMapped = ''
+      this.viewMode = 'product'
       this.initProducts()
+    },
+    changeViewMode() {
+      this.page = 1
+      if (this.viewMode === 'shop') {
+        if (!this.shopAccountOptions.length) this.loadShopAccounts()
+        if (!this.listingConfigFilterOptions.length) this.loadListingConfigOptions()
+        this.initShopProducts()
+      } else {
+        this.initProducts()
+      }
+    },
+    loadShopAccounts() {
+      this.getRequest('api/bo_bonus_accounts/?is_active=true&type=eBay&page_size=1000').then(resp => {
+        if (resp && resp.results) {
+          this.shopAccountOptions = resp.results.map(r => r.name)
+        }
+      })
+    },
+    loadListingConfigOptions() {
+      this.getRequest('api/listing_configs/?page_size=100').then(resp => {
+        if (resp && resp.results) {
+          this.listingConfigFilterOptions = resp.results.map(c => ({ id: c.id, name: c.name }))
+        }
+      })
+    },
+    changeShopAccountFilter() {
+      this.page = 1
+      this.initShopProducts()
     },
     changeUserFilter() {
       this.page = 1
-      this.initProducts()
+      if (this.viewMode === 'shop') this.initShopProducts()
+      else this.initProducts()
     },
     handleDataStatus(cmd) {
       this.page = 1
@@ -569,21 +752,25 @@ export default {
     },
     clearSearchValue() {
       this.searchValue = '';
-      this.initProducts();
+      if (this.viewMode === 'shop') this.initShopProducts()
+      else this.initProducts()
     },
     doSearch() {
       this.page = 1;
-      this.$refs.productTable.clearFilter();
-      this.initProducts();
+      if (this.$refs.productTable) this.$refs.productTable.clearFilter();
+      if (this.viewMode === 'shop') this.initShopProducts()
+      else this.initProducts()
     },
     sizeChange(size) {
       this.page = 1;
       this.size = size;
-      this.initProducts();
+      if (this.viewMode === 'shop') this.initShopProducts()
+      else this.initProducts()
     },
     currentChange(page) {
       this.page = page;
-      this.initProducts();
+      if (this.viewMode === 'shop') this.initShopProducts()
+      else this.initProducts()
     },
     initProducts() {
       const reqId = ++this._reqId
@@ -613,6 +800,39 @@ export default {
         this.loading = false
       })
     },
+    initShopProducts() {
+      const reqId = ++this._reqId
+      let url = '/api/product_group/?page=' + this.page + '&page_size=' + this.size
+      url += '&base_status=' + this.p_status
+      if (this.filterUser === '__all__') {
+        // 所有产品，不加 creator 筛选
+      } else if (this.filterUser) {
+        url += '&creator=' + encodeURIComponent(this.filterUser)
+      } else {
+        const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
+        if (user.username) url += '&creator=' + encodeURIComponent(user.username)
+      }
+      if (this.filterShopAccount) {
+        url += '&shop_account=' + encodeURIComponent(this.filterShopAccount)
+      }
+      if (this.filterListingConfig) {
+        url += '&listing_config=' + this.filterListingConfig
+      }
+      if (this.searchValue) {
+        url += '&search=' + encodeURIComponent(this.searchValue)
+      }
+      this.loading = true
+      this.getRequest(url).then(resp => {
+        this.loading = false
+        if (resp && resp.results && reqId === this._reqId) {
+          this.ShopProducts = resp.results
+          this.total = resp.count
+        }
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+
     // 加载供应商和产品系列辅助数据
     loadAddInfoRefs() {
       this.getRequest('api/base_suppliers/quick_list/').then(resp => {
@@ -733,6 +953,21 @@ export default {
         this.addInfoForm = {supplier: '', series: '', cost: ''};
         this.addInfoDialogVisible = true;
         this.loadAddInfoRefs();
+      } else if (cmd === 'batchListing') {
+        this.batchListingId = ''
+        if (!this.batchListingOptions.length) {
+          let url = 'api/listing_configs/?page_size=100'
+          if (!this.isSuperuser) {
+            const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
+            if (user.id) url += '&user=' + user.id
+          }
+          this.getRequest(url).then(resp => {
+            if (resp && resp.results) {
+              this.batchListingOptions = resp.results.map(c => ({ id: c.id, name: c.name }))
+            }
+          })
+        }
+        this.batchListingVisible = true
       } else if (cmd === 'delete') {
         this.$confirm('此操作将永久删除选中数据, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -740,12 +975,36 @@ export default {
           type: 'warning'
         }).then(() => {
           const ids = this.selectedRows.map(item => item.id);
-          this.postRequest('/api/base_product_group/batch_delete/', {ids}).then(() => {
-            this.initProducts();
+          const url = this.viewMode === 'shop'
+            ? '/api/product_group/batch_delete/'
+            : '/api/base_product_group/batch_delete/'
+          this.postRequest(url, {ids}).then(() => {
+            if (this.viewMode === 'shop') this.initShopProducts()
+            else this.initProducts()
           }).catch(() => {
           })
         }).catch(() => {});
       }
+    },
+
+    submitBatchListing() {
+      if (!this.batchListingId) return
+      const selection = this.$refs.productTable.selection
+      this.batchListingSaving = true
+      this.postRequest('/api/product_group/batch_update_listing/', {
+        ids: selection.map(item => item.id),
+        listing_config_id: this.batchListingId
+      }).then(resp => {
+        this.batchListingSaving = false
+        if (resp) {
+          if (resp.status === 'error') {
+            // 拦截器已显示 msg，不重复弹
+          } else {
+            this.batchListingVisible = false
+            this.initShopProducts()
+          }
+        }
+      }).catch(() => { this.batchListingSaving = false })
     },
 
     // ================== 打开产品详情弹窗 ==================
