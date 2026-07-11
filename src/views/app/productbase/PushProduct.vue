@@ -423,9 +423,12 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="店铺信息" min-width="280">
+        <el-table-column label="店铺信息" min-width="300">
           <template slot-scope="scope">
-            <div>{{ scope.row.shop_account }}</div>
+            <div>
+              <span class="shop-sync-dot" :class="scope.row.is_synced ? 'dot-synced' : 'dot-unsynced'"></span>
+              {{ getFlagEmoji(getSiteCode(scope.row.site)) }} <b>{{ scope.row.shop_account }}</b>
+            </div>
             <div class="gray_zi">{{ scope.row.title }}</div>
             <div class="gray_zi">
               <el-tag size="mini" type="info">{{ scope.row.base_sku_count }}个SKU</el-tag>
@@ -443,16 +446,9 @@
             {{ scope.row.listing_config_name || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="同步" width="75" align="center">
-          <template slot-scope="scope">
-            <el-tag size="mini" :type="scope.row.is_synced ? 'success' : 'info'">
-              {{ scope.row.is_synced ? '已同步' : '未同步' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="操作" width="70" align="center">
           <template slot-scope="scope">
-            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id)">
+            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id, scope.row.id)">
               详情
             </el-button>
           </template>
@@ -478,9 +474,12 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="店铺信息" min-width="280">
+        <el-table-column label="店铺信息" min-width="300">
           <template slot-scope="scope">
-            <div>{{ scope.row.shop_account }}</div>
+            <div>
+              <span class="shop-sync-dot" :class="scope.row.is_synced ? 'dot-synced' : 'dot-unsynced'"></span>
+              {{ getFlagEmoji(getSiteCode(scope.row.site)) }} <b>{{ scope.row.shop_account }}</b>
+            </div>
             <div class="gray_zi">{{ scope.row.title }}</div>
             <div class="gray_zi">
               <el-tag size="mini" type="info">{{ scope.row.base_sku_count }}个SKU</el-tag>
@@ -498,16 +497,9 @@
             {{ scope.row.listing_config_name || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="同步" width="75" align="center">
-          <template slot-scope="scope">
-            <el-tag size="mini" :type="scope.row.is_synced ? 'success' : 'info'">
-              {{ scope.row.is_synced ? '已同步' : '未同步' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="操作" width="70" align="center">
           <template slot-scope="scope">
-            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id)">
+            <el-button size="mini" type="success" plain round @click="openDetailDialog(scope.row.base_id, scope.row.id)">
               详情
             </el-button>
           </template>
@@ -573,6 +565,7 @@
           v-if="detailDialogVisible"
           ref="pushDetail"
           :product-id="currentProductId"
+          :target-shop-id="currentTargetShopId"
           @saved="onDetailSaved"
           @cancel="handleDetailCancel"
       />
@@ -651,7 +644,8 @@ export default {
       addInfoSeriesMap: {},
       // 产品详情弹窗
       detailDialogVisible: false,
-      currentProductId: null // 传递给详情的ID
+      currentProductId: null, // 传递给详情的ID
+      currentTargetShopId: null // 目标店铺ID（店铺视角跳转用）
     }
   },
   computed: {
@@ -686,6 +680,21 @@ export default {
     thumbUrl(url) {
       if (!url) return ''
       return url + (url.indexOf('?') >= 0 ? '&w=100' : '?w=100')
+    },
+    getSiteCode(site) {
+      const map = {
+        'EBAY_US': 'US', 'EBAY_AU': 'AU', 'EBAY_CA': 'CA', 'EBAY_DE': 'DE',
+        'EBAY_ES': 'ES', 'EBAY_FR': 'FR', 'EBAY_GB': 'GB', 'EBAY_IE': 'IE',
+        'EBAY_IN': 'IN', 'EBAY_IT': 'IT', 'EBAY_MY': 'MY', 'EBAY_NL': 'NL',
+        'EBAY_PH': 'PH', 'EBAY_PL': 'PL', 'EBAY_SG': 'SG', 'EBAY_TH': 'TH',
+        'EBAY_VN': 'VN'
+      }
+      return map[site] || ''
+    },
+    getFlagEmoji(code) {
+      if (!code || code.length !== 2) return ''
+      const cp = code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
+      return String.fromCodePoint(...cp)
     },
     loadUsers() {
       const user = JSON.parse(window.sessionStorage.getItem('user') || '{}')
@@ -1008,8 +1017,9 @@ export default {
     },
 
     // ================== 打开产品详情弹窗 ==================
-    openDetailDialog(id) {
+    openDetailDialog(id, shopId) {
       this.currentProductId = id;
+      this.currentTargetShopId = shopId || null;
       this.detailDialogVisible = true;
     },
 
@@ -1214,4 +1224,14 @@ export default {
 .dialog-footer {
   text-align: right;
 }
+.shop-sync-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.dot-synced { background-color: #67c23a; }
+.dot-unsynced { background-color: #e6a23c; }
 </style>

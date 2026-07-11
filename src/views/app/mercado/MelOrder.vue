@@ -126,9 +126,9 @@
               <el-link :href="scope.row.sale_url"
                        title="查看平台链接"
                        :underline="false" target="_blank"><i class="el-icon-link"></i></el-link>
-              <el-link @click.native="selectItemID(scope.row.item_id)"
+              <el-link @click.native="selectItemID(scope.row.group_id)"
                        style="margin-left: 5px"
-                       title="筛选当前ItemID"
+                       title="筛选当前group_id"
                        :underline="false"><i class="el-icon-connection"></i></el-link>
               <el-link @click.native="copyText(scope.row.item_id)"
                        style="margin-left: 5px"
@@ -345,14 +345,43 @@
             :value="item.value">
         </el-option>
       </el-select>
-      <div class="chart">
+      <div class="chart" v-if="chartType !== 'RANKING'">
         <MelSaleChart
             :key="timer"
             :shop="shopID"
             :chartType="chartType"
         :startSaleDate="start_date | dateFormat"
         :endSaleDate="end_date | dateFormat"></MelSaleChart>
-
+      </div>
+      <div v-if="chartType === 'RANKING'" v-loading="rankingLoading" style="min-height: 200px">
+        <div style="margin-bottom: 8px">
+          <el-radio-group v-model="rankingBy" size="mini" @change="loadRanking">
+            <el-radio-button label="sku">按产品(SKU)</el-radio-button>
+            <el-radio-button label="group_id">按链接</el-radio-button>
+          </el-radio-group>
+        </div>
+        <el-table :data="rankingData" border size="small" max-height="500"
+          :header-cell-style="{background:'#fafafa'}">
+          <el-table-column type="index" label="#" width="50" align="center" />
+          <el-table-column label="图片" width="70" align="center">
+            <template slot-scope="scope">
+              <el-image v-if="scope.row.image" style="width: 50px; height: 50px"
+                :src="scope.row.image" fit="cover" />
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="SKU" width="110">
+            <template slot-scope="scope">{{ scope.row.sku }}</template>
+          </el-table-column>
+          <el-table-column label="产品名称" min-width="200" show-overflow-tooltip>
+            <template slot-scope="scope">{{ scope.row.p_name }}</template>
+          </el-table-column>
+          <el-table-column label="销量" width="100" align="center" sortable prop="total_qty">
+            <template slot-scope="scope">
+              <b>{{ scope.row.total_qty }}</b>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
       <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="chartVisible = false">关 闭</el-button>
@@ -621,8 +650,19 @@ export default {
       }, {
         value: 'PROFIT',
         label: '毛利润图表'
+      }, {
+        value: 'RANKING',
+        label: '产品排行'
       }],
       chartType: 'ORDER',
+      rankingData: [],
+      rankingLoading: false,
+      rankingBy: 'sku',
+    }
+  },
+  watch: {
+    chartType(val) {
+      if (val === 'RANKING') this.loadRanking()
     }
   },
   filters: {
@@ -689,6 +729,21 @@ export default {
     this.inintShops();
   },
   methods:{
+    loadRanking() {
+      if (!this.shopID || !this.start_date || !this.end_date) return
+      this.rankingLoading = true
+      let url = 'api/ml_orders/sales_ranking/?shop_id=' + this.shopID
+        + '&start_date=' + moment(this.start_date).format('YYYY-MM-DD')
+        + '&end_date=' + moment(this.end_date).format('YYYY-MM-DD')
+        + '&rank_by=' + this.rankingBy
+      this.getRequest(url).then(resp => {
+        this.rankingLoading = false
+        if (resp && resp.results) {
+          this.rankingData = resp.results
+        }
+      }).catch(() => { this.rankingLoading = false })
+    },
+
     // 打开订单详情弹窗
     checkOrderDetail(obj){
       this.orderDetail = obj

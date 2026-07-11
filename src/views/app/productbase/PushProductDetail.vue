@@ -811,6 +811,10 @@ export default {
     productId: {
       type: Number,
       required: true
+    },
+    targetShopId: {
+      type: Number,
+      default: null
     }
   },
   data() {
@@ -1106,6 +1110,15 @@ export default {
           this.markAllStatus(this.baseProduct)
           if (this.baseProduct.product_groups && this.baseProduct.product_groups.length) {
             this.activeShopTabName = 'shop-0'
+            // 店铺视角跳转：自动切换到目标店铺
+            if (this.targetShopId) {
+              const shops = this.visibleShops
+              const idx = shops.findIndex(s => s.id === this.targetShopId)
+              if (idx >= 0) {
+                this.activeShopTabName = 'shop-' + idx
+                this.activeTab = 'shop'
+              }
+            }
           }
           this.$nextTick(() => {
             this._watching = true
