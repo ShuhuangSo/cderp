@@ -6,7 +6,8 @@ proxyobj['/'] = {
     ws: false,
     target: 'http://localhost:8000',
     changeOrigin: true,
-    pathRewrite: { '^/': '/' }
+    pathRewrite: { '^/': '/' },
+    timeout: 120000  // 大文件上传超时设为 2 分钟
 }
 
 module.exports = {

@@ -299,6 +299,7 @@
             :data="{'id': this.shopID, 'mel_row': this.mel_row}"
             :headers="headers"
             :on-success="onSuccess"
+            :on-error="onError"
             :auto-upload="false"
             :before-upload="beforeUpload"
             accept=".xlsx,.xls"
@@ -804,6 +805,11 @@ export default {
 
       //更新默认标题行
       window.localStorage.setItem('order_mel_row', this.mel_row)
+    },
+    // 上传失败回调
+    onError(err, file, fileList) {
+      this.upload_loading = false
+      this.$message.error('上传失败：文件过大或网络超时，请重试')
     },
     // 上传
     submitUpload() {
