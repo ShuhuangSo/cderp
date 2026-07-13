@@ -2,6 +2,12 @@ const webpack = require('webpack')
 
 let proxyobj = {}
 
+proxyobj['/flower/'] = {
+    ws: true,
+    target: 'http://localhost:5555',
+    changeOrigin: true
+}
+
 proxyobj['/'] = {
     ws: false,
     target: 'http://localhost:8000',

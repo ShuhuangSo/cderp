@@ -5,7 +5,7 @@
 
         <div style="display: flex; justify-content: left">
           <router-link to="/home">
-            <el-tooltip class="item" effect="light" content="系统版本: v1.9.10" placement="bottom">
+            <el-tooltip class="item" effect="light" content="系统版本: v1.9.11" placement="bottom">
               <img src="../assets/logo-m.png" alt="CaseDance"  class="logo">
             </el-tooltip>
 
@@ -29,8 +29,9 @@
         </div>
 
         <div class="avatar">
-          <el-button type="text" icon="el-icon-s-data" style="color: #d6d6d6; margin-right: 20px"
-            @click="flowerVisible = true">Celery 任务</el-button>
+          <el-button v-if="user.is_superuser" type="text" icon="el-icon-s-data"
+            style="color: #d6d6d6; margin-right: 20px"
+            @click="openFlower">Celery 任务</el-button>
           <el-dropdown style="margin-bottom: 10px" @command="commandHandler">
           <span class="el-dropdown-link">
             <i class="el-icon-user"></i>{{ user.name }}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -53,23 +54,6 @@
       </el-main>
       <el-backtop target=".el-main" :bottom="100"></el-backtop>
 
-      <!-- Celery Flower 任务监控抽屉 -->
-      <el-drawer
-        title="Celery 任务监控"
-        :visible.sync="flowerVisible"
-        direction="rtl"
-        size="90%"
-        :close-on-press-escape="false"
-        @open="flowerLoading = true"
-      >
-        <div v-loading="flowerLoading" style="height: 100%">
-          <iframe
-            src="/flower/"
-            style="width: 100%; height: 100%; border: none; display: block"
-            @load="flowerLoading = false"
-          />
-        </div>
-      </el-drawer>
     </el-container>
 
 </template>
@@ -84,13 +68,14 @@ export default {
   },
   data() {
     return {
-      user: JSON.parse(window.sessionStorage.getItem('user')),
-      flowerVisible: false,
-      flowerLoading: true
+      user: JSON.parse(window.sessionStorage.getItem('user'))
     }
   },
 
   methods:{
+    openFlower() {
+      window.open('/flower/', '_blank')
+    },
     commandHandler(command){
       if(command=='logout'){
         this.$confirm('是否注销退出系统?', '提示', {

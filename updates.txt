@@ -275,4 +275,8 @@ v1.9.9
 - 新增 NProgress 路由跳转进度条，消除懒加载 chunk 下载时的空白等待
 
 v1.9.10
-- 新增 Celery Flower 任务监控抽屉，点击顶部「Celery 任务」按钮即可在系统内查看
+- 新增 Celery Flower 任务监控抽屉，iframe 嵌入 /flower/
+
+v1.9.11
+- Celery 任务入口简化为新标签页打开，移除 iframe 抽屉
+- 按钮仅管理员可见
