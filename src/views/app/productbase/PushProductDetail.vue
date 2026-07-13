@@ -1061,6 +1061,11 @@ export default {
     },
     activeShopTabName() {
       // 只触发，不在此加载数据
+    },
+    activeTab(newTab) {
+      if (newTab === 'shop') {
+        this.loadListingConfigs()
+      }
     }
   },
   filters: {
