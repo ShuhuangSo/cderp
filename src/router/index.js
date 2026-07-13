@@ -1,7 +1,17 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 Vue.use(VueRouter)
+
+// NProgress 配置
+NProgress.configure({
+  showSpinner: false,
+  easing: 'ease',
+  speed: 400,
+  minimum: 0.15
+})
 
 const routes = [
     {
@@ -134,6 +144,15 @@ const routes = [
 
 const router = new VueRouter({
     routes
+})
+
+router.beforeEach((to, from, next) => {
+  NProgress.start()
+  next()
+})
+
+router.afterEach(() => {
+  NProgress.done()
 })
 
 export default router

@@ -37,4 +37,12 @@
   border-radius: 4px;
   overflow: hidden;
 }
+
+/* NProgress 顶部进度条颜色 */
+#nprogress .bar {
+  background: #409eff;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #409eff, 0 0 5px #409eff;
+}
 </style>
